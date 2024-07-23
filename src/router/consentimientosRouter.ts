@@ -1,20 +1,28 @@
 import { Router } from "express";
-import ConsentimientosService from "../Services/ConsentimientosService";
+import ConsentimientosService from "../Services/consentimientosService";
+import { NextFunction, Request, Response } from "express";
 
-class ProductoRouter {
+class ConsentimientoRouter {
 
     router: Router;
-    private controller: ConsentimientosService;
+    private service: ConsentimientosService;
 
     constructor() {
-        this.controller = new ConsentimientosService();
+        this.service = new ConsentimientosService();
         this.router = Router();
         this.config();
     }
 
     private config() {
-        this.router.route('/consentimiento/pdf').post(this.controller.GenerarConsentimiento);
+        this.router.get('/consentimiento/pdf', async (req: Request, res: Response, next: NextFunction) => {
+            var response = await this.service.GenerarConsentimiento();
+            if(response){
+                res.status(200).send(true)
+            }else{
+                res.status(500).send(false)
+            }
+        });
     }
 }
 
-export default new ProductoRouter();
+export default new ConsentimientoRouter();

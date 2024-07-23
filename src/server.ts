@@ -1,7 +1,7 @@
 import express from 'express';
 import morgan from 'morgan';
 import cors from 'cors';
-import ProductoRouter from './router/consentimientosRouter.js'
+import ConsentimientoRouter from './router/consentimientosRouter.js'
 
 class Server{
 
@@ -24,7 +24,7 @@ class Server{
     }
     
     private routes(){
-        this.app.use('/api',ProductoRouter.router)
+        this.app.use('/api',ConsentimientoRouter.router)
         this.app.get('/', (req, res) => {
             res.status(200).send({ message: 'API is running' });
         });
