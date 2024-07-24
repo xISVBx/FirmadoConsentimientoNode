@@ -2,6 +2,8 @@ import express from 'express';
 import morgan from 'morgan';
 import cors from 'cors';
 import ConsentimientoRouter from './router/consentimientosRouter.js'
+import dotenv from 'dotenv';
+
 
 class Server{
 
@@ -15,6 +17,7 @@ class Server{
     }
 
     private config(){
+        dotenv.config();
         this.app.use(cors({
             origin: '*',
             credentials: true

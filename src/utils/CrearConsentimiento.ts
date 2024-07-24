@@ -2,12 +2,16 @@ import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import fs from 'fs';
 import path from 'path';
 
-export async function generatePdf() {
+export async function generatePdf(base64Image:String) {
   // Crear un nuevo documento PDF
   const pdfDoc = await PDFDocument.create();
   const page = pdfDoc.addPage();
   const timesRomanFont = await pdfDoc.embedFont(StandardFonts.TimesRoman);
 
+  //imagebyte to embebed
+  const imageBytes = Buffer.from(base64Image, 'base64')
+  // Incorporar la imagen al documento PDF
+  const embeddedImage = await pdfDoc.embedPng(imageBytes);
   // Definir el contenido del formulario
   const consentText = `
     FORMULARIO DE CONSENTIMIENTO Y AUTORIZACIÓN
@@ -41,11 +45,11 @@ export async function generatePdf() {
 
     Nombre del agente de escritura principal:            ____________________________________
     Número de Productor Nacional del agente:          ____________________________________
+    Número de teléfono:                                             ____________________________________
+    Dirección de correo electrónico:                           ____________________________________
+    Nombre del titular y/o representante autorizado:  ____________________________________
     Número de teléfono:                                              ____________________________________
-    Dirección de correo electrónico:                         ____________________________________
-    Nombre del titular y/o representante autorizado: ____________________________________
-    Número de teléfono:                                         ____________________________________
-    Correo electrónico:                                           ____________________________________
+    Correo electrónico:                                                ____________________________________
 
     Firma: ____________________________________ Fecha: _______________________________
   `;
@@ -103,16 +107,33 @@ export async function generatePdf() {
   page.drawText(`Agente: ${formData.agente}`, { x: 180, y: initLine - (17 * 1), size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
   //
   page.drawText(`Número de Agente: ${formData.numeroAgente}`, { x: 290, y: initLine - (17 * 27), size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
-  //page.drawText(`Teléfono de Agente: ${formData.telefonoAgente}`, { x: 50, y: 420, size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
-  //page.drawText(`Email de Agente: ${formData.emailAgente}`, { x: 50, y: 400, size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
-  //page.drawText(`Nombre de Representante: ${formData.nombreRepresentante}`, { x: 50, y: 380, size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
-  //page.drawText(`Teléfono de Representante: ${formData.telefonoRepresentante}`, { x: 50, y: 360, size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
-  //page.drawText(`Email de Representante: ${formData.emailRepresentante}`, { x: 50, y: 340, size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
-  //page.drawText(`Firma: ${formData.firma}`, { x: 50, y: 320, size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
-  //page.drawText(`Fecha de Firma: ${formData.fechaFirma}`, { x: 50, y: 300, size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
+  //
+  page.drawText(`Teléfono de Agente: ${formData.telefonoAgente}`, { x: 290, y: initLine - (17 * 28), size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
+  //
+  page.drawText(`Email de Agente: ${formData.emailAgente}`, { x: 290, y: initLine - (17 * 29), size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
+  //
+  page.drawText(`Nombre de Representante: ${formData.nombreRepresentante}`, { x: 290, y: initLine - (17 * 30), size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
+  //
+  page.drawText(`Teléfono de Representante: ${formData.telefonoRepresentante}`, { x: 290, y: initLine - (17 * 31), size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
+  //
+  page.drawText(`Email de Representante: ${formData.emailRepresentante}`, { x: 290, y: initLine - (17 * 32), size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
+  //
+  page.drawText(`Firma: ${formData.firma}`, { x: 290, y: initLine - (17 * 33), size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
+  //
+  page.drawText(`Fecha de Firma: ${formData.fechaFirma}`, { x: 340, y: initLine - (17 * 35), size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
+  //Guardar imagen
+  const x:number = 90
+  const yImage:number = initLine - (17 * 35)
 
+  page.drawImage(embeddedImage, {
+    x,
+    y = yImage,
+    width: imageSize.width,
+    height: imageSize.height,
+  });
   // Guardar el documento PDF como un archivo
-  const filePath = path.resolve(__dirname, '../consentimientos/formulario_consentimiento.pdf');
+  
+  const filePath = path.resolve(__dirname, process.env.VITE_FOLDER_CONSENTIMIENTO_PATH ?? "");
   const pdfBytes = await pdfDoc.save();
   fs.writeFileSync(filePath, pdfBytes);
 }

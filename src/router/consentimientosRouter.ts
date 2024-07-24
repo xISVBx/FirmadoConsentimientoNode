@@ -14,8 +14,13 @@ class ConsentimientoRouter {
     }
 
     private config() {
-        this.router.get('/consentimiento/pdf', async (req: Request, res: Response, next: NextFunction) => {
-            var response = await this.service.GenerarConsentimiento();
+        this.router.post('/consentimiento/pdf', async (req: Request, res: Response, next: NextFunction) => {
+            const { base64Image } = req.body
+            if(!base64Image){
+                res.status(400).send('El parámetro image es requerido')
+                return
+            }
+            var response = await this.service.GenerarConsentimiento(base64Image);
             if(response){
                 res.status(200).send(true)
             }else{
