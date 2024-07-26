@@ -15,16 +15,20 @@ class ConsentimientoRouter {
 
     private config() {
         this.router.post('/consentimiento/pdf', async (req: Request, res: Response, next: NextFunction) => {
-            const { base64Image } = req.body
+            const { base64Image, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento } = req.body
             if(!base64Image){
-                res.status(400).send('El parámetro image es requerido')
+                res.status(400).send('El parámetro base64Image es requerido')
                 return
             }
-            var response = await this.service.GenerarConsentimiento(base64Image);
+            var nombreAgente:string = "Carlos";
+            var numeroAgente:string = "12365484321"
+            var telefonoAgente:string = "32116546"
+            var correoAgente:string = "agente@agente.com"
+            var response = await this.service.GenerarConsentimiento(base64Image, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, nombreAgente, numeroAgente, telefonoAgente, correoAgente);
             if(response){
-                res.status(200).send(true)
+                res.status(200).send(response)
             }else{
-                res.status(500).send(false)
+                res.status(500).send(response)
             }
         });
     }

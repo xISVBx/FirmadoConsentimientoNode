@@ -2,7 +2,19 @@ import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import fs from 'fs';
 import path from 'path';
 
-export async function generatePdf(base64Image:String) {
+export async function generatePdf(base64Image:string, nombreTitular:string, telefonoTitular:string, correoTitular:string, fechaNacimiento:string, 
+  nombreAgente:string, numeroAgente:string, telefonoAgente:string, correoAgente:string, consentimientoId:string) {
+
+  //Crear la carpeta
+  const folderPath = path.resolve(__dirname, `${process.env.VITE_FOLDER_CONSENTIMIENTO_PATH}/${consentimientoId}`);
+  fs.mkdir(folderPath, { recursive: true }, (err) => {
+    if (err) {
+      console.error('Error creating directory:', err);
+    } else {
+      console.log(`Directory created successfully! ${folderPath}`);
+    }
+  });  
+
   // Crear un nuevo documento PDF
   const pdfDoc = await PDFDocument.create();
   const page = pdfDoc.addPage();
@@ -100,40 +112,40 @@ export async function generatePdf(base64Image:String) {
   var lineHeight = 15
   var initLine = 741
   //Nombre
-  page.drawText(`Nombre: ${formData.nombre}`, { x: 80, y: initLine, size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
+  page.drawText(nombreTitular, { x: 80, y: initLine, size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
   //fecha
-  page.drawText(`Fecha de nacimiento: ${formData.fechaNacimiento}`, { x: 450, y: initLine, size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
+  page.drawText(fechaNacimiento, { x: 450, y: initLine, size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
   //agente
-  page.drawText(`Agente: ${formData.agente}`, { x: 180, y: initLine - (17 * 1), size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
+  page.drawText(nombreAgente, { x: 180, y: initLine - (17 * 1), size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
   //
-  page.drawText(`Número de Agente: ${formData.numeroAgente}`, { x: 290, y: initLine - (17 * 27), size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
+  page.drawText(nombreAgente, { x: 290, y: initLine - (17 * 27), size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
   //
-  page.drawText(`Teléfono de Agente: ${formData.telefonoAgente}`, { x: 290, y: initLine - (17 * 28), size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
+  page.drawText(numeroAgente, { x: 290, y: initLine - (17 * 28), size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
   //
-  page.drawText(`Email de Agente: ${formData.emailAgente}`, { x: 290, y: initLine - (17 * 29), size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
+  page.drawText(telefonoAgente, { x: 290, y: initLine - (17 * 29), size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
   //
-  page.drawText(`Nombre de Representante: ${formData.nombreRepresentante}`, { x: 290, y: initLine - (17 * 30), size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
+  page.drawText(correoAgente, { x: 290, y: initLine - (17 * 30), size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
   //
-  page.drawText(`Teléfono de Representante: ${formData.telefonoRepresentante}`, { x: 290, y: initLine - (17 * 31), size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
+  page.drawText(nombreTitular, { x: 290, y: initLine - (17 * 31), size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
   //
-  page.drawText(`Email de Representante: ${formData.emailRepresentante}`, { x: 290, y: initLine - (17 * 32), size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
+  page.drawText(telefonoTitular, { x: 290, y: initLine - (17 * 32), size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
   //
-  page.drawText(`Firma: ${formData.firma}`, { x: 290, y: initLine - (17 * 33), size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
+  page.drawText(correoTitular, { x: 290, y: initLine - (17 * 33), size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
   //
   page.drawText(`Fecha de Firma: ${formData.fechaFirma}`, { x: 340, y: initLine - (17 * 35), size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
   //Guardar imagen
   const x:number = 90
-  const yImage:number = initLine - (17 * 35)
+  const yImage:number = initLine - (17 * 36)
 
   page.drawImage(embeddedImage, {
     x,
-    y = yImage,
-    width: imageSize.width,
-    height: imageSize.height,
+    y: yImage,
+    width: 100,
+    height: 50,
   });
   // Guardar el documento PDF como un archivo
   
-  const filePath = path.resolve(__dirname, process.env.VITE_FOLDER_CONSENTIMIENTO_PATH ?? "");
+  const filePath = path.resolve(__dirname, `${folderPath}/formulario_consentimiento.pdf`);
   const pdfBytes = await pdfDoc.save();
   fs.writeFileSync(filePath, pdfBytes);
 }
