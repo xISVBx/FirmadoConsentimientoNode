@@ -2,18 +2,18 @@ import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import fs from 'fs';
 import path from 'path';
 
-export async function generatePdf(base64Image:string, nombreTitular:string, telefonoTitular:string, correoTitular:string, fechaNacimiento:string, 
-  nombreAgente:string, numeroAgente:string, telefonoAgente:string, correoAgente:string, consentimientoId:string) {
+export async function generatePdf(base64Image: string, nombreTitular: string, telefonoTitular: string, correoTitular: string, fechaNacimiento: string,
+  nombreAgente: string, numeroAgente: string, telefonoAgente: string, correoAgente: string, consentimientoId: string): Promise<Uint8Array> {
 
   //Crear la carpeta
-  const folderPath = path.resolve(__dirname, `${process.env.VITE_FOLDER_CONSENTIMIENTO_PATH}/${consentimientoId}`);
+  const folderPath = path.resolve(__dirname, `${process.env.CONSENTIMIENTOS_PATH}/${consentimientoId}`);
   fs.mkdir(folderPath, { recursive: true }, (err) => {
     if (err) {
       console.error('Error creating directory:', err);
     } else {
       console.log(`Directory created successfully! ${folderPath}`);
     }
-  });  
+  });
 
   // Crear un nuevo documento PDF
   const pdfDoc = await PDFDocument.create();
@@ -134,8 +134,8 @@ export async function generatePdf(base64Image:string, nombreTitular:string, tele
   //
   page.drawText(`Fecha de Firma: ${formData.fechaFirma}`, { x: 340, y: initLine - (17 * 35), size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
   //Guardar imagen
-  const x:number = 90
-  const yImage:number = initLine - (17 * 36)
+  const x: number = 90
+  const yImage: number = initLine - (17 * 36)
 
   page.drawImage(embeddedImage, {
     x,
@@ -144,8 +144,9 @@ export async function generatePdf(base64Image:string, nombreTitular:string, tele
     height: 50,
   });
   // Guardar el documento PDF como un archivo
-  
+
   const filePath = path.resolve(__dirname, `${folderPath}/formulario_consentimiento.pdf`);
   const pdfBytes = await pdfDoc.save();
   fs.writeFileSync(filePath, pdfBytes);
+  return pdfBytes;
 }

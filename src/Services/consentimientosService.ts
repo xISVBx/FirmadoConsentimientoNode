@@ -15,9 +15,10 @@ export default class ConsentimientosService {
         }
         try {
             var consentimientoId = uuidv4()
-            await generatePdf(base64Image, nombreTitular, telefonoTitular, correoTitular, 
+            var pdfResponse = await generatePdf(base64Image, nombreTitular, telefonoTitular, correoTitular, 
                 fechaNacimiento, nombreAgente, numeroAgente, telefonoAgente, correoAgente, 
                 consentimientoId);
+                
             response.data = true;
             response.isSucces = true;
             response.message = "PDF Almacenado!!!";

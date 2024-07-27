@@ -1,29 +1,24 @@
-import { Connection } from "mysql2/typings/mysql/lib/Connection";
-import { ResponseGeneric } from "../common/response";
-import { generatePdf } from "../utils/CrearConsentimiento";
-import { v4 as uuidv4 } from 'uuid';
 import { getConnection } from "../database/database";
 
-
-export default class ConsentimientosRepository {
+class ConsentimientosRepository {
     async GuardarConsentimiento(base64Consentimiento: string, nombreTitular: string, telefonoTitular: string,
-        correoTitular: string, fechaNacimiento: string, nombreAgente: string, numeroAgente: string,
-        telefonoAgente: string, correoAgente: string, idConsentimiento: string, pathConsentimiento: string): Promise<boolean> {
+        correoTitular: string, fechaNacimiento: string, idConsentimiento: string,
+        pathConsentimiento: string): Promise<boolean> {
         var conn = await getConnection()
         await conn.beginTransaction();
         try {
 
-            const [resultConsentimiento] = await conn.execute(
+            const resultConsentimiento = await conn.execute(
                 `INSERT INTO consentimientos
-            (id, path_consentimiento, consentimiento)
+            (id, path_consentimiento, consentimiento, created)
             VALUES (?, ?, ?);`,
-                [idConsentimiento, pathConsentimiento, base64Consentimiento]
+                [idConsentimiento, pathConsentimiento, base64Consentimiento, Date.now()]
             )
-            const [resultDatos] = await conn.execute(
+            const resultDatos = await conn.execute(
                 `INSERT INTO datos_consentimientos
-            (id, id_consentimiento, nombre, correo_electronico, fecha_registro)
+            (id_consentimiento, nombre, telefono, correo, fecha_nacimiento)
             VALUES (?, ?, ?, ?, ?);`,
-                [idConsentimiento, pathConsentimiento, base64Consentimiento]
+                [idConsentimiento, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento]
             )
             await conn.commit();
             return true;
@@ -34,3 +29,5 @@ export default class ConsentimientosRepository {
 
     }
 }
+
+export default new ConsentimientosRepository()
