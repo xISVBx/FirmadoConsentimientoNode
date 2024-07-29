@@ -19,11 +19,12 @@ class Server{
     private config(){
         dotenv.config();
         this.app.use(cors({
-            origin: '*', // Cambia esto según tu política de CORS
+            origin: 'https://www.jecopainsurance.com', // Cambia esto a tu dominio
             methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
             allowedHeaders: ['Content-Type', 'Authorization'],
-            credentials: true
+            credentials: true // Solo permite esto si estás especificando un origen específico
         }));
+        
         this.app.use(express.json());
         this.app.use(morgan('dev'));
     }
