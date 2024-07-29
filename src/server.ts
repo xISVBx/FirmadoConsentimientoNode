@@ -34,18 +34,15 @@ class Server{
     }
 
     private start(){
-        const port =  "80";
-        const host = "localhost";
-        if(host) {
-            this.app.listen(parseInt(port), host, ()=>{
-                console.log(`Listen on http://${host}:${port}/`);
-            });
-        } else {
-            this.app.listen(parseInt(port), ()=>{
-                console.log(`Listen on ${port}`);
-            });
-        }
+        // Usar el puerto proporcionado por el entorno (por ejemplo, por cPanel)
+        const port = process.env.PORT || 80; // Usa el puerto de entorno o 80 por defecto
+        const host = '0.0.0.0'; // cPanel usa 0.0.0.0 para aceptar conexiones desde cualquier IP
+    
+        this.app.listen(parseInt(port as string), host, () => {
+            console.log(`Listening on http://${host}:${port}/`);
+        });
     }
+    
 }
 
 new Server();
