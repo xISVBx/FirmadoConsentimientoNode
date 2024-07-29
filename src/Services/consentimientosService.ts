@@ -1,4 +1,6 @@
 import { ResponseGeneric } from "../common/response";
+import { enviarCorreo } from "../infraestructure/email";
+import { GuardarConsentimiento } from "../repository/consentimientosRepository";
 import { generatePdf } from "../utils/CrearConsentimiento";
 import { v4 as uuidv4 } from 'uuid';
 
@@ -10,18 +12,28 @@ export default class ConsentimientosService {
 
         let response: ResponseGeneric<boolean> = {
             data: false,
-            isSucces:false,
-            message:""
+            isSucces: false,
+            message: ""
         }
         try {
             var consentimientoId = uuidv4()
-            var pdfResponse = await generatePdf(base64Image, nombreTitular, telefonoTitular, correoTitular, 
-                fechaNacimiento, nombreAgente, numeroAgente, telefonoAgente, correoAgente, 
+            var pdfResponse = await generatePdf(base64Image, nombreTitular, telefonoTitular, correoTitular,
+                fechaNacimiento, nombreAgente, numeroAgente, telefonoAgente, correoAgente,
                 consentimientoId);
-                
-            response.data = true;
-            response.isSucces = true;
-            response.message = "PDF Almacenado!!!";
+
+            var correoResponse = await enviarCorreo(correoTitular, "Envio de consentimiento", "", "", "ConsentimientoFirmado.pdf", pdfResponse[0])
+
+            if(!correoResponse){
+                response.message = "No se pudo enviar el correo!!!"
+                return response
+            }
+
+            var result = await GuardarConsentimiento(pdfResponse[0], nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, consentimientoId, pdfResponse[1])
+            if (result) {
+                response.data = true;
+                response.isSucces = true;
+                response.message = "PDF Almacenado!!!";
+            }
             return response;
         } catch (e) {
             if (e instanceof Error) {

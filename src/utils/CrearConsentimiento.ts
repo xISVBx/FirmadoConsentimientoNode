@@ -1,12 +1,13 @@
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import fs from 'fs';
 import path from 'path';
+import { convertirFecha, obtenerFechaActualDDMMYYYY } from './datesUtils';
 
-export async function generatePdf(base64Image: string, nombreTitular: string, telefonoTitular: string, correoTitular: string, fechaNacimiento: string,
-  nombreAgente: string, numeroAgente: string, telefonoAgente: string, correoAgente: string, consentimientoId: string): Promise<Uint8Array> {
+export async function generatePdf(base64Data: string, nombreTitular: string, telefonoTitular: string, correoTitular: string, fechaNacimiento: string,
+  nombreAgente: string, numeroAgente: string, telefonoAgente: string, correoAgente: string, consentimientoId: string): Promise<[Uint8Array, string]> {
 
   //Crear la carpeta
-  const folderPath = path.resolve(__dirname, `${process.env.CONSENTIMIENTOS_PATH}/${consentimientoId}`);
+  const folderPath = path.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/${consentimientoId}`);
   fs.mkdir(folderPath, { recursive: true }, (err) => {
     if (err) {
       console.error('Error creating directory:', err);
@@ -19,6 +20,9 @@ export async function generatePdf(base64Image: string, nombreTitular: string, te
   const pdfDoc = await PDFDocument.create();
   const page = pdfDoc.addPage();
   const timesRomanFont = await pdfDoc.embedFont(StandardFonts.TimesRoman);
+
+  // Si el Base64 incluye un prefijo, elimínalo
+  const base64Image = base64Data.replace(/^data:image\/png;base64,/, '');
 
   //imagebyte to embebed
   const imageBytes = Buffer.from(base64Image, 'base64')
@@ -76,7 +80,6 @@ export async function generatePdf(base64Image: string, nombreTitular: string, te
 
   // Escribir el texto en la página
   let y = height - margin;
-  console.log(y)
   for (const line of consentLines) {
     if (y < margin) {
       // Agregar una nueva página si el texto no cabe en la página actual
@@ -93,28 +96,13 @@ export async function generatePdf(base64Image: string, nombreTitular: string, te
     y -= fontSize + 5; // Espacio entre líneas
   }
 
-  // Definir los datos a agregar al PDF (Estos son ejemplos, deberás adaptarlos a tus necesidades)
-  const formData = {
-    nombre: 'Juan Pérez',
-    fechaNacimiento: '01/01/1980',
-    agente: 'Agente X',
-    numeroAgente: '123456',
-    telefonoAgente: '555-123-4567',
-    emailAgente: 'agente@example.com',
-    nombreRepresentante: 'Ana Pérez',
-    telefonoRepresentante: '555-987-6543',
-    emailRepresentante: 'ana.perez@example.com',
-    firma: 'Juan Pérez',
-    fechaFirma: '23/07/2024',
-  };
-
   // Escribir los datos en el PDF
   var lineHeight = 15
   var initLine = 741
   //Nombre
   page.drawText(nombreTitular, { x: 80, y: initLine, size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
   //fecha
-  page.drawText(fechaNacimiento, { x: 450, y: initLine, size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
+  page.drawText(convertirFecha(fechaNacimiento), { x: 450, y: initLine, size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
   //agente
   page.drawText(nombreAgente, { x: 180, y: initLine - (17 * 1), size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
   //
@@ -132,7 +120,7 @@ export async function generatePdf(base64Image: string, nombreTitular: string, te
   //
   page.drawText(correoTitular, { x: 290, y: initLine - (17 * 33), size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
   //
-  page.drawText(`Fecha de Firma: ${formData.fechaFirma}`, { x: 340, y: initLine - (17 * 35), size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
+  page.drawText( obtenerFechaActualDDMMYYYY(), { x: 340, y: initLine - (17 * 35), size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
   //Guardar imagen
   const x: number = 90
   const yImage: number = initLine - (17 * 36)
@@ -148,5 +136,5 @@ export async function generatePdf(base64Image: string, nombreTitular: string, te
   const filePath = path.resolve(__dirname, `${folderPath}/formulario_consentimiento.pdf`);
   const pdfBytes = await pdfDoc.save();
   fs.writeFileSync(filePath, pdfBytes);
-  return pdfBytes;
+  return [pdfBytes, filePath];
 }

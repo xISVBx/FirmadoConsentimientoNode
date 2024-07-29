@@ -81,7 +81,7 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "node ./dist/server.js"
+    "dev": "tsc && node ./dist/server.js"
   },
   "keywords": [],
   "author": "",
@@ -92,6 +92,7 @@
     "@types/express": "^4.17.21",
     "@types/morgan": "^1.9.9",
     "@types/multer": "^1.4.11",
+    "@types/nodemailer": "^6.4.15",
     "@types/uuid": "^10.0.0"
   }
 }

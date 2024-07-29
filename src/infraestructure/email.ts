@@ -1,23 +1,32 @@
-// mailer.js
 import nodemailer from 'nodemailer';
 
-// Configura el transportador
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: 'vasquezballesterosivansantiago@gmail.com', // Tu correo
-        pass: 'tu-contraseña' // Tu contraseña de aplicación
-    }
-});
+export async function enviarCorreo(destinatario: string, asunto: string, texto: string,
+    html: string, fileName: string, uint8Array: Uint8Array): Promise<boolean> {
 
-// Función para enviar correos
-export async function enviarCorreo(destinatario, asunto, texto, html) {
-    const mailOptions = {
-        from: 'tu-email@gmail.com', // Remitente
-        to: destinatario, // Destinatario
-        subject: asunto, // Asunto
-        text: texto, // Texto en formato plano
-        html: html // Texto en formato HTML
+    const transporter = nodemailer.createTransport({
+        host: 'jecopainsurance.com',
+        port: 465,
+        secure: true,
+        auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASS
+        }
+    });
+
+    const pdfBytes = Buffer.from(uint8Array);
+
+    const mailOptions: nodemailer.SendMailOptions = {
+        from: process.env.EMAIL_USER,
+        to: destinatario,
+        subject: asunto,
+        text: texto,
+        html: html,
+        attachments: [
+            {
+                filename: fileName,
+                content: pdfBytes
+            }
+        ]
     };
 
     try {
