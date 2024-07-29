@@ -21,7 +21,7 @@ class ConsentimientoRouter {
         this.config();
     }
     config() {
-        this.router.post('/consentimiento/pdf', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+        this.router.post('/consentimiento', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
             const { base64Image, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento } = req.body;
             if (!base64Image) {
                 res.status(400).send('El parámetro base64Image es requerido');
