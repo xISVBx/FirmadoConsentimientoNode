@@ -18,10 +18,10 @@ class Server {
     config() {
         dotenv_1.default.config();
         this.app.use((0, cors_1.default)({
-            origin: 'https://www.jecopainsurance.com', // Cambia esto a tu dominio
+            origin: '*', // Cambia esto según tu política de CORS
             methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
             allowedHeaders: ['Content-Type', 'Authorization'],
-            credentials: true // Solo permite esto si estás especificando un origen específico
+            credentials: true
         }));
         this.app.use(express_1.default.json());
         this.app.use((0, morgan_1.default)('dev'));
