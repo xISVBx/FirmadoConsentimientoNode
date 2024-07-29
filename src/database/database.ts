@@ -1,12 +1,21 @@
 import mysql from 'mysql2/promise';
 
 export const getConnection = async (): Promise<mysql.Connection> => {
-    return mysql.createConnection({
-      host: 'localhost',
-      port: 3306,
+  const host = process.env.DB_HOST || "";
+  const port = parseInt(process.env.DB_PORT || "3306");
+  const user = process.env.DB_USER || "";
+  const password = process.env.DB_PASS || "";
+  const database = process.env.DB_DATABASE || "";
 
-      user: 'root',
-      password: '1234',
-      database: 'consentimientos',
-    });
-  };
+  if (!host || isNaN(port) || !user || !password || !database) {
+    throw new Error('Invalid database configuration');
+  }
+
+  return mysql.createConnection({
+    host,
+    port,
+    user,
+    password,
+    database,
+  });
+};

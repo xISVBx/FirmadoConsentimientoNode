@@ -15,12 +15,20 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getConnection = void 0;
 const promise_1 = __importDefault(require("mysql2/promise"));
 const getConnection = () => __awaiter(void 0, void 0, void 0, function* () {
+    const host = process.env.DB_HOST || "";
+    const port = parseInt(process.env.DB_PORT || "3306");
+    const user = process.env.DB_USER || "";
+    const password = process.env.DB_PASS || "";
+    const database = process.env.DB_DATABASE || "";
+    if (!host || isNaN(port) || !user || !password || !database) {
+        throw new Error('Invalid database configuration');
+    }
     return promise_1.default.createConnection({
-        host: 'localhost',
-        port: 3306,
-        user: 'root',
-        password: '1234',
-        database: 'consentimientos',
+        host,
+        port,
+        user,
+        password,
+        database,
     });
 });
 exports.getConnection = getConnection;
