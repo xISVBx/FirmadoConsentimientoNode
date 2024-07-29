@@ -26,7 +26,7 @@ class Server {
     }
     routes() {
         this.app.use('/api', consentimientosRouter_js_1.default.router);
-        this.app.get('/', (req, res) => {
+        this.app.get('/api', (req, res) => {
             res.status(200).send({ message: 'API is running' });
         });
     }

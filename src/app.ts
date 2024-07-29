@@ -28,7 +28,7 @@ class Server{
     
     private routes(){
         this.app.use('/api',ConsentimientoRouter.router)
-        this.app.get('/', (req, res) => {
+        this.app.get('/api', (req, res) => {
             res.status(200).send({ message: 'API is running' });
         });
     }
