@@ -18,7 +18,9 @@ class Server {
     config() {
         dotenv_1.default.config();
         this.app.use((0, cors_1.default)({
-            origin: '*',
+            origin: '*', // Cambia esto según tu política de CORS
+            methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+            allowedHeaders: ['Content-Type', 'Authorization'],
             credentials: true
         }));
         this.app.use(express_1.default.json());

@@ -18,9 +18,8 @@ class Server{
 
     private config(){
         dotenv.config();
-        // Configura CORS antes de usar otros middleware
         this.app.use(cors({
-            origin: '*', // Permite cualquier origen
+            origin: '*', // Cambia esto según tu política de CORS
             methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
             allowedHeaders: ['Content-Type', 'Authorization'],
             credentials: true
