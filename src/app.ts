@@ -35,7 +35,7 @@ class Server{
 
     private start(){
         // Usar el puerto proporcionado por el entorno (por ejemplo, por cPanel)
-        const port = process.env.PORT || 80; // Usa el puerto de entorno o 80 por defecto
+        const port = process.env.PORT || 3000; // Usa el puerto de entorno o 80 por defecto
     
         this.app.listen(parseInt(port as string), () => {
             console.log(`Listening on http://:${port}/`);
