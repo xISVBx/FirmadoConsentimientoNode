@@ -33,7 +33,7 @@ class Server{
         this.app.get('/api', (req, res) => {
             res.status(200).send({ message: 'API is running' });
         });
-        this.app.get('/consentimiento/test', (req, res) => {
+        this.app.get('api/test', (req, res) => {
             res.status(200).send({ message: 'Test passed' });
         });
     }
