@@ -36,6 +36,7 @@ class ConsentimientoRouter {
             if (decodedToken == null) {
                 res.status(400).send('Token no valido!!!');
             }
+            console.log(decodedToken);
             var response = yield this.service.GenerarConsentimiento(base64Image, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, decodedToken);
             if (response) {
                 res.status(200).send(response);
@@ -44,7 +45,7 @@ class ConsentimientoRouter {
                 res.status(500).send(response);
             }
         }));
-        this.router.post('/correo', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+        this.router.post('/consentimiento/correo', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
             const { nombreAgente, numeroProductor, telefonoAgente, correoAgente, destinatario } = req.body;
             var response = yield this.service.EnviarFormularioConsentimiento(nombreAgente, numeroProductor, telefonoAgente, correoAgente, destinatario);
             if (response) {

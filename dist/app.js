@@ -31,7 +31,7 @@ class Server {
         this.app.get('/api', (req, res) => {
             res.status(200).send({ message: 'API is running' });
         });
-        this.app.post('api', (req, res) => {
+        this.app.post('/api', (req, res) => {
             res.status(200).send({ message: 'post passed' });
         });
     }
