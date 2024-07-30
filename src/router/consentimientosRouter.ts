@@ -1,6 +1,7 @@
 import { Router } from "express";
 import ConsentimientosService from "../Services/consentimientosService";
 import { NextFunction, Request, Response } from "express";
+import { verifyToken } from "../utils/token";
 
 class ConsentimientoRouter {
 
@@ -15,22 +16,37 @@ class ConsentimientoRouter {
 
     private config() {
         this.router.post('/consentimiento', async (req: Request, res: Response, next: NextFunction) => {
-            const { base64Image, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento } = req.body
+            const { base64Image, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, token } = req.body
             if(!base64Image){
-                res.status(400).send('El parámetro base64Image es requerido')
+                res.status(400).send('Se debe firmar el formulario requerido!!!')
                 return
             }
-            var nombreAgente:string = "Carlos";
-            var numeroAgente:string = "12365484321"
-            var telefonoAgente:string = "32116546"
-            var correoAgente:string = "agente@agente.com"
-            var response = await this.service.GenerarConsentimiento(base64Image, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, nombreAgente, numeroAgente, telefonoAgente, correoAgente);
+            if(!token){
+                res.status(400).send('No se envio el token!!!')
+                return
+            }
+            var decodedToken = verifyToken(token)
+            
+            if(decodedToken == null){
+                res.status(400).send('Token no valido!!!')
+            }
+            console.log(decodedToken)
+            var response = await this.service.GenerarConsentimiento(base64Image, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, decodedToken!);
             if(response){
                 res.status(200).send(response)
             }else{
                 res.status(500).send(response)
             }
         });
+        this.router.post('/correo', async (req:Request, res: Response, next: NextFunction) =>{
+            const { nombreAgente, numeroProductor, telefonoAgente, correoAgente, destinatario } = req.body
+            var response = await this.service.EnviarFormularioConsentimiento(nombreAgente, numeroProductor, telefonoAgente, correoAgente, destinatario);
+            if(response){
+                res.status(200).send(response)
+            }else{
+                res.status(500).send(response)
+            }
+        })
     }
 }
 

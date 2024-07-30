@@ -9,12 +9,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const token_1 = require("../utils/token");
 const email_1 = require("../infraestructure/email");
 const consentimientosRepository_1 = require("../repository/consentimientosRepository");
-const CrearConsentimiento_1 = require("../utils/CrearConsentimiento");
+const crearConsentimiento_1 = require("../utils/crearConsentimiento");
 const uuid_1 = require("uuid");
 class ConsentimientosService {
-    GenerarConsentimiento(base64Image, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, nombreAgente, numeroAgente, telefonoAgente, correoAgente) {
+    GenerarConsentimiento(base64Image, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, agente) {
         return __awaiter(this, void 0, void 0, function* () {
             let response = {
                 data: false,
@@ -23,7 +24,7 @@ class ConsentimientosService {
             };
             try {
                 var consentimientoId = (0, uuid_1.v4)();
-                var pdfResponse = yield (0, CrearConsentimiento_1.generatePdf)(base64Image, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, nombreAgente, numeroAgente, telefonoAgente, correoAgente, consentimientoId);
+                var pdfResponse = yield (0, crearConsentimiento_1.generatePdf)(base64Image, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, agente.nombreAgente, agente.numeroProductor, agente.telefonoAgente, agente.correoAgente, consentimientoId);
                 var correoResponse = yield (0, email_1.enviarCorreo)(correoTitular, "Envio de consentimiento", "", "", "ConsentimientoFirmado.pdf", pdfResponse[0]);
                 if (!correoResponse) {
                     response.message = "No se pudo enviar el correo!!!";
@@ -46,6 +47,33 @@ class ConsentimientosService {
                 }
                 return response;
             }
+        });
+    }
+    EnviarFormularioConsentimiento(nombreAgente, numeroProductor, telefonoAgente, correoAgente, destinatario) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let response = {
+                data: false,
+                isSucces: false,
+                message: ""
+            };
+            try {
+                var payload = {
+                    correoAgente: correoAgente,
+                    nombreAgente: nombreAgente,
+                    numeroProductor: numeroProductor,
+                    telefonoAgente: telefonoAgente
+                };
+                var token = (0, token_1.generateToken)(payload);
+                response.data = yield (0, email_1.enviarFormularioCorreo)(destinatario, "Formulario de consentimiento", token);
+                if (response.data) {
+                    response.isSucces = true;
+                    response.message = "Correo enviado correctamente!!!";
+                }
+            }
+            catch (e) {
+                response.message = `${e}`;
+            }
+            return response;
         });
     }
 }

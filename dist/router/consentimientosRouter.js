@@ -14,6 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const consentimientosService_1 = __importDefault(require("../Services/consentimientosService"));
+const token_1 = require("../utils/token");
 class ConsentimientoRouter {
     constructor() {
         this.service = new consentimientosService_1.default();
@@ -22,16 +23,30 @@ class ConsentimientoRouter {
     }
     config() {
         this.router.post('/consentimiento', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
-            const { base64Image, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento } = req.body;
+            const { base64Image, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, token } = req.body;
             if (!base64Image) {
-                res.status(400).send('El parámetro base64Image es requerido');
+                res.status(400).send('Se debe firmar el formulario requerido!!!');
                 return;
             }
-            var nombreAgente = "Carlos";
-            var numeroAgente = "12365484321";
-            var telefonoAgente = "32116546";
-            var correoAgente = "agente@agente.com";
-            var response = yield this.service.GenerarConsentimiento(base64Image, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, nombreAgente, numeroAgente, telefonoAgente, correoAgente);
+            if (!token) {
+                res.status(400).send('No se envio el token!!!');
+                return;
+            }
+            var decodedToken = (0, token_1.verifyToken)(token);
+            if (decodedToken == null) {
+                res.status(400).send('Token no valido!!!');
+            }
+            var response = yield this.service.GenerarConsentimiento(base64Image, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, decodedToken);
+            if (response) {
+                res.status(200).send(response);
+            }
+            else {
+                res.status(500).send(response);
+            }
+        }));
+        this.router.post('/correo', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const { nombreAgente, numeroProductor, telefonoAgente, correoAgente, destinatario } = req.body;
+            var response = yield this.service.EnviarFormularioConsentimiento(nombreAgente, numeroProductor, telefonoAgente, correoAgente, destinatario);
             if (response) {
                 res.status(200).send(response);
             }

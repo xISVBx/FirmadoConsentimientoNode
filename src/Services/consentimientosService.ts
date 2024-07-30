@@ -1,14 +1,15 @@
+import { generateToken, Agente } from "../utils/token";
 import { ResponseGeneric } from "../common/response";
-import { enviarCorreo } from "../infraestructure/email";
+import { enviarCorreo, enviarFormularioCorreo } from "../infraestructure/email";
 import { GuardarConsentimiento } from "../repository/consentimientosRepository";
-import { generatePdf } from "../utils/CrearConsentimiento";
+import { generatePdf } from "../utils/crearConsentimiento";
 import { v4 as uuidv4 } from 'uuid';
 
 
 export default class ConsentimientosService {
+
     async GenerarConsentimiento(base64Image: string, nombreTitular: string, telefonoTitular: string,
-        correoTitular: string, fechaNacimiento: string, nombreAgente: string, numeroAgente: string,
-        telefonoAgente: string, correoAgente: string): Promise<ResponseGeneric<boolean>> {
+        correoTitular: string, fechaNacimiento: string, agente: Agente): Promise<ResponseGeneric<boolean>> {
 
         let response: ResponseGeneric<boolean> = {
             data: false,
@@ -18,12 +19,12 @@ export default class ConsentimientosService {
         try {
             var consentimientoId = uuidv4()
             var pdfResponse = await generatePdf(base64Image, nombreTitular, telefonoTitular, correoTitular,
-                fechaNacimiento, nombreAgente, numeroAgente, telefonoAgente, correoAgente,
+                fechaNacimiento, agente.nombreAgente, agente.numeroProductor, agente.telefonoAgente, agente.correoAgente,
                 consentimientoId);
 
             var correoResponse = await enviarCorreo(correoTitular, "Envio de consentimiento", "", "", "ConsentimientoFirmado.pdf", pdfResponse[0])
 
-            if(!correoResponse){
+            if (!correoResponse) {
                 response.message = "No se pudo enviar el correo!!!"
                 return response
             }
@@ -43,5 +44,31 @@ export default class ConsentimientosService {
             }
             return response
         }
+    }
+
+    async EnviarFormularioConsentimiento(nombreAgente: string, numeroProductor: string,
+        telefonoAgente: string, correoAgente: string, destinatario: string): Promise<ResponseGeneric<boolean>> {
+        let response: ResponseGeneric<boolean> = {
+            data: false,
+            isSucces: false,
+            message: ""
+        }
+        try {
+            var payload: Agente = {
+                correoAgente: correoAgente,
+                nombreAgente: nombreAgente,
+                numeroProductor: numeroProductor,
+                telefonoAgente: telefonoAgente
+            }
+            var token = generateToken(payload)
+            response.data = await enviarFormularioCorreo(destinatario, "Formulario de consentimiento", token)
+            if (response.data) {
+                response.isSucces = true
+                response.message = "Correo enviado correctamente!!!"
+            }
+        } catch (e) {
+            response.message = `${e}`
+        }
+        return response
     }
 }
