@@ -103,9 +103,8 @@ export async function enviarFormularioCorreo(destinatario: string, asunto: strin
 <body>
     <div class="container">
         <h1 class="center">Formulario de consentimiento</h1>
-        <h4 class="text">Acción requerida. 
-
-Requerimos su autorización para actuar como su agente o corredor de seguros de salud, con el fin de inscribirlo en un plan de salud calificado ofrecido en el mercado y facilitado por el gobierno federal.</h4>
+        <h4 class="text">Acción requerida.</h4>
+        <h4 class="text">Requerimos su autorización para actuar como su agente o corredor de seguros de salud, con el fin de inscribirlo en un plan de salud calificado ofrecido en el mercado y facilitado por el gobierno federal.</h4>
         <div class="center">
             <a href="${link}" class="button">Rellenar Formulario</a>
         </div>
