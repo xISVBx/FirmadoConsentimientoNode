@@ -22,7 +22,7 @@ export default class ConsentimientosService {
                 fechaNacimiento, agente.nombreAgente, agente.numeroProductor, agente.telefonoAgente, agente.correoAgente,
                 consentimientoId);
 
-            var correoResponse = await enviarCorreo(correoTitular, "Envio de consentimiento", "", "", "ConsentimientoFirmado.pdf", pdfResponse[0])
+            var correoResponse = await enviarCorreo([correoTitular, agente.correoAgente], "Envio de consentimiento", "", "", "ConsentimientoFirmado.pdf", pdfResponse[0])
 
             if (!correoResponse) {
                 response.message = "No se pudo enviar el correo!!!"

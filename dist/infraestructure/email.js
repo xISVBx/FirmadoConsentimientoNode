@@ -29,7 +29,7 @@ function enviarCorreo(destinatario, asunto, texto, html, fileName, uint8Array) {
         const pdfBytes = Buffer.from(uint8Array);
         const mailOptions = {
             from: process.env.EMAIL_USER,
-            to: destinatario,
+            to: destinatario.join(','),
             subject: asunto,
             text: texto,
             html: html,

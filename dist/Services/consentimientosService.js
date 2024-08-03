@@ -25,7 +25,7 @@ class ConsentimientosService {
             try {
                 var consentimientoId = (0, uuid_1.v4)();
                 var pdfResponse = yield (0, crearConsentimiento_1.generatePdf)(base64Image, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, agente.nombreAgente, agente.numeroProductor, agente.telefonoAgente, agente.correoAgente, consentimientoId);
-                var correoResponse = yield (0, email_1.enviarCorreo)(correoTitular, "Envio de consentimiento", "", "", "ConsentimientoFirmado.pdf", pdfResponse[0]);
+                var correoResponse = yield (0, email_1.enviarCorreo)([correoTitular, agente.correoAgente], "Envio de consentimiento", "", "", "ConsentimientoFirmado.pdf", pdfResponse[0]);
                 if (!correoResponse) {
                     response.message = "No se pudo enviar el correo!!!";
                     return response;

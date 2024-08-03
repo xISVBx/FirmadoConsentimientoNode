@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer';
 
-export async function enviarCorreo(destinatario: string, asunto: string, texto: string,
+export async function enviarCorreo(destinatario: string[], asunto: string, texto: string,
     html: string, fileName: string, uint8Array: Uint8Array): Promise<boolean> {
 
     const transporter = nodemailer.createTransport({
@@ -17,7 +17,7 @@ export async function enviarCorreo(destinatario: string, asunto: string, texto: 
 
     const mailOptions: nodemailer.SendMailOptions = {
         from: process.env.EMAIL_USER,
-        to: destinatario,
+        to: destinatario.join(','),
         subject: asunto,
         text: texto,
         html: html,
@@ -103,7 +103,9 @@ export async function enviarFormularioCorreo(destinatario: string, asunto: strin
 <body>
     <div class="container">
         <h1 class="center">Formulario de consentimiento</h1>
-        <h4 class="text">Dale click al boton para ir a llenar el formulario del consentimiento, despues de llenarlo te llegara un correo junto con una copia del documento</h4>
+        <h4 class="text">Acción requerida. 
+
+Requerimos su autorización para actuar como su agente o corredor de seguros de salud, con el fin de inscribirlo en un plan de salud calificado ofrecido en el mercado y facilitado por el gobierno federal.</h4>
         <div class="center">
             <a href="${link}" class="button">Rellenar Formulario</a>
         </div>
