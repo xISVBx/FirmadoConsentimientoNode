@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.GuardarConsentimiento = void 0;
+exports.GuardarStatement = exports.GuardarConsentimiento = void 0;
 const database_1 = require("../database/database");
 const GuardarConsentimiento = (base64Consentimiento, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, idConsentimiento, pathConsentimiento) => __awaiter(void 0, void 0, void 0, function* () {
     var conn = yield (0, database_1.getConnection)();
@@ -35,8 +35,6 @@ const GuardarConsentimiento = (base64Consentimiento, nombreTitular, telefonoTitu
         const resultDatos = yield conn.execute(`INSERT INTO datos_consentimientos
             (id_consentimiento, nombre, telefono, correo, fecha_nacimiento)
             VALUES (?, ?, ?, ?, ?);`, [idConsentimiento, nombreTitular, telefonoTitular, correoTitular, fechaNacimientoDate]);
-        //console.log(resultConsentimiento)
-        //console.log(resultDatos)
         yield conn.commit();
         return true;
     }
@@ -47,3 +45,37 @@ const GuardarConsentimiento = (base64Consentimiento, nombreTitular, telefonoTitu
     }
 });
 exports.GuardarConsentimiento = GuardarConsentimiento;
+const GuardarStatement = (base64Consentimiento, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, idConsentimiento, pathConsentimiento) => __awaiter(void 0, void 0, void 0, function* () {
+    var conn = yield (0, database_1.getConnection)();
+    yield conn.beginTransaction();
+    try {
+        // Convertir Uint8Array a Buffer
+        const bufferConsentimiento = Buffer.from(base64Consentimiento);
+        // Usar new Date() para el campo TIMESTAMP
+        const resultConsentimiento = yield conn.execute(`INSERT INTO consentimientos
+            (id, path_consentimiento, consentimiento, created)
+            VALUES (?, ?, ?, ?);`, [idConsentimiento, pathConsentimiento, bufferConsentimiento, new Date()]);
+        // Convertir fechaNacimiento a un objeto Date y manejar valores inválidos
+        let fechaNacimientoDate;
+        if (fechaNacimiento) {
+            fechaNacimientoDate = new Date(fechaNacimiento);
+            if (isNaN(fechaNacimientoDate.getTime())) {
+                fechaNacimientoDate = null; // O el valor que prefieras para fechas inválidas
+            }
+        }
+        else {
+            fechaNacimientoDate = null; // O el valor que prefieras si fechaNacimiento es nulo o vacío
+        }
+        const resultDatos = yield conn.execute(`INSERT INTO datos_consentimientos
+            (id_consentimiento, nombre, telefono, correo, fecha_nacimiento)
+            VALUES (?, ?, ?, ?, ?);`, [idConsentimiento, nombreTitular, telefonoTitular, correoTitular, fechaNacimientoDate]);
+        yield conn.commit();
+        return true;
+    }
+    catch (e) {
+        console.log(e);
+        yield conn.rollback();
+        return false;
+    }
+});
+exports.GuardarStatement = GuardarStatement;

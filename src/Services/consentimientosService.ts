@@ -2,14 +2,15 @@ import { generateToken, Agente } from "../utils/token";
 import { ResponseGeneric } from "../common/response";
 import { enviarCorreo, enviarFormularioCorreo } from "../infraestructure/email";
 import { GuardarConsentimiento } from "../repository/consentimientosRepository";
-import { generatePdf } from "../utils/crearConsentimiento";
+import { generateEnglishPdf, generatePdf, generateStatementsPdf } from "../utils/CrearConsentimiento";
 import { v4 as uuidv4 } from 'uuid';
+import { Idioma } from '../domain/Idioma';
 
 
 export default class ConsentimientosService {
 
     async GenerarConsentimiento(base64Image: string, nombreTitular: string, telefonoTitular: string,
-        correoTitular: string, fechaNacimiento: string, agente: Agente): Promise<ResponseGeneric<boolean>> {
+        correoTitular: string, fechaNacimiento: string, agente: Agente, idioma: string): Promise<ResponseGeneric<boolean>> {
 
         let response: ResponseGeneric<boolean> = {
             data: false,
@@ -18,9 +19,25 @@ export default class ConsentimientosService {
         }
         try {
             var consentimientoId = uuidv4()
-            var pdfResponse = await generatePdf(base64Image, nombreTitular, telefonoTitular, correoTitular,
-                fechaNacimiento, agente.nombreAgente, agente.numeroProductor, agente.telefonoAgente, agente.correoAgente,
-                consentimientoId);
+
+            var pdfResponse;
+            console.log(idioma)
+            console.log(Idioma.Español === 'es')
+            console.log(Idioma.Inglés === 'en')
+
+            if (idioma === Idioma.Español) {
+                pdfResponse = await generatePdf(base64Image, nombreTitular, telefonoTitular, correoTitular,
+                    fechaNacimiento, agente.nombreAgente, agente.numeroProductor, agente.telefonoAgente, agente.correoAgente,
+                    consentimientoId);
+
+            } else if (idioma === Idioma.Inglés) {
+                pdfResponse = await generateEnglishPdf(base64Image, nombreTitular, telefonoTitular, correoTitular,
+                    fechaNacimiento, agente.nombreAgente, agente.numeroProductor, agente.telefonoAgente, agente.correoAgente,
+                    consentimientoId);
+            }
+            if(pdfResponse == undefined){
+                return response;
+            }
 
             var correoResponse = await enviarCorreo([correoTitular, agente.correoAgente], "Envio de consentimiento", "", "", "ConsentimientoFirmado.pdf", pdfResponse[0])
 
@@ -35,6 +52,65 @@ export default class ConsentimientosService {
                 response.isSucces = true;
                 response.message = "PDF Almacenado!!!";
             }
+            return response;
+        } catch (e) {
+            if (e instanceof Error) {
+                response.message = e.message;
+            } else {
+                response.message = "Error desconocido";
+            }
+            return response
+        }
+    }
+
+    async GenerarStatements(base64Image: string, nombreTitular: string, telefonoTitular: string,
+        correoTitular: string, fechaNacimiento: string, agente: Agente, idioma: string): Promise<ResponseGeneric<boolean>> {
+
+        let response: ResponseGeneric<boolean> = {
+            data: false,
+            isSucces: false,
+            message: ""
+        }
+        try {
+            var consentimientoId = uuidv4()
+
+            var pdfResponse;
+            console.log(idioma)
+            console.log(Idioma.Español === 'es')
+            console.log(Idioma.Inglés === 'en')
+
+            if (idioma === Idioma.Español) {
+                pdfResponse = await generateStatementsPdf(base64Image, nombreTitular, telefonoTitular, correoTitular,
+                    fechaNacimiento, agente.nombreAgente, agente.numeroProductor, agente.telefonoAgente, agente.correoAgente,
+                    consentimientoId);
+
+            } else if (idioma === Idioma.Inglés) {
+                pdfResponse = await generateStatementsPdf(base64Image, nombreTitular, telefonoTitular, correoTitular,
+                    fechaNacimiento, agente.nombreAgente, agente.numeroProductor, agente.telefonoAgente, agente.correoAgente,
+                    consentimientoId);
+            }
+            if(pdfResponse == undefined){
+                return response;
+            }
+
+            var correoResponse = await enviarCorreo([correoTitular, agente.correoAgente], "Envio de consentimiento", "", "", "ConsentimientoFirmado.pdf", pdfResponse[0])
+
+            if (!correoResponse) {
+                response.message = "No se pudo enviar el correo!!!"
+                return response
+            }
+
+            /*
+            var result = await GuardarConsentimiento(pdfResponse[0], nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, consentimientoId, pdfResponse[1])
+            if (result) {
+                response.data = true;
+                response.isSucces = true;
+                response.message = "PDF Almacenado!!!";
+            }*/
+           //TODO: QUITAR ESTO Y QUITAR COMENTARIOS DE ARRIBA
+                response.data = true;
+                response.isSucces = true;
+                response.message = "PDF Almacenado!!!";
             return response;
         } catch (e) {
             if (e instanceof Error) {

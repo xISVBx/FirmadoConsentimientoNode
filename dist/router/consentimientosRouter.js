@@ -23,26 +23,57 @@ class ConsentimientoRouter {
     }
     config() {
         this.router.post('/consentimiento', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
-            const { base64Image, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, token } = req.body;
+            const { base64Image, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, token, idioma } = req.body;
             if (!base64Image) {
                 res.status(400).send('Se debe firmar el formulario requerido!!!');
                 return;
             }
             if (!token) {
+                console.log(token);
                 res.status(400).send('No se envio el token!!!');
                 return;
             }
             var decodedToken = (0, token_1.verifyToken)(token);
             if (decodedToken == null) {
                 res.status(400).send('Token no valido!!!');
+                return;
             }
             console.log(decodedToken);
-            var response = yield this.service.GenerarConsentimiento(base64Image, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, decodedToken);
+            var response = yield this.service.GenerarConsentimiento(base64Image, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, decodedToken, idioma);
             if (response) {
                 res.status(200).send(response);
+                return;
             }
             else {
                 res.status(500).send(response);
+                return;
+            }
+        }));
+        this.router.post('/statements', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const { base64Image, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, token, idioma } = req.body;
+            if (!base64Image) {
+                res.status(400).send('Se debe firmar el formulario requerido!!!');
+                return;
+            }
+            if (!token) {
+                console.log(token);
+                res.status(400).send('No se envio el token!!!');
+                return;
+            }
+            var decodedToken = (0, token_1.verifyToken)(token);
+            if (decodedToken == null) {
+                res.status(400).send('Token no valido!!!');
+                return;
+            }
+            console.log(decodedToken);
+            var response = yield this.service.GenerarStatements(base64Image, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, decodedToken, idioma);
+            if (response) {
+                res.status(200).send(response);
+                return;
+            }
+            else {
+                res.status(500).send(response);
+                return;
             }
         }));
         this.router.post('/consentimiento/correo', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
