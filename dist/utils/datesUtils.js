@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.obtenerFechaActualDDMMYYYY = exports.convertirFecha = void 0;
+exports.getCurrentHour = getCurrentHour;
 const convertirFecha = (fechaStr) => {
     // La fecha debe estar en formato yyyy-mm-dd
     const [year, month, day] = fechaStr.split('-').map(num => parseInt(num, 10));

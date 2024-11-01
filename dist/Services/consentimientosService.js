@@ -70,9 +70,11 @@ class ConsentimientosService {
                 message: ""
             };
             try {
+                var consentimientoId = (0, uuid_1.v4)();
                 var pdfResponse;
+                console.log(idioma);
                 if (idioma === Idioma_1.Idioma.Español) {
-                    pdfResponse = yield (0, CrearConsentimiento_1.generateStatementsPdf)(base64Image, agente.nombreAgente, statement);
+                    pdfResponse = yield (0, CrearConsentimiento_1.generateStatementsPdf)(base64Image, agente.nombreAgente, statement, consentimientoId);
                 }
                 else if (idioma === Idioma_1.Idioma.Inglés) {
                     pdfResponse = yield (0, CrearConsentimiento_1.generateStatementsEnglishPdf)(base64Image, agente.nombreAgente, statement);
@@ -80,12 +82,11 @@ class ConsentimientosService {
                 if (pdfResponse == undefined) {
                     return response;
                 }
-                //var correoResponse = await enviarCorreo([correoTitular, agente.correoAgente], "Envio de consentimiento", "", "", "ConsentimientoFirmado.pdf", pdfResponse[0])
                 var correoResponse = yield (0, email_1.enviarCorreo)([correoTitular, 'consent@jecopagroup.com'], "Envio de consentimiento", "", "", "ConsentimientoFirmado.pdf", pdfResponse[0]);
-                //if (!correoResponse) {
-                //    response.message = "No se pudo enviar el correo!!!"
-                //    return response
-                //}
+                if (!correoResponse) {
+                    response.message = "No se pudo enviar el correo!!!";
+                    return response;
+                }
                 var result = yield (0, consentimientosRepository_1.GuardarStatement)(pdfResponse[0], pdfResponse[1], statement);
                 if (result) {
                     response.data = true;

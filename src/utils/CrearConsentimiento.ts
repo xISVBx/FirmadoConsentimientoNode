@@ -1,7 +1,7 @@
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import fs from 'fs';
 import path from 'path';
-import { convertirFecha, obtenerFechaActualDDMMYYYY } from './datesUtils';
+import { convertirFecha, getCurrentHour, obtenerFechaActualDDMMYYYY } from './datesUtils';
 import { drawUnderlinedText } from './pdfUtils';
 import { IStatement } from 'domain/IStatement';
 
@@ -281,11 +281,11 @@ Signature: ____________________________________ Date: __________________________
   return [pdfBytes, filePath];
 }
 
-export async function generateStatementsPdf(base64Data: string, agente: string, statement: IStatement): Promise<[Uint8Array, string]> {
+export async function generateStatementsPdf(base64Data: string, agente: string, statement: IStatement, consentimientoId: string): Promise<[Uint8Array, string]> {
 
   //Crear la carpeta
-  //const folderPath = path.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/${consentimientoId}`);
-  const folderPath = path.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/archivo`);
+  const folderPath = path.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/${consentimientoId}`);
+  //const folderPath = path.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/archivo`);
   fs.mkdir(folderPath, { recursive: true }, (err) => {
     if (err) {
       console.error('Error creating directory:', err);
@@ -397,25 +397,25 @@ export async function generateStatementsPdf(base64Data: string, agente: string, 
 
 
   //Fecha de revision
-  drawText(obtenerFechaActualDDMMYYYY(), 330, 33);
+  drawText(obtenerFechaActualDDMMYYYY(), 300, 33);
   //Hora de la revision
-  drawText(getCurrentHour(), 330, 34);
+  drawText(getCurrentHour(), 300, 34);
   //Nombre del cosumidor
-  drawText(statement.nombreConsumidor, 330, 35);
+  drawText(statement.nombreConsumidor, 300, 35);
   //Firma del consumirdor
   //drawText(nombreTitular, 330, 36);
   //Agente
-  drawText(agente, 330, 37);
+  drawText(agente, 300, 37);
 
   //Guardar imagen
-  const x: number = 105
+  const x: number = 300
   const yImage: number = initLine - (17 * 37)
 
   page.drawImage(embeddedImage, {
     x,
-    y: yImage,
+    y: yImage + 5,
     width: 100,
-    height: 50,
+    height: 20,
   });
   // Guardar el documento PDF como un archivo
 
@@ -539,25 +539,25 @@ export async function generateStatementsEnglishPdf(base64Data: string, agente: s
 
 
   //Fecha de revision
-  drawText(obtenerFechaActualDDMMYYYY(), 330, 33);
+  drawText(obtenerFechaActualDDMMYYYY(), 300, 31);
   //Hora de la revision
-  drawText(getCurrentHour(), 330, 34);
+  drawText(getCurrentHour(), 300, 32);
   //Nombre del cosumidor
-  drawText(statement.nombreConsumidor, 330, 35);
+  drawText(statement.nombreConsumidor, 300, 33);
   //Firma del consumirdor
   //drawText(nombreTitular, 330, 36);
   //Agente
-  drawText(agente, 330, 37);
+  drawText(agente, 300, 35);
 
   //Guardar imagen
-  const x: number = 105
-  const yImage: number = initLine - (17 * 37)
+  const x: number = 300
+  const yImage: number = initLine - (17 * 34)
 
   page.drawImage(embeddedImage, {
     x,
-    y: yImage,
+    y: yImage -10,
     width: 100,
-    height: 50,
+    height: 20,
   });
   // Guardar el documento PDF como un archivo
 
@@ -565,8 +565,4 @@ export async function generateStatementsEnglishPdf(base64Data: string, agente: s
   const pdfBytes = await pdfDoc.save();
   fs.writeFileSync(filePath, pdfBytes);
   return [pdfBytes, filePath];
-}
-
-function getCurrentHour(): string {
-  throw new Error('Function not implemented.');
 }

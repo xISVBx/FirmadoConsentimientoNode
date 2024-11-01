@@ -72,9 +72,13 @@ export default class ConsentimientosService {
             message: ""
         }
         try {
+            var consentimientoId = uuidv4()
             var pdfResponse;
+
+            console.log(idioma)
+
             if (idioma === Idioma.Español) {
-                pdfResponse = await generateStatementsPdf(base64Image, agente.nombreAgente, statement);
+                pdfResponse = await generateStatementsPdf(base64Image, agente.nombreAgente, statement, consentimientoId);
 
             } else if (idioma === Idioma.Inglés) {
                 pdfResponse = await generateStatementsEnglishPdf(base64Image, agente.nombreAgente, statement);
@@ -83,13 +87,12 @@ export default class ConsentimientosService {
                 return response;
             }
 
-            //var correoResponse = await enviarCorreo([correoTitular, agente.correoAgente], "Envio de consentimiento", "", "", "ConsentimientoFirmado.pdf", pdfResponse[0])
             var correoResponse = await enviarCorreo([correoTitular, 'consent@jecopagroup.com'], "Envio de consentimiento", "", "", "ConsentimientoFirmado.pdf", pdfResponse[0])
 
-            //if (!correoResponse) {
-            //    response.message = "No se pudo enviar el correo!!!"
-            //    return response
-            //}
+            if (!correoResponse) {
+                response.message = "No se pudo enviar el correo!!!"
+                return response
+            }
             
             var result = await GuardarStatement(pdfResponse[0], pdfResponse[1], statement);
 

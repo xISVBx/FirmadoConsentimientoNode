@@ -15,7 +15,7 @@ export const obtenerFechaActualDDMMYYYY = (): string => {
     return `${dia}/${mes}/${año}`;
 }
 
-function getCurrentHour(): string {
+export function getCurrentHour(): string {
     const now = new Date();
     let hours = now.getHours();
     const minutes = now.getMinutes();
