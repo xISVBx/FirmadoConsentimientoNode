@@ -84,11 +84,11 @@ class ConsentimientosService {
                 if (pdfResponse == undefined) {
                     return response;
                 }
-                var correoResponse = yield (0, email_1.enviarCorreo)([correoTitular, agente.correoAgente], "Envio de consentimiento", "", "", "ConsentimientoFirmado.pdf", pdfResponse[0]);
-                if (!correoResponse) {
-                    response.message = "No se pudo enviar el correo!!!";
-                    return response;
-                }
+                //var correoResponse = await enviarCorreo([correoTitular, agente.correoAgente], "Envio de consentimiento", "", "", "ConsentimientoFirmado.pdf", pdfResponse[0])
+                //if (!correoResponse) {
+                //    response.message = "No se pudo enviar el correo!!!"
+                //    return response
+                //}
                 /*
                 var result = await GuardarConsentimiento(pdfResponse[0], nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, consentimientoId, pdfResponse[1])
                 if (result) {
@@ -103,6 +103,7 @@ class ConsentimientosService {
                 return response;
             }
             catch (e) {
+                console.log(e);
                 if (e instanceof Error) {
                     response.message = e.message;
                 }

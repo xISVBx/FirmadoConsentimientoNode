@@ -2,6 +2,7 @@ import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import fs from 'fs';
 import path from 'path';
 import { convertirFecha, obtenerFechaActualDDMMYYYY } from './datesUtils';
+import { drawUnderlinedText } from './pdfUtils';
 
 export async function generatePdf(base64Data: string, nombreTitular: string, telefonoTitular: string, correoTitular: string, fechaNacimiento: string,
   nombreAgente: string, numeroAgente: string, telefonoAgente: string, correoAgente: string, consentimientoId: string): Promise<[Uint8Array, string]> {
@@ -283,7 +284,8 @@ export async function generateStatementsPdf(base64Data: string, nombreTitular: s
   nombreAgente: string, numeroAgente: string, telefonoAgente: string, correoAgente: string, consentimientoId: string): Promise<[Uint8Array, string]> {
 
   //Crear la carpeta
-  const folderPath = path.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/${consentimientoId}`);
+  //const folderPath = path.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/${consentimientoId}`);
+  const folderPath = path.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/archivo`);
   fs.mkdir(folderPath, { recursive: true }, (err) => {
     if (err) {
       console.error('Error creating directory:', err);
@@ -306,15 +308,15 @@ export async function generateStatementsPdf(base64Data: string, nombreTitular: s
   const consentText = `
   Verificación de información/ Afirmaciones
   
-  Yo, confirmo que, a mi leal saber y entender, he revisado la información de la solicitud
-  de elegibilidad y resultó ser precisa. Qué recibí una explicación de las afirmaciones 
-  contenidas al final de la solicitud de elegibilidad y que doy permiso a mi agente/corredor 
-  para firmar la solicitud de elegibilidad en mi nombre.
+  Yo ______________________________________, confirmo que, a mi leal saber y entender,
+  he revisado la información de la solicitud de elegibilidad y resultó ser  precisa. Qué recibí una
+  explicación de las afirmaciones contenidas al final de la solicitud de elegibilidad y que doy
+  permiso a mi agente/corredor para firmar la solicitud de elegibilidad en mi nombre.
   
-  Código postal:______________________
-  Ingreso anual:______________________
-  Compañía:_________________________
-  Plan:______________________________
+  Código postal:
+  Ingreso anual:
+  Compañía:
+  Plan:
   
   Afirmaciones explicadas:
   1. Al presentar esta solicitud, acepto el uso de mi información y otorgo consentimiento para 
@@ -339,15 +341,13 @@ export async function generateStatementsPdf(base64Data: string, nombreTitular: s
   10. Reconozco que estoy firmando bajo pena de perjurio y las consecuencias legales de proporcionar 
   información falsa.
   
-  Fecha de revisión: _______________________
-  Hora de la revisión: ______________________
-  Nombre del consumidor/representante autorizado: ________________________________
-  Firma del consumidor/representante autorizado: ______________________________________
-  Agente/Corredor que brinda asistencia: ________________________________
+  Fecha de revisión:                                                          ______________________________________
+  Hora de la revisión:                                                        ______________________________________
+  Nombre del consumidor/representante autorizado:         ______________________________________
+  Firma del consumidor/representante autorizado:          ______________________________________
+  Agente/Corredor que brinda asistencia:                        ______________________________________
   `;
   
-
-
   // Dividir el texto en líneas para ajustarse al ancho de la página
   const consentLines = consentText.split('\n');
 
@@ -377,28 +377,38 @@ export async function generateStatementsPdf(base64Data: string, nombreTitular: s
   // Escribir los datos en el PDF
   var lineHeight = 15
   var initLine = 741
+
+  const drawText = (text: string, x: number, y: number, underline: boolean = false) => {
+    if(underline) {
+      page.drawText(text, { x, y: initLine - (17 * y), size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
+    } else {
+      drawUnderlinedText({text, fontSize: 12, page, x, y: initLine - (17 * y)})
+    }
+  }
+
   //Nombre
-  page.drawText(nombreTitular, { x: 70, y: initLine, size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
-  //fecha
-  page.drawText(convertirFecha(fechaNacimiento), { x: 450, y: initLine, size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
-  //agente
-  page.drawText(nombreAgente, { x: 150, y: initLine - (17 * 1), size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
-  //
-  page.drawText(nombreAgente, { x: 330, y: initLine - (17 * 28), size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
-  //
-  page.drawText(numeroAgente, { x: 330, y: initLine - (17 * 29), size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
-  //
-  page.drawText(telefonoAgente, { x: 330, y: initLine - (17 * 30), size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
-  //
-  page.drawText(correoAgente, { x: 330, y: initLine - (17 * 31), size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
-  //
-  page.drawText(nombreTitular, { x: 330, y: initLine - (17 * 32), size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
-  //
-  page.drawText(telefonoTitular, { x: 330, y: initLine - (17 * 33), size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
-  //
-  page.drawText(correoTitular, { x: 330, y: initLine - (17 * 34), size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
-  //
-  page.drawText( obtenerFechaActualDDMMYYYY(), { x: 355, y: initLine - (17 * 36), size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
+  drawText(nombreTitular, 70, 0, true);
+  //Codigo postal
+  drawText(nombreTitular, 130, 5);
+  //Ingreso anual
+  drawText(nombreTitular, 130, 6);
+  //Compañia
+  drawText(nombreTitular, 130, 7);
+  //Plan
+  drawText(nombreTitular, 130, 8);
+
+
+  //Fecha de revision
+  drawText(nombreTitular, 330, 33);
+  //Hora de la revision
+  drawText(nombreTitular, 330, 34);
+  //Nombre del cosumidor
+  drawText(nombreTitular, 330, 35);
+  //Firma del consumirdor
+  drawText(nombreTitular, 330, 36);
+  //Agente
+  drawText(nombreTitular, 330, 37);
+
   //Guardar imagen
   const x: number = 105
   const yImage: number = initLine - (17 * 37)
@@ -412,9 +422,7 @@ export async function generateStatementsPdf(base64Data: string, nombreTitular: s
   // Guardar el documento PDF como un archivo
 
   const filePath = path.resolve(__dirname, `${folderPath}/formulario_consentimiento.pdf`);
-  console.log(filePath)
   const pdfBytes = await pdfDoc.save();
-  console.log(pdfBytes)
   fs.writeFileSync(filePath, pdfBytes);
   return [pdfBytes, filePath];
 }

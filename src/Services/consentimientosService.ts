@@ -93,12 +93,12 @@ export default class ConsentimientosService {
                 return response;
             }
 
-            var correoResponse = await enviarCorreo([correoTitular, agente.correoAgente], "Envio de consentimiento", "", "", "ConsentimientoFirmado.pdf", pdfResponse[0])
+            //var correoResponse = await enviarCorreo([correoTitular, agente.correoAgente], "Envio de consentimiento", "", "", "ConsentimientoFirmado.pdf", pdfResponse[0])
 
-            if (!correoResponse) {
-                response.message = "No se pudo enviar el correo!!!"
-                return response
-            }
+            //if (!correoResponse) {
+            //    response.message = "No se pudo enviar el correo!!!"
+            //    return response
+            //}
 
             /*
             var result = await GuardarConsentimiento(pdfResponse[0], nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, consentimientoId, pdfResponse[1])
@@ -113,6 +113,7 @@ export default class ConsentimientosService {
                 response.message = "PDF Almacenado!!!";
             return response;
         } catch (e) {
+            console.log(e);
             if (e instanceof Error) {
                 response.message = e.message;
             } else {
