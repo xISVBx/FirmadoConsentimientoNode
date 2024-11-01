@@ -50,6 +50,16 @@ class ConsentimientoRouter {
                 return;
             }
         }));
+        this.router.post('/consentimiento/correo', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const { nombreAgente, numeroProductor, telefonoAgente, correoAgente, destinatario } = req.body;
+            var response = yield this.service.EnviarFormularioConsentimiento(nombreAgente, numeroProductor, telefonoAgente, correoAgente, destinatario);
+            if (response) {
+                res.status(200).send(response);
+            }
+            else {
+                res.status(500).send(response);
+            }
+        }));
         this.router.post('/statements', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
             const { base64Image, plan, codigoPostal, correoTitular, compania, ingresoAnual, nombreConsumidor, token, idioma } = req.body;
             if (!base64Image) {
@@ -84,9 +94,9 @@ class ConsentimientoRouter {
                 return;
             }
         }));
-        this.router.post('/consentimiento/correo', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+        this.router.post('/statements/correo', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
             const { nombreAgente, numeroProductor, telefonoAgente, correoAgente, destinatario } = req.body;
-            var response = yield this.service.EnviarFormularioConsentimiento(nombreAgente, numeroProductor, telefonoAgente, correoAgente, destinatario);
+            var response = yield this.service.EnviarFormularioAfirmaciones(nombreAgente, numeroProductor, telefonoAgente, correoAgente, destinatario);
             if (response) {
                 res.status(200).send(response);
             }
