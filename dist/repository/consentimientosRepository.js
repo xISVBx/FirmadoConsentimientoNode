@@ -45,7 +45,7 @@ const GuardarConsentimiento = (base64Consentimiento, nombreTitular, telefonoTitu
     }
 });
 exports.GuardarConsentimiento = GuardarConsentimiento;
-const GuardarStatement = (base64Consentimiento, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, idConsentimiento, pathConsentimiento) => __awaiter(void 0, void 0, void 0, function* () {
+const GuardarStatement = (base64Consentimiento, path, statement) => __awaiter(void 0, void 0, void 0, function* () {
     var conn = yield (0, database_1.getConnection)();
     yield conn.beginTransaction();
     try {
@@ -54,21 +54,20 @@ const GuardarStatement = (base64Consentimiento, nombreTitular, telefonoTitular, 
         // Usar new Date() para el campo TIMESTAMP
         const resultConsentimiento = yield conn.execute(`INSERT INTO consentimientos
             (id, path_consentimiento, consentimiento, created)
-            VALUES (?, ?, ?, ?);`, [idConsentimiento, pathConsentimiento, bufferConsentimiento, new Date()]);
-        // Convertir fechaNacimiento a un objeto Date y manejar valores inválidos
-        let fechaNacimientoDate;
-        if (fechaNacimiento) {
-            fechaNacimientoDate = new Date(fechaNacimiento);
-            if (isNaN(fechaNacimientoDate.getTime())) {
-                fechaNacimientoDate = null; // O el valor que prefieras para fechas inválidas
-            }
-        }
-        else {
-            fechaNacimientoDate = null; // O el valor que prefieras si fechaNacimiento es nulo o vacío
-        }
-        const resultDatos = yield conn.execute(`INSERT INTO datos_consentimientos
-            (id_consentimiento, nombre, telefono, correo, fecha_nacimiento)
-            VALUES (?, ?, ?, ?, ?);`, [idConsentimiento, nombreTitular, telefonoTitular, correoTitular, fechaNacimientoDate]);
+            VALUES (?, ?, ?, ?);`, [statement.idConsentimiento, path, bufferConsentimiento, new Date()]);
+        // // Convertir fechaNacimiento a un objeto Date y manejar valores inválidos
+        // let fechaNacimientoDate;
+        // if (fechaNacimiento) {
+        //     fechaNacimientoDate = new Date(fechaNacimiento);
+        //     if (isNaN(fechaNacimientoDate.getTime())) {
+        //         fechaNacimientoDate = null; // O el valor que prefieras para fechas inválidas
+        //     }
+        // } else {
+        //     fechaNacimientoDate = null; // O el valor que prefieras si fechaNacimiento es nulo o vacío
+        // }
+        const resultDatos = yield conn.execute(`INSERT INTO datos_afirmaciones
+            (id_consentimiento, codigoPostal, ingresoAnual, compania, plan, nombreConsumidor)
+            VALUES (?, ?, ?, ?, ?);`, [statement.idConsentimiento, statement.codigoPostal, statement.ingresoAnual, statement.compania, statement.plan, statement.nombreConsumidor]);
         yield conn.commit();
         return true;
     }

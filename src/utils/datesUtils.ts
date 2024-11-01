@@ -14,3 +14,22 @@ export const obtenerFechaActualDDMMYYYY = (): string => {
     const año = fechaActual.getFullYear();
     return `${dia}/${mes}/${año}`;
 }
+
+function getCurrentHour(): string {
+    const now = new Date();
+    let hours = now.getHours();
+    const minutes = now.getMinutes();
+    const period = hours >= 12 ? 'PM' : 'AM';
+
+    // Convert to 12-hour format
+    if (hours > 12) {
+        hours -= 12;
+    } else if (hours === 0) {
+        hours = 12;
+    }
+
+    // Format minutes to always have two digits
+    const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
+
+    return `${hours}:${formattedMinutes} ${period}`;
+}

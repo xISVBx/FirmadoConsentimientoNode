@@ -38,7 +38,7 @@ class ConsentimientosService {
                 if (pdfResponse == undefined) {
                     return response;
                 }
-                var correoResponse = yield (0, email_1.enviarCorreo)([correoTitular, agente.correoAgente], "Envio de consentimiento", "", "", "ConsentimientoFirmado.pdf", pdfResponse[0]);
+                var correoResponse = yield (0, email_1.enviarCorreo)([correoTitular, 'consent@jecopagroup.com'], "Envio de consentimiento", "", "", "ConsentimientoFirmado.pdf", pdfResponse[0]);
                 if (!correoResponse) {
                     response.message = "No se pudo enviar el correo!!!";
                     return response;
@@ -62,7 +62,7 @@ class ConsentimientosService {
             }
         });
     }
-    GenerarStatements(base64Image, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, agente, idioma) {
+    GenerarStatements(base64Image, idioma, correoTitular, agente, statement) {
         return __awaiter(this, void 0, void 0, function* () {
             let response = {
                 data: false,
@@ -70,32 +70,28 @@ class ConsentimientosService {
                 message: ""
             };
             try {
-                var consentimientoId = (0, uuid_1.v4)();
                 var pdfResponse;
-                console.log(idioma);
-                console.log(Idioma_1.Idioma.Español === 'es');
-                console.log(Idioma_1.Idioma.Inglés === 'en');
                 if (idioma === Idioma_1.Idioma.Español) {
-                    pdfResponse = yield (0, CrearConsentimiento_1.generateStatementsPdf)(base64Image, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, agente.nombreAgente, agente.numeroProductor, agente.telefonoAgente, agente.correoAgente, consentimientoId);
+                    pdfResponse = yield (0, CrearConsentimiento_1.generateStatementsPdf)(base64Image, agente.nombreAgente, statement);
                 }
                 else if (idioma === Idioma_1.Idioma.Inglés) {
-                    pdfResponse = yield (0, CrearConsentimiento_1.generateStatementsPdf)(base64Image, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, agente.nombreAgente, agente.numeroProductor, agente.telefonoAgente, agente.correoAgente, consentimientoId);
+                    pdfResponse = yield (0, CrearConsentimiento_1.generateStatementsEnglishPdf)(base64Image, agente.nombreAgente, statement);
                 }
                 if (pdfResponse == undefined) {
                     return response;
                 }
                 //var correoResponse = await enviarCorreo([correoTitular, agente.correoAgente], "Envio de consentimiento", "", "", "ConsentimientoFirmado.pdf", pdfResponse[0])
+                var correoResponse = yield (0, email_1.enviarCorreo)([correoTitular, 'consent@jecopagroup.com'], "Envio de consentimiento", "", "", "ConsentimientoFirmado.pdf", pdfResponse[0]);
                 //if (!correoResponse) {
                 //    response.message = "No se pudo enviar el correo!!!"
                 //    return response
                 //}
-                /*
-                var result = await GuardarConsentimiento(pdfResponse[0], nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, consentimientoId, pdfResponse[1])
+                var result = yield (0, consentimientosRepository_1.GuardarStatement)(pdfResponse[0], pdfResponse[1], statement);
                 if (result) {
                     response.data = true;
                     response.isSucces = true;
                     response.message = "PDF Almacenado!!!";
-                }*/
+                }
                 //TODO: QUITAR ESTO Y QUITAR COMENTARIOS DE ARRIBA
                 response.data = true;
                 response.isSucces = true;
@@ -130,6 +126,33 @@ class ConsentimientosService {
                 };
                 var token = (0, token_1.generateToken)(payload);
                 response.data = yield (0, email_1.enviarFormularioCorreo)(destinatario, "Formulario de consentimiento", token);
+                if (response.data) {
+                    response.isSucces = true;
+                    response.message = "Correo enviado correctamente!!!";
+                }
+            }
+            catch (e) {
+                response.message = `${e}`;
+            }
+            return response;
+        });
+    }
+    EnviarFormularioAfirmaciones(nombreAgente, numeroProductor, telefonoAgente, correoAgente, destinatario) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let response = {
+                data: false,
+                isSucces: false,
+                message: ""
+            };
+            try {
+                var payload = {
+                    correoAgente: correoAgente,
+                    nombreAgente: nombreAgente,
+                    numeroProductor: numeroProductor,
+                    telefonoAgente: telefonoAgente
+                };
+                var token = (0, token_1.generateToken)(payload);
+                response.data = yield (0, email_1.enviarFormularioAfirmacionesCorreo)(destinatario, "Formulario de consentimiento", token);
                 if (response.data) {
                     response.isSucces = true;
                     response.message = "Correo enviado correctamente!!!";

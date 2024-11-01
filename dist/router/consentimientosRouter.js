@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const consentimientosService_1 = __importDefault(require("../Services/consentimientosService"));
 const token_1 = require("../utils/token");
+const uuid_1 = require("uuid");
 class ConsentimientoRouter {
     constructor() {
         this.service = new consentimientosService_1.default();
@@ -50,7 +51,7 @@ class ConsentimientoRouter {
             }
         }));
         this.router.post('/statements', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
-            const { base64Image, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, token, idioma } = req.body;
+            const { base64Image, plan, codigoPostal, correoTitular, compania, ingresoAnual, nombreConsumidor, token, idioma } = req.body;
             if (!base64Image) {
                 res.status(400).send('Se debe firmar el formulario requerido!!!');
                 return;
@@ -61,12 +62,19 @@ class ConsentimientoRouter {
                 return;
             }
             var decodedToken = (0, token_1.verifyToken)(token);
+            console.log(decodedToken);
             if (decodedToken == null) {
                 res.status(400).send('Token no valido!!!');
                 return;
             }
-            console.log(decodedToken);
-            var response = yield this.service.GenerarStatements(base64Image, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, decodedToken, idioma);
+            var response = yield this.service.GenerarStatements(base64Image, idioma, correoTitular, decodedToken, {
+                plan,
+                codigoPostal,
+                compania,
+                idConsentimiento: (0, uuid_1.v4)(),
+                ingresoAnual,
+                nombreConsumidor
+            });
             if (response) {
                 res.status(200).send(response);
                 return;

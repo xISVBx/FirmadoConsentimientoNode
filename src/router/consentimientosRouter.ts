@@ -2,6 +2,7 @@ import { Router } from "express";
 import ConsentimientosService from "../Services/consentimientosService";
 import { NextFunction, Request, Response } from "express";
 import { verifyToken } from "../utils/token";
+import { v4 as uuidv4 } from 'uuid';
 
 class ConsentimientoRouter {
 
@@ -44,7 +45,7 @@ class ConsentimientoRouter {
         });
 
         this.router.post('/statements', async (req: Request, res: Response, next: NextFunction) => {
-            const { base64Image, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, token, idioma } = req.body
+            const { base64Image, plan, codigoPostal, correoTitular, compania, ingresoAnual, nombreConsumidor, token, idioma } = req.body
             if(!base64Image){
                 res.status(400).send('Se debe firmar el formulario requerido!!!')
                 return
@@ -55,13 +56,20 @@ class ConsentimientoRouter {
                 return
             }
             var decodedToken = verifyToken(token)
-            
+            console.log(decodedToken)
             if(decodedToken == null){
                 res.status(400).send('Token no valido!!!')
                 return
             }
-            console.log(decodedToken)
-            var response = await this.service.GenerarStatements(base64Image, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, decodedToken!, idioma);
+            
+            var response = await this.service.GenerarStatements(base64Image, idioma, correoTitular, decodedToken!, {
+                plan,
+                codigoPostal,
+                compania,
+                idConsentimiento: uuidv4(),
+                ingresoAnual,
+                nombreConsumidor
+            });
             if(response){
                 res.status(200).send(response)
                 return

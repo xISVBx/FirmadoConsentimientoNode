@@ -1,3 +1,4 @@
+import { IStatement } from "domain/IStatement";
 import { getConnection } from "../database/database";
 
 export const GuardarConsentimiento = async (base64Consentimiento: Uint8Array, nombreTitular: string, telefonoTitular: string,
@@ -44,9 +45,7 @@ export const GuardarConsentimiento = async (base64Consentimiento: Uint8Array, no
     }
 }
 
-export const GuardarStatement = async (base64Consentimiento: Uint8Array, nombreTitular: string, telefonoTitular: string,
-    correoTitular: string, fechaNacimiento: string, idConsentimiento: string,
-    pathConsentimiento: string): Promise<boolean> => {
+export const GuardarStatement = async (base64Consentimiento: Uint8Array, path: string, statement: IStatement): Promise<boolean> => {
     var conn = await getConnection();
     await conn.beginTransaction();
     try {
@@ -59,25 +58,25 @@ export const GuardarStatement = async (base64Consentimiento: Uint8Array, nombreT
             `INSERT INTO consentimientos
             (id, path_consentimiento, consentimiento, created)
             VALUES (?, ?, ?, ?);`,
-            [idConsentimiento, pathConsentimiento, bufferConsentimiento, new Date()]
+            [statement.idConsentimiento, path, bufferConsentimiento, new Date()]
         );
 
-        // Convertir fechaNacimiento a un objeto Date y manejar valores inválidos
-        let fechaNacimientoDate;
-        if (fechaNacimiento) {
-            fechaNacimientoDate = new Date(fechaNacimiento);
-            if (isNaN(fechaNacimientoDate.getTime())) {
-                fechaNacimientoDate = null; // O el valor que prefieras para fechas inválidas
-            }
-        } else {
-            fechaNacimientoDate = null; // O el valor que prefieras si fechaNacimiento es nulo o vacío
-        }
+        // // Convertir fechaNacimiento a un objeto Date y manejar valores inválidos
+        // let fechaNacimientoDate;
+        // if (fechaNacimiento) {
+        //     fechaNacimientoDate = new Date(fechaNacimiento);
+        //     if (isNaN(fechaNacimientoDate.getTime())) {
+        //         fechaNacimientoDate = null; // O el valor que prefieras para fechas inválidas
+        //     }
+        // } else {
+        //     fechaNacimientoDate = null; // O el valor que prefieras si fechaNacimiento es nulo o vacío
+        // }
 
         const resultDatos = await conn.execute(
-            `INSERT INTO datos_consentimientos
-            (id_consentimiento, nombre, telefono, correo, fecha_nacimiento)
+            `INSERT INTO datos_afirmaciones
+            (id_consentimiento, codigoPostal, ingresoAnual, compania, plan, nombreConsumidor)
             VALUES (?, ?, ?, ?, ?);`,
-            [idConsentimiento, nombreTitular, telefonoTitular, correoTitular, fechaNacimientoDate]
+            [statement.idConsentimiento, statement.codigoPostal, statement.ingresoAnual, statement.compania, statement.plan, statement.nombreConsumidor]
         );
         await conn.commit();
         return true;
