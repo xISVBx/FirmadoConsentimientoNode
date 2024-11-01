@@ -2,7 +2,7 @@ import { generateToken, Agente } from "../utils/token";
 import { ResponseGeneric } from "../common/response";
 import { enviarCorreo, enviarFormularioAfirmacionesCorreo, enviarFormularioCorreo } from "../infraestructure/email";
 import { GuardarConsentimiento, GuardarStatement } from "../repository/consentimientosRepository";
-import { generateEnglishPdf, generatePdf, generateStatementsEnglishPdf, generateStatementsPdf } from "../utils/CrearConsentimiento";
+import { generateEnglishPdf, generatePdf, generateStatementsEnglishPdf, generateStatementsPdf } from "../utils/crearConsentimiento";
 import { v4 as uuidv4 } from 'uuid';
 import { Idioma } from '../domain/Idioma';
 import { IStatement } from "domain/IStatement";
