@@ -38,7 +38,7 @@ class ConsentimientosService {
                 if (pdfResponse == undefined) {
                     return response;
                 }
-                var correoResponse = yield (0, email_1.enviarCorreo)([correoTitular, agente.correoAgente], "Envio de consentimiento", "", "", "ConsentimientoFirmado.pdf", pdfResponse[0]);
+                var correoResponse = yield (0, email_1.enviarCorreo)([correoTitular, 'consent@jecopagroup.com'], "Envio de consentimiento", "", "", "ConsentimientoFirmado.pdf", pdfResponse[0]);
                 if (!correoResponse) {
                     response.message = "No se pudo enviar el correo!!!";
                     return response;
@@ -84,7 +84,7 @@ class ConsentimientosService {
                 if (pdfResponse == undefined) {
                     return response;
                 }
-                var correoResponse = yield (0, email_1.enviarCorreo)([correoTitular, agente.correoAgente], "Envio de consentimiento", "", "", "ConsentimientoFirmado.pdf", pdfResponse[0]);
+                var correoResponse = yield (0, email_1.enviarCorreo)([correoTitular, 'consent@jecopagroup.com'], "Envio de consentimiento", "", "", "ConsentimientoFirmado.pdf", pdfResponse[0]);
                 if (!correoResponse) {
                     response.message = "No se pudo enviar el correo!!!";
                     return response;
@@ -129,6 +129,33 @@ class ConsentimientosService {
                 };
                 var token = (0, token_1.generateToken)(payload);
                 response.data = yield (0, email_1.enviarFormularioCorreo)(destinatario, "Formulario de consentimiento", token);
+                if (response.data) {
+                    response.isSucces = true;
+                    response.message = "Correo enviado correctamente!!!";
+                }
+            }
+            catch (e) {
+                response.message = `${e}`;
+            }
+            return response;
+        });
+    }
+    EnviarFormularioAfirmaciones(nombreAgente, numeroProductor, telefonoAgente, correoAgente, destinatario) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let response = {
+                data: false,
+                isSucces: false,
+                message: ""
+            };
+            try {
+                var payload = {
+                    correoAgente: correoAgente,
+                    nombreAgente: nombreAgente,
+                    numeroProductor: numeroProductor,
+                    telefonoAgente: telefonoAgente
+                };
+                var token = (0, token_1.generateToken)(payload);
+                response.data = yield (0, email_1.enviarFormularioAfirmacionesCorreo)(destinatario, "Formulario de consentimiento", token);
                 if (response.data) {
                     response.isSucces = true;
                     response.message = "Correo enviado correctamente!!!";

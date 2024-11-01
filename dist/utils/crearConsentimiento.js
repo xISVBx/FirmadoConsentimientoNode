@@ -13,6 +13,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.generatePdf = generatePdf;
+exports.generateEnglishPdf = generateEnglishPdf;
+exports.generateStatementsPdf = generateStatementsPdf;
 const pdf_lib_1 = require("pdf-lib");
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
@@ -139,7 +141,262 @@ function generatePdf(base64Data, nombreTitular, telefonoTitular, correoTitular, 
         });
         // Guardar el documento PDF como un archivo
         const filePath = path_1.default.resolve(__dirname, `${folderPath}/formulario_consentimiento.pdf`);
+        console.log(filePath);
         const pdfBytes = yield pdfDoc.save();
+        console.log();
+        fs_1.default.writeFileSync(filePath, pdfBytes);
+        return [pdfBytes, filePath];
+    });
+}
+function generateEnglishPdf(base64Data, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, nombreAgente, numeroAgente, telefonoAgente, correoAgente, consentimientoId) {
+    return __awaiter(this, void 0, void 0, function* () {
+        //Crear la carpeta
+        const folderPath = path_1.default.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/${consentimientoId}`);
+        fs_1.default.mkdir(folderPath, { recursive: true }, (err) => {
+            if (err) {
+                console.error('Error creating directory:', err);
+            }
+            else {
+                console.log(`Directory created successfully! ${folderPath}`);
+            }
+        });
+        // Crear un nuevo documento PDF
+        const pdfDoc = yield pdf_lib_1.PDFDocument.create();
+        const page = pdfDoc.addPage();
+        const timesRomanFont = yield pdfDoc.embedFont(pdf_lib_1.StandardFonts.TimesRoman);
+        const base64Image = base64Data.replace(/^data:image\/png;base64,/, '');
+        const imageBytes = Buffer.from(base64Image, 'base64');
+        const embeddedImage = yield pdfDoc.embedPng(imageBytes);
+        const consentText = `
+CONSENT AND AUTHORIZATION FORM
+
+I, ____________________________________________________, date of birth: __________________,
+hereby consent to ____________________________________ acting as my health insurance agent 
+or broker on behalf of myself and my family, if applicable, for the purpose of enrolling 
+in a Qualified Health Plan offered through the Federally Facilitated Marketplace (FFM). By 
+accepting this arrangement, I authorize the above-named Agent to access and use the 
+confidential information I provide, whether in writing, electronically, or by phone, solely
+for one or more of the following purposes:
+
+1. Searching for an existing policy in the Marketplace;
+2. Completing an eligibility and enrollment application for a Qualified Health Plan through 
+the Marketplace or other government insurance affordability programs, such as Medicaid, CHIP, 
+or advance tax credits to assist with Marketplace premium payments;
+3. Providing ongoing account maintenance and enrollment assistance as necessary; or
+4. Responding to Marketplace inquiries regarding my Marketplace policy.
+
+I understand that the Agent will not use or share my personally identifiable information (PII) 
+for any purposes other than those listed above. The Agent will ensure that my PII is kept 
+private and secure when collecting, storing, and using my PII for the aforementioned purposes.
+
+I affirm that the information I provide for my Marketplace eligibility and enrollment 
+application will be true and accurate to the best of my knowledge and belief. I understand that
+I am not required to share additional personal or health information with my Agent beyond what 
+is required in the application for eligibility and enrollment purposes.
+
+I understand that my consent will remain in effect until I revoke it in writing. I may revoke 
+or modify my consent at any time by notifying my Agent in writing and sending the 
+revocation/modification letter to the Agent’s business address via USPS certified mail.
+
+Primary writing agent’s name:                                         ____________________________________
+Agent’s National Producer Number:                                ____________________________________
+Phone number:                                                                 ____________________________________
+Email address:                                                                  ____________________________________
+Name of policyholder and/or authorized representative: ____________________________________
+Phone number:                                                                 ____________________________________
+Email:                                                                               ____________________________________
+
+Signature: ____________________________________ Date: ______________________________
+`;
+        // Dividir el texto en líneas para ajustarse al ancho de la página
+        const consentLines = consentText.split('\n');
+        const { width, height } = page.getSize();
+        const fontSize = 12;
+        const textWidth = 500; // Ancho máximo para el texto en la página
+        const margin = 50; // Margen izquierdo
+        // Escribir el texto en la página
+        let y = height - margin;
+        for (const line of consentLines) {
+            if (y < margin) {
+                // Agregar una nueva página si el texto no cabe en la página actual
+                const newPage = pdfDoc.addPage();
+                y = newPage.getHeight() - margin;
+            }
+            page.drawText(line.trim(), {
+                x: margin,
+                y,
+                size: fontSize,
+                font: timesRomanFont,
+                color: (0, pdf_lib_1.rgb)(0, 0, 0),
+            });
+            y -= fontSize + 5; // Espacio entre líneas
+        }
+        // Escribir los datos en el PDF
+        var lineHeight = 15;
+        var initLine = 741;
+        //Nombre
+        page.drawText(nombreTitular, { x: 70, y: initLine, size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
+        //fecha
+        page.drawText((0, datesUtils_1.convertirFecha)(fechaNacimiento), { x: 450, y: initLine, size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
+        //agente
+        page.drawText(nombreAgente, { x: 150, y: initLine - (17 * 1), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
+        //
+        page.drawText(nombreAgente, { x: 330, y: initLine - (17 * 28), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
+        //
+        page.drawText(numeroAgente, { x: 330, y: initLine - (17 * 29), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
+        //
+        page.drawText(telefonoAgente, { x: 330, y: initLine - (17 * 30), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
+        //
+        page.drawText(correoAgente, { x: 330, y: initLine - (17 * 31), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
+        //
+        page.drawText(nombreTitular, { x: 330, y: initLine - (17 * 32), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
+        //
+        page.drawText(telefonoTitular, { x: 330, y: initLine - (17 * 33), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
+        //
+        page.drawText(correoTitular, { x: 330, y: initLine - (17 * 34), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
+        //
+        page.drawText((0, datesUtils_1.obtenerFechaActualDDMMYYYY)(), { x: 355, y: initLine - (17 * 36), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
+        //Guardar imagen
+        const x = 105;
+        const yImage = initLine - (17 * 37);
+        page.drawImage(embeddedImage, {
+            x,
+            y: yImage,
+            width: 100,
+            height: 50,
+        });
+        // Guardar el documento PDF como un archivo
+        const filePath = path_1.default.resolve(__dirname, `${folderPath}/formulario_consentimiento.pdf`);
+        console.log(filePath);
+        const pdfBytes = yield pdfDoc.save();
+        console.log(pdfBytes);
+        fs_1.default.writeFileSync(filePath, pdfBytes);
+        return [pdfBytes, filePath];
+    });
+}
+function generateStatementsPdf(base64Data, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, nombreAgente, numeroAgente, telefonoAgente, correoAgente, consentimientoId) {
+    return __awaiter(this, void 0, void 0, function* () {
+        //Crear la carpeta
+        const folderPath = path_1.default.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/${consentimientoId}`);
+        fs_1.default.mkdir(folderPath, { recursive: true }, (err) => {
+            if (err) {
+                console.error('Error creating directory:', err);
+            }
+            else {
+                console.log(`Directory created successfully! ${folderPath}`);
+            }
+        });
+        // Crear un nuevo documento PDF
+        const pdfDoc = yield pdf_lib_1.PDFDocument.create();
+        const page = pdfDoc.addPage();
+        const timesRomanFont = yield pdfDoc.embedFont(pdf_lib_1.StandardFonts.TimesRoman);
+        const base64Image = base64Data.replace(/^data:image\/png;base64,/, '');
+        const imageBytes = Buffer.from(base64Image, 'base64');
+        const embeddedImage = yield pdfDoc.embedPng(imageBytes);
+        const consentText = `
+  Verificación de información/ Afirmaciones
+  
+  Yo, confirmo que, a mi leal saber y entender, he revisado la información de la solicitud
+  de elegibilidad y resultó ser precisa. Qué recibí una explicación de las afirmaciones 
+  contenidas al final de la solicitud de elegibilidad y que doy permiso a mi agente/corredor 
+  para firmar la solicitud de elegibilidad en mi nombre.
+  
+  Código postal:______________________
+  Ingreso anual:______________________
+  Compañía:_________________________
+  Plan:______________________________
+  
+  Afirmaciones explicadas:
+  1. Al presentar esta solicitud, acepto el uso de mi información y otorgo consentimiento para 
+  que otros incluidos en la solicitud permitan el uso de sus datos obtenidos de diversas fuentes.
+  2. Comprendo la obligación de proporcionar información veraz y la posibilidad de tener que 
+  enviar pruebas para soportar la solicitud de elegibilidad, con penalizaciones por incumplimiento.
+  3. Permito que el Mercado utilice datos de ingresos durante los próximos 5 años para determinar 
+  mi elegibilidad para asistencia en la cobertura de salud, con la opción de optar por no participar.
+  4. Si alguien en la solicitud tiene cobertura tanto en el Mercado como en Medicare, la cobertura 
+  del plan del Mercado se terminará con previo aviso.
+  5. Debo informar al programa de cualquier cambio en la solicitud, lo que podría afectar la 
+  elegibilidad de los miembros del hogar.
+  6. La elegibilidad para un crédito fiscal para la prima no está disponible si tengo otra cobertura 
+  de salud calificada.
+  7. Si llego a ser elegible para otra cobertura de salud calificada, debo dar de baja mi cobertura 
+  en el Mercado y el crédito fiscal para la prima.
+  8. Estoy obligado a presentar una declaración de impuestos federales, presentarla conjuntamente si 
+  estoy casado, no ser reclamado como dependiente y listar a los dependientes que reciben cobertura 
+  pagada en parte o en su totalidad con anticipos del crédito fiscal premium.
+  9. Mi ingreso se comparará entre la declaración de impuestos y la solicitud, lo que afectará el 
+  crédito fiscal para la prima.
+  10. Reconozco que estoy firmando bajo pena de perjurio y las consecuencias legales de proporcionar 
+  información falsa.
+  
+  Fecha de revisión: _______________________
+  Hora de la revisión: ______________________
+  Nombre del consumidor/representante autorizado: ________________________________
+  Firma del consumidor/representante autorizado: ______________________________________
+  Agente/Corredor que brinda asistencia: ________________________________
+  `;
+        // Dividir el texto en líneas para ajustarse al ancho de la página
+        const consentLines = consentText.split('\n');
+        const { width, height } = page.getSize();
+        const fontSize = 12;
+        const textWidth = 500; // Ancho máximo para el texto en la página
+        const margin = 50; // Margen izquierdo
+        // Escribir el texto en la página
+        let y = height - margin;
+        for (const line of consentLines) {
+            if (y < margin) {
+                // Agregar una nueva página si el texto no cabe en la página actual
+                const newPage = pdfDoc.addPage();
+                y = newPage.getHeight() - margin;
+            }
+            page.drawText(line.trim(), {
+                x: margin,
+                y,
+                size: fontSize,
+                font: timesRomanFont,
+                color: (0, pdf_lib_1.rgb)(0, 0, 0),
+            });
+            y -= fontSize + 5; // Espacio entre líneas
+        }
+        // Escribir los datos en el PDF
+        var lineHeight = 15;
+        var initLine = 741;
+        //Nombre
+        page.drawText(nombreTitular, { x: 70, y: initLine, size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
+        //fecha
+        page.drawText((0, datesUtils_1.convertirFecha)(fechaNacimiento), { x: 450, y: initLine, size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
+        //agente
+        page.drawText(nombreAgente, { x: 150, y: initLine - (17 * 1), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
+        //
+        page.drawText(nombreAgente, { x: 330, y: initLine - (17 * 28), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
+        //
+        page.drawText(numeroAgente, { x: 330, y: initLine - (17 * 29), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
+        //
+        page.drawText(telefonoAgente, { x: 330, y: initLine - (17 * 30), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
+        //
+        page.drawText(correoAgente, { x: 330, y: initLine - (17 * 31), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
+        //
+        page.drawText(nombreTitular, { x: 330, y: initLine - (17 * 32), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
+        //
+        page.drawText(telefonoTitular, { x: 330, y: initLine - (17 * 33), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
+        //
+        page.drawText(correoTitular, { x: 330, y: initLine - (17 * 34), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
+        //
+        page.drawText((0, datesUtils_1.obtenerFechaActualDDMMYYYY)(), { x: 355, y: initLine - (17 * 36), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
+        //Guardar imagen
+        const x = 105;
+        const yImage = initLine - (17 * 37);
+        page.drawImage(embeddedImage, {
+            x,
+            y: yImage,
+            width: 100,
+            height: 50,
+        });
+        // Guardar el documento PDF como un archivo
+        const filePath = path_1.default.resolve(__dirname, `${folderPath}/formulario_consentimiento.pdf`);
+        console.log(filePath);
+        const pdfBytes = yield pdfDoc.save();
+        console.log(pdfBytes);
         fs_1.default.writeFileSync(filePath, pdfBytes);
         return [pdfBytes, filePath];
     });
