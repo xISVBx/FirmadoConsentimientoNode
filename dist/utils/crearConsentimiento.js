@@ -276,11 +276,11 @@ Signature: ____________________________________ Date: __________________________
         return [pdfBytes, filePath];
     });
 }
-function generateStatementsPdf(base64Data, agente, statement) {
+function generateStatementsPdf(base64Data, agente, statement, consentimientoId) {
     return __awaiter(this, void 0, void 0, function* () {
         //Crear la carpeta
-        //const folderPath = path.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/${consentimientoId}`);
-        const folderPath = path_1.default.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/archivo`);
+        const folderPath = path_1.default.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/${consentimientoId}`);
+        //const folderPath = path.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/archivo`);
         fs_1.default.mkdir(folderPath, { recursive: true }, (err) => {
             if (err) {
                 console.error('Error creating directory:', err);
@@ -381,23 +381,23 @@ function generateStatementsPdf(base64Data, agente, statement) {
         //Plan
         drawText(statement.plan, 130, 8);
         //Fecha de revision
-        drawText((0, datesUtils_1.obtenerFechaActualDDMMYYYY)(), 330, 33);
+        drawText((0, datesUtils_1.obtenerFechaActualDDMMYYYY)(), 300, 33);
         //Hora de la revision
-        drawText(getCurrentHour(), 330, 34);
+        drawText((0, datesUtils_1.getCurrentHour)(), 300, 34);
         //Nombre del cosumidor
-        drawText(statement.nombreConsumidor, 330, 35);
+        drawText(statement.nombreConsumidor, 300, 35);
         //Firma del consumirdor
         //drawText(nombreTitular, 330, 36);
         //Agente
-        drawText(agente, 330, 37);
+        drawText(agente, 300, 37);
         //Guardar imagen
-        const x = 105;
+        const x = 300;
         const yImage = initLine - (17 * 37);
         page.drawImage(embeddedImage, {
             x,
-            y: yImage,
+            y: yImage + 5,
             width: 100,
-            height: 50,
+            height: 20,
         });
         // Guardar el documento PDF como un archivo
         const filePath = path_1.default.resolve(__dirname, `${folderPath}/formulario_consentimiento.pdf`);
@@ -509,23 +509,23 @@ function generateStatementsEnglishPdf(base64Data, agente, statement) {
         //Plan
         drawText(statement.plan, 130, 8);
         //Fecha de revision
-        drawText((0, datesUtils_1.obtenerFechaActualDDMMYYYY)(), 330, 33);
+        drawText((0, datesUtils_1.obtenerFechaActualDDMMYYYY)(), 300, 31);
         //Hora de la revision
-        drawText(getCurrentHour(), 330, 34);
+        drawText((0, datesUtils_1.getCurrentHour)(), 300, 32);
         //Nombre del cosumidor
-        drawText(statement.nombreConsumidor, 330, 35);
+        drawText(statement.nombreConsumidor, 300, 33);
         //Firma del consumirdor
         //drawText(nombreTitular, 330, 36);
         //Agente
-        drawText(agente, 330, 37);
+        drawText(agente, 300, 35);
         //Guardar imagen
-        const x = 105;
-        const yImage = initLine - (17 * 37);
+        const x = 300;
+        const yImage = initLine - (17 * 34);
         page.drawImage(embeddedImage, {
             x,
-            y: yImage,
+            y: yImage - 10,
             width: 100,
-            height: 50,
+            height: 20,
         });
         // Guardar el documento PDF como un archivo
         const filePath = path_1.default.resolve(__dirname, `${folderPath}/formulario_consentimiento.pdf`);
@@ -533,7 +533,4 @@ function generateStatementsEnglishPdf(base64Data, agente, statement) {
         fs_1.default.writeFileSync(filePath, pdfBytes);
         return [pdfBytes, filePath];
     });
-}
-function getCurrentHour() {
-    throw new Error('Function not implemented.');
 }
