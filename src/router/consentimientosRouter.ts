@@ -16,6 +16,7 @@ class ConsentimientoRouter {
     }
 
     private config() {
+
         this.router.post('/consentimiento', async (req: Request, res: Response, next: NextFunction) => {
             const { base64Image, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, token, idioma } = req.body
             if(!base64Image){
@@ -43,6 +44,16 @@ class ConsentimientoRouter {
                 return
             }
         });
+
+        this.router.post('/consentimiento/correo', async (req:Request, res: Response, next: NextFunction) =>{
+            const { nombreAgente, numeroProductor, telefonoAgente, correoAgente, destinatario } = req.body
+            var response = await this.service.EnviarFormularioConsentimiento(nombreAgente, numeroProductor, telefonoAgente, correoAgente, destinatario);
+            if(response){
+                res.status(200).send(response)
+            }else{
+                res.status(500).send(response)
+            }
+        })
 
         this.router.post('/statements', async (req: Request, res: Response, next: NextFunction) => {
             const { base64Image, plan, codigoPostal, correoTitular, compania, ingresoAnual, nombreConsumidor, token, idioma } = req.body
@@ -79,16 +90,16 @@ class ConsentimientoRouter {
             }
         });
 
-
-        this.router.post('/consentimiento/correo', async (req:Request, res: Response, next: NextFunction) =>{
+        this.router.post('/statements/correo', async (req:Request, res: Response, next: NextFunction) =>{
             const { nombreAgente, numeroProductor, telefonoAgente, correoAgente, destinatario } = req.body
-            var response = await this.service.EnviarFormularioConsentimiento(nombreAgente, numeroProductor, telefonoAgente, correoAgente, destinatario);
+            var response = await this.service.EnviarFormularioAfirmaciones(nombreAgente, numeroProductor, telefonoAgente, correoAgente, destinatario);
             if(response){
                 res.status(200).send(response)
             }else{
                 res.status(500).send(response)
             }
         })
+
     }
 }
 
