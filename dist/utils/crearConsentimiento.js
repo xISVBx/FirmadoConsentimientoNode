@@ -15,10 +15,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.generatePdf = generatePdf;
 exports.generateEnglishPdf = generateEnglishPdf;
 exports.generateStatementsPdf = generateStatementsPdf;
+exports.generateStatementsEnglishPdf = generateStatementsEnglishPdf;
 const pdf_lib_1 = require("pdf-lib");
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
 const datesUtils_1 = require("./datesUtils");
+const pdfUtils_1 = require("./pdfUtils");
 function generatePdf(base64Data, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, nombreAgente, numeroAgente, telefonoAgente, correoAgente, consentimientoId) {
     return __awaiter(this, void 0, void 0, function* () {
         //Crear la carpeta
@@ -274,10 +276,11 @@ Signature: ____________________________________ Date: __________________________
         return [pdfBytes, filePath];
     });
 }
-function generateStatementsPdf(base64Data, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, nombreAgente, numeroAgente, telefonoAgente, correoAgente, consentimientoId) {
+function generateStatementsPdf(base64Data, agente, statement) {
     return __awaiter(this, void 0, void 0, function* () {
         //Crear la carpeta
-        const folderPath = path_1.default.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/${consentimientoId}`);
+        //const folderPath = path.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/${consentimientoId}`);
+        const folderPath = path_1.default.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/archivo`);
         fs_1.default.mkdir(folderPath, { recursive: true }, (err) => {
             if (err) {
                 console.error('Error creating directory:', err);
@@ -296,15 +299,15 @@ function generateStatementsPdf(base64Data, nombreTitular, telefonoTitular, corre
         const consentText = `
   Verificación de información/ Afirmaciones
   
-  Yo, confirmo que, a mi leal saber y entender, he revisado la información de la solicitud
-  de elegibilidad y resultó ser precisa. Qué recibí una explicación de las afirmaciones 
-  contenidas al final de la solicitud de elegibilidad y que doy permiso a mi agente/corredor 
-  para firmar la solicitud de elegibilidad en mi nombre.
+  Yo, confirmo que, a mi leal saber y entender,
+  he revisado la información de la solicitud de elegibilidad y resultó ser  precisa. Qué recibí una
+  explicación de las afirmaciones contenidas al final de la solicitud de elegibilidad y que doy
+  permiso a mi agente/corredor para firmar la solicitud de elegibilidad en mi nombre.
   
-  Código postal:______________________
-  Ingreso anual:______________________
-  Compañía:_________________________
-  Plan:______________________________
+  Código postal:
+  Ingreso anual:
+  Compañía:
+  Plan:
   
   Afirmaciones explicadas:
   1. Al presentar esta solicitud, acepto el uso de mi información y otorgo consentimiento para 
@@ -329,11 +332,11 @@ function generateStatementsPdf(base64Data, nombreTitular, telefonoTitular, corre
   10. Reconozco que estoy firmando bajo pena de perjurio y las consecuencias legales de proporcionar 
   información falsa.
   
-  Fecha de revisión: _______________________
-  Hora de la revisión: ______________________
-  Nombre del consumidor/representante autorizado: ________________________________
-  Firma del consumidor/representante autorizado: ______________________________________
-  Agente/Corredor que brinda asistencia: ________________________________
+  Fecha de revisión:
+  Hora de la revisión:
+  Nombre del consumidor/representante autorizado:
+  Firma del consumidor/representante autorizado:
+  Agente/Corredor que brinda asistencia:
   `;
         // Dividir el texto en líneas para ajustarse al ancho de la página
         const consentLines = consentText.split('\n');
@@ -361,28 +364,32 @@ function generateStatementsPdf(base64Data, nombreTitular, telefonoTitular, corre
         // Escribir los datos en el PDF
         var lineHeight = 15;
         var initLine = 741;
-        //Nombre
-        page.drawText(nombreTitular, { x: 70, y: initLine, size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
-        //fecha
-        page.drawText((0, datesUtils_1.convertirFecha)(fechaNacimiento), { x: 450, y: initLine, size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
-        //agente
-        page.drawText(nombreAgente, { x: 150, y: initLine - (17 * 1), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
-        //
-        page.drawText(nombreAgente, { x: 330, y: initLine - (17 * 28), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
-        //
-        page.drawText(numeroAgente, { x: 330, y: initLine - (17 * 29), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
-        //
-        page.drawText(telefonoAgente, { x: 330, y: initLine - (17 * 30), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
-        //
-        page.drawText(correoAgente, { x: 330, y: initLine - (17 * 31), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
-        //
-        page.drawText(nombreTitular, { x: 330, y: initLine - (17 * 32), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
-        //
-        page.drawText(telefonoTitular, { x: 330, y: initLine - (17 * 33), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
-        //
-        page.drawText(correoTitular, { x: 330, y: initLine - (17 * 34), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
-        //
-        page.drawText((0, datesUtils_1.obtenerFechaActualDDMMYYYY)(), { x: 355, y: initLine - (17 * 36), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
+        const drawText = (text, x, y, underline = false) => {
+            if (underline) {
+                page.drawText(text, { x, y: initLine - (17 * y), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
+            }
+            else {
+                (0, pdfUtils_1.drawUnderlinedText)({ text, fontSize: 12, page, x, y: initLine - (17 * y) });
+            }
+        };
+        //Codigo postal
+        drawText(statement.codigoPostal, 130, 5);
+        //Ingreso anual
+        drawText(statement.ingresoAnual.toString(), 130, 6);
+        //Compañia
+        drawText(statement.compania, 130, 7);
+        //Plan
+        drawText(statement.plan, 130, 8);
+        //Fecha de revision
+        drawText((0, datesUtils_1.obtenerFechaActualDDMMYYYY)(), 330, 33);
+        //Hora de la revision
+        drawText(getCurrentHour(), 330, 34);
+        //Nombre del cosumidor
+        drawText(statement.nombreConsumidor, 330, 35);
+        //Firma del consumirdor
+        //drawText(nombreTitular, 330, 36);
+        //Agente
+        drawText(agente, 330, 37);
         //Guardar imagen
         const x = 105;
         const yImage = initLine - (17 * 37);
@@ -394,10 +401,139 @@ function generateStatementsPdf(base64Data, nombreTitular, telefonoTitular, corre
         });
         // Guardar el documento PDF como un archivo
         const filePath = path_1.default.resolve(__dirname, `${folderPath}/formulario_consentimiento.pdf`);
-        console.log(filePath);
         const pdfBytes = yield pdfDoc.save();
-        console.log(pdfBytes);
         fs_1.default.writeFileSync(filePath, pdfBytes);
         return [pdfBytes, filePath];
     });
+}
+function generateStatementsEnglishPdf(base64Data, agente, statement) {
+    return __awaiter(this, void 0, void 0, function* () {
+        //Crear la carpeta
+        //const folderPath = path.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/${consentimientoId}`);
+        const folderPath = path_1.default.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/archivo`);
+        fs_1.default.mkdir(folderPath, { recursive: true }, (err) => {
+            if (err) {
+                console.error('Error creating directory:', err);
+            }
+            else {
+                console.log(`Directory created successfully! ${folderPath}`);
+            }
+        });
+        // Crear un nuevo documento PDF
+        const pdfDoc = yield pdf_lib_1.PDFDocument.create();
+        const page = pdfDoc.addPage();
+        const timesRomanFont = yield pdfDoc.embedFont(pdf_lib_1.StandardFonts.TimesRoman);
+        const base64Image = base64Data.replace(/^data:image\/png;base64,/, '');
+        const imageBytes = Buffer.from(base64Image, 'base64');
+        const embeddedImage = yield pdfDoc.embedPng(imageBytes);
+        const consentText = `
+  Information Verification / Statements
+  
+  I hereby confirm that, to the best of my knowledge and understanding, I have reviewed the information
+  in the eligibility application, and it has proven to be accurate. I have received an explanation of the
+  statements included at the end of the eligibility application and authorized my agent/broker to sign the
+  eligibility application on my behalf.
+
+  Postal Code:
+  Annual Income:
+  Company:
+  Plan:
+
+  Statements Explained:
+  1. By submitting this application, I agree to the use of my information and consent to others listed on the
+  application allowing the use of their data obtained from various sources.
+  2. I understand the obligation to provide truthful information and the possibility that I may need to submit
+  supporting documentation for eligibility, with penalties for non-compliance.
+  3. I authorize the Marketplace to use income data over the next 5 years to determine my eligibility for
+  health coverage assistance, with the option to opt out.
+  4. If anyone on the application is enrolled in both Marketplace coverage and Medicare, the Marketplace
+  plan coverage will be terminated with prior notice.
+  5. I am required to inform the program of any changes in the application that may affect the eligibility of
+  household members.
+  6. Eligibility for a premium tax credit is not available if I have other qualifying health coverage.
+  7. If I become eligible for other qualifying health coverage, I must terminate my Marketplace coverage
+  and the premium tax credit.
+  8. I am required to file a federal tax return, file jointly if married, not be claimed as a dependent, and list
+  dependents who receive coverage partially or fully funded with premium tax credit advances.
+  9. My income will be compared between the tax return and the application, impacting the premium tax
+  credit.
+  10. I acknowledge that I am signing under penalty of perjury and am aware of the legal consequences of
+  providing false information.
+
+  Review Date:
+  Review Time:
+  Consumer/Authorized Representative Name:
+  Consumer/Authorized Representative Signature:
+  Agent/Broker Providing Assistance:
+  `;
+        // Dividir el texto en líneas para ajustarse al ancho de la página
+        const consentLines = consentText.split('\n');
+        const { width, height } = page.getSize();
+        const fontSize = 12;
+        const textWidth = 500; // Ancho máximo para el texto en la página
+        const margin = 50; // Margen izquierdo
+        // Escribir el texto en la página
+        let y = height - margin;
+        for (const line of consentLines) {
+            if (y < margin) {
+                // Agregar una nueva página si el texto no cabe en la página actual
+                const newPage = pdfDoc.addPage();
+                y = newPage.getHeight() - margin;
+            }
+            page.drawText(line.trim(), {
+                x: margin,
+                y,
+                size: fontSize,
+                font: timesRomanFont,
+                color: (0, pdf_lib_1.rgb)(0, 0, 0),
+            });
+            y -= fontSize + 5; // Espacio entre líneas
+        }
+        // Escribir los datos en el PDF
+        var lineHeight = 15;
+        var initLine = 741;
+        const drawText = (text, x, y, underline = false) => {
+            if (underline) {
+                page.drawText(text, { x, y: initLine - (17 * y), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
+            }
+            else {
+                (0, pdfUtils_1.drawUnderlinedText)({ text, fontSize: 12, page, x, y: initLine - (17 * y) });
+            }
+        };
+        //Codigo postal
+        drawText(statement.codigoPostal, 130, 5);
+        //Ingreso anual
+        drawText(statement.ingresoAnual.toString(), 130, 6);
+        //Compañia
+        drawText(statement.compania, 130, 7);
+        //Plan
+        drawText(statement.plan, 130, 8);
+        //Fecha de revision
+        drawText((0, datesUtils_1.obtenerFechaActualDDMMYYYY)(), 330, 33);
+        //Hora de la revision
+        drawText(getCurrentHour(), 330, 34);
+        //Nombre del cosumidor
+        drawText(statement.nombreConsumidor, 330, 35);
+        //Firma del consumirdor
+        //drawText(nombreTitular, 330, 36);
+        //Agente
+        drawText(agente, 330, 37);
+        //Guardar imagen
+        const x = 105;
+        const yImage = initLine - (17 * 37);
+        page.drawImage(embeddedImage, {
+            x,
+            y: yImage,
+            width: 100,
+            height: 50,
+        });
+        // Guardar el documento PDF como un archivo
+        const filePath = path_1.default.resolve(__dirname, `${folderPath}/formulario_consentimiento.pdf`);
+        const pdfBytes = yield pdfDoc.save();
+        fs_1.default.writeFileSync(filePath, pdfBytes);
+        return [pdfBytes, filePath];
+    });
+}
+function getCurrentHour() {
+    throw new Error('Function not implemented.');
 }
