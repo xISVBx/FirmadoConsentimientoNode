@@ -78,7 +78,6 @@ export default class ConsentimientosService {
                 throw CustomError.InternalServerError("No se pudo almacenar la informacion correctamente");
             }
         } catch (e) {
-            console.log('si entro aca eres un crqack')
             throw CustomError.InternalServerError(`${e}`);
         }
         return ResponseGeneric.Success(true, 'Pdf Almacenado!!!');

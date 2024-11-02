@@ -71,7 +71,6 @@ class ConsentimientosService {
                 }
             }
             catch (e) {
-                console.log('si entro aca eres un crqack');
                 throw CustomError_1.CustomError.InternalServerError(`${e}`);
             }
             return response_1.ResponseGeneric.Success(true, 'Pdf Almacenado!!!');

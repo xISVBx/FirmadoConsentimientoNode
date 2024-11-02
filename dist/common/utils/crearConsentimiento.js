@@ -21,30 +21,32 @@ const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
 const datesUtils_1 = require("./datesUtils");
 const pdfUtils_1 = require("./pdfUtils");
+const CustomError_1 = require("../../common/errors/CustomError");
 function generatePdf(base64Data, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, nombreAgente, numeroAgente, telefonoAgente, correoAgente, consentimientoId) {
     return __awaiter(this, void 0, void 0, function* () {
-        //Crear la carpeta
-        const folderPath = path_1.default.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/${consentimientoId}`);
-        fs_1.default.mkdir(folderPath, { recursive: true }, (err) => {
-            if (err) {
-                console.error('Error creating directory:', err);
-            }
-            else {
-                console.log(`Directory created successfully! ${folderPath}`);
-            }
-        });
-        // Crear un nuevo documento PDF
-        const pdfDoc = yield pdf_lib_1.PDFDocument.create();
-        const page = pdfDoc.addPage();
-        const timesRomanFont = yield pdfDoc.embedFont(pdf_lib_1.StandardFonts.TimesRoman);
-        // Si el Base64 incluye un prefijo, elimínalo
-        const base64Image = base64Data.replace(/^data:image\/png;base64,/, '');
-        //imagebyte to embebed
-        const imageBytes = Buffer.from(base64Image, 'base64');
-        // Incorporar la imagen al documento PDF
-        const embeddedImage = yield pdfDoc.embedPng(imageBytes);
-        // Definir el contenido del formulario
-        const consentText = `
+        try {
+            //Crear la carpeta
+            const folderPath = path_1.default.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/${consentimientoId}`);
+            fs_1.default.mkdir(folderPath, { recursive: true }, (err) => {
+                if (err) {
+                    console.error('Error creating directory:', err);
+                }
+                else {
+                    console.log(`Directory created successfully! ${folderPath}`);
+                }
+            });
+            // Crear un nuevo documento PDF
+            const pdfDoc = yield pdf_lib_1.PDFDocument.create();
+            const page = pdfDoc.addPage();
+            const timesRomanFont = yield pdfDoc.embedFont(pdf_lib_1.StandardFonts.TimesRoman);
+            // Si el Base64 incluye un prefijo, elimínalo
+            const base64Image = base64Data.replace(/^data:image\/png;base64,/, '');
+            //imagebyte to embebed
+            const imageBytes = Buffer.from(base64Image, 'base64');
+            // Incorporar la imagen al documento PDF
+            const embeddedImage = yield pdfDoc.embedPng(imageBytes);
+            // Definir el contenido del formulario
+            const consentText = `
     FORMULARIO DE CONSENTIMIENTO Y AUTORIZACIÓN
 
     Yo, _____________________________________________ fecha de nacimiento: __________________
@@ -84,92 +86,95 @@ function generatePdf(base64Data, nombreTitular, telefonoTitular, correoTitular, 
 
     Firma: ____________________________________ Fecha: _______________________________
   `;
-        // Dividir el texto en líneas para ajustarse al ancho de la página
-        const consentLines = consentText.split('\n');
-        const { width, height } = page.getSize();
-        const fontSize = 12;
-        const textWidth = 500; // Ancho máximo para el texto en la página
-        const margin = 50; // Margen izquierdo
-        // Escribir el texto en la página
-        let y = height - margin;
-        for (const line of consentLines) {
-            if (y < margin) {
-                // Agregar una nueva página si el texto no cabe en la página actual
-                const newPage = pdfDoc.addPage();
-                y = newPage.getHeight() - margin;
+            // Dividir el texto en líneas para ajustarse al ancho de la página
+            const consentLines = consentText.split('\n');
+            const { width, height } = page.getSize();
+            const fontSize = 12;
+            const textWidth = 500; // Ancho máximo para el texto en la página
+            const margin = 50; // Margen izquierdo
+            // Escribir el texto en la página
+            let y = height - margin;
+            for (const line of consentLines) {
+                if (y < margin) {
+                    // Agregar una nueva página si el texto no cabe en la página actual
+                    const newPage = pdfDoc.addPage();
+                    y = newPage.getHeight() - margin;
+                }
+                page.drawText(line.trim(), {
+                    x: margin,
+                    y,
+                    size: fontSize,
+                    font: timesRomanFont,
+                    color: (0, pdf_lib_1.rgb)(0, 0, 0),
+                });
+                y -= fontSize + 5; // Espacio entre líneas
             }
-            page.drawText(line.trim(), {
-                x: margin,
-                y,
-                size: fontSize,
-                font: timesRomanFont,
-                color: (0, pdf_lib_1.rgb)(0, 0, 0),
+            // Escribir los datos en el PDF
+            var lineHeight = 15;
+            var initLine = 741;
+            //Nombre
+            page.drawText(nombreTitular, { x: 80, y: initLine, size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
+            //fecha
+            page.drawText((0, datesUtils_1.convertirFecha)(fechaNacimiento), { x: 450, y: initLine, size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
+            //agente
+            page.drawText(nombreAgente, { x: 180, y: initLine - (17 * 1), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
+            //
+            page.drawText(nombreAgente, { x: 290, y: initLine - (17 * 27), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
+            //
+            page.drawText(numeroAgente, { x: 290, y: initLine - (17 * 28), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
+            //
+            page.drawText(telefonoAgente, { x: 290, y: initLine - (17 * 29), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
+            //
+            page.drawText(correoAgente, { x: 290, y: initLine - (17 * 30), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
+            //
+            page.drawText(nombreTitular, { x: 290, y: initLine - (17 * 31), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
+            //
+            page.drawText(telefonoTitular, { x: 290, y: initLine - (17 * 32), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
+            //
+            page.drawText(correoTitular, { x: 290, y: initLine - (17 * 33), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
+            //
+            page.drawText((0, datesUtils_1.obtenerFechaActualDDMMYYYY)(), { x: 340, y: initLine - (17 * 35), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
+            //Guardar imagen
+            const x = 90;
+            const yImage = initLine - (17 * 36);
+            page.drawImage(embeddedImage, {
+                x,
+                y: yImage,
+                width: 100,
+                height: 50,
             });
-            y -= fontSize + 5; // Espacio entre líneas
+            // Guardar el documento PDF como un archivo
+            const filePath = path_1.default.resolve(__dirname, `${folderPath}/formulario_consentimiento.pdf`);
+            const pdfBytes = yield pdfDoc.save();
+            fs_1.default.writeFileSync(filePath, pdfBytes);
+            return [pdfBytes, filePath];
         }
-        // Escribir los datos en el PDF
-        var lineHeight = 15;
-        var initLine = 741;
-        //Nombre
-        page.drawText(nombreTitular, { x: 80, y: initLine, size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
-        //fecha
-        page.drawText((0, datesUtils_1.convertirFecha)(fechaNacimiento), { x: 450, y: initLine, size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
-        //agente
-        page.drawText(nombreAgente, { x: 180, y: initLine - (17 * 1), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
-        //
-        page.drawText(nombreAgente, { x: 290, y: initLine - (17 * 27), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
-        //
-        page.drawText(numeroAgente, { x: 290, y: initLine - (17 * 28), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
-        //
-        page.drawText(telefonoAgente, { x: 290, y: initLine - (17 * 29), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
-        //
-        page.drawText(correoAgente, { x: 290, y: initLine - (17 * 30), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
-        //
-        page.drawText(nombreTitular, { x: 290, y: initLine - (17 * 31), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
-        //
-        page.drawText(telefonoTitular, { x: 290, y: initLine - (17 * 32), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
-        //
-        page.drawText(correoTitular, { x: 290, y: initLine - (17 * 33), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
-        //
-        page.drawText((0, datesUtils_1.obtenerFechaActualDDMMYYYY)(), { x: 340, y: initLine - (17 * 35), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
-        //Guardar imagen
-        const x = 90;
-        const yImage = initLine - (17 * 36);
-        page.drawImage(embeddedImage, {
-            x,
-            y: yImage,
-            width: 100,
-            height: 50,
-        });
-        // Guardar el documento PDF como un archivo
-        const filePath = path_1.default.resolve(__dirname, `${folderPath}/formulario_consentimiento.pdf`);
-        console.log(filePath);
-        const pdfBytes = yield pdfDoc.save();
-        console.log();
-        fs_1.default.writeFileSync(filePath, pdfBytes);
-        return [pdfBytes, filePath];
+        catch (err) {
+            throw CustomError_1.CustomError.InternalServerError(`${err}`);
+        }
     });
 }
 function generateEnglishPdf(base64Data, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, nombreAgente, numeroAgente, telefonoAgente, correoAgente, consentimientoId) {
     return __awaiter(this, void 0, void 0, function* () {
-        //Crear la carpeta
-        const folderPath = path_1.default.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/${consentimientoId}`);
-        fs_1.default.mkdir(folderPath, { recursive: true }, (err) => {
-            if (err) {
-                console.error('Error creating directory:', err);
-            }
-            else {
-                console.log(`Directory created successfully! ${folderPath}`);
-            }
-        });
-        // Crear un nuevo documento PDF
-        const pdfDoc = yield pdf_lib_1.PDFDocument.create();
-        const page = pdfDoc.addPage();
-        const timesRomanFont = yield pdfDoc.embedFont(pdf_lib_1.StandardFonts.TimesRoman);
-        const base64Image = base64Data.replace(/^data:image\/png;base64,/, '');
-        const imageBytes = Buffer.from(base64Image, 'base64');
-        const embeddedImage = yield pdfDoc.embedPng(imageBytes);
-        const consentText = `
+        try {
+            //Crear la carpeta
+            const folderPath = path_1.default.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/${consentimientoId}`);
+            fs_1.default.mkdir(folderPath, { recursive: true }, (err) => {
+                if (err) {
+                    console.error('Error creating directory:', err);
+                }
+                else {
+                    console.log(`Directory created successfully! ${folderPath}`);
+                }
+            });
+            // Crear un nuevo documento PDF
+            const pdfDoc = yield pdf_lib_1.PDFDocument.create();
+            const page = pdfDoc.addPage();
+            const timesRomanFont = yield pdfDoc.embedFont(pdf_lib_1.StandardFonts.TimesRoman);
+            const base64Image = base64Data.replace(/^data:image\/png;base64,/, '');
+            const imageBytes = Buffer.from(base64Image, 'base64');
+            const embeddedImage = yield pdfDoc.embedPng(imageBytes);
+            const consentText = `
 CONSENT AND AUTHORIZATION FORM
 
 I, ____________________________________________________, date of birth: __________________,
@@ -210,93 +215,96 @@ Email:                                                                          
 
 Signature: ____________________________________ Date: ______________________________
 `;
-        // Dividir el texto en líneas para ajustarse al ancho de la página
-        const consentLines = consentText.split('\n');
-        const { width, height } = page.getSize();
-        const fontSize = 12;
-        const textWidth = 500; // Ancho máximo para el texto en la página
-        const margin = 50; // Margen izquierdo
-        // Escribir el texto en la página
-        let y = height - margin;
-        for (const line of consentLines) {
-            if (y < margin) {
-                // Agregar una nueva página si el texto no cabe en la página actual
-                const newPage = pdfDoc.addPage();
-                y = newPage.getHeight() - margin;
+            // Dividir el texto en líneas para ajustarse al ancho de la página
+            const consentLines = consentText.split('\n');
+            const { width, height } = page.getSize();
+            const fontSize = 12;
+            const textWidth = 500; // Ancho máximo para el texto en la página
+            const margin = 50; // Margen izquierdo
+            // Escribir el texto en la página
+            let y = height - margin;
+            for (const line of consentLines) {
+                if (y < margin) {
+                    // Agregar una nueva página si el texto no cabe en la página actual
+                    const newPage = pdfDoc.addPage();
+                    y = newPage.getHeight() - margin;
+                }
+                page.drawText(line.trim(), {
+                    x: margin,
+                    y,
+                    size: fontSize,
+                    font: timesRomanFont,
+                    color: (0, pdf_lib_1.rgb)(0, 0, 0),
+                });
+                y -= fontSize + 5; // Espacio entre líneas
             }
-            page.drawText(line.trim(), {
-                x: margin,
-                y,
-                size: fontSize,
-                font: timesRomanFont,
-                color: (0, pdf_lib_1.rgb)(0, 0, 0),
+            // Escribir los datos en el PDF
+            var lineHeight = 15;
+            var initLine = 741;
+            //Nombre
+            page.drawText(nombreTitular, { x: 70, y: initLine, size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
+            //fecha
+            page.drawText((0, datesUtils_1.convertirFecha)(fechaNacimiento), { x: 450, y: initLine, size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
+            //agente
+            page.drawText(nombreAgente, { x: 150, y: initLine - (17 * 1), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
+            //
+            page.drawText(nombreAgente, { x: 330, y: initLine - (17 * 28), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
+            //
+            page.drawText(numeroAgente, { x: 330, y: initLine - (17 * 29), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
+            //
+            page.drawText(telefonoAgente, { x: 330, y: initLine - (17 * 30), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
+            //
+            page.drawText(correoAgente, { x: 330, y: initLine - (17 * 31), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
+            //
+            page.drawText(nombreTitular, { x: 330, y: initLine - (17 * 32), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
+            //
+            page.drawText(telefonoTitular, { x: 330, y: initLine - (17 * 33), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
+            //
+            page.drawText(correoTitular, { x: 330, y: initLine - (17 * 34), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
+            //
+            page.drawText((0, datesUtils_1.obtenerFechaActualDDMMYYYY)(), { x: 355, y: initLine - (17 * 36), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
+            //Guardar imagen
+            const x = 105;
+            const yImage = initLine - (17 * 37);
+            page.drawImage(embeddedImage, {
+                x,
+                y: yImage,
+                width: 100,
+                height: 50,
             });
-            y -= fontSize + 5; // Espacio entre líneas
+            // Guardar el documento PDF como un archivo
+            const filePath = path_1.default.resolve(__dirname, `${folderPath}/formulario_consentimiento.pdf`);
+            const pdfBytes = yield pdfDoc.save();
+            fs_1.default.writeFileSync(filePath, pdfBytes);
+            return [pdfBytes, filePath];
         }
-        // Escribir los datos en el PDF
-        var lineHeight = 15;
-        var initLine = 741;
-        //Nombre
-        page.drawText(nombreTitular, { x: 70, y: initLine, size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
-        //fecha
-        page.drawText((0, datesUtils_1.convertirFecha)(fechaNacimiento), { x: 450, y: initLine, size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
-        //agente
-        page.drawText(nombreAgente, { x: 150, y: initLine - (17 * 1), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
-        //
-        page.drawText(nombreAgente, { x: 330, y: initLine - (17 * 28), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
-        //
-        page.drawText(numeroAgente, { x: 330, y: initLine - (17 * 29), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
-        //
-        page.drawText(telefonoAgente, { x: 330, y: initLine - (17 * 30), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
-        //
-        page.drawText(correoAgente, { x: 330, y: initLine - (17 * 31), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
-        //
-        page.drawText(nombreTitular, { x: 330, y: initLine - (17 * 32), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
-        //
-        page.drawText(telefonoTitular, { x: 330, y: initLine - (17 * 33), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
-        //
-        page.drawText(correoTitular, { x: 330, y: initLine - (17 * 34), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
-        //
-        page.drawText((0, datesUtils_1.obtenerFechaActualDDMMYYYY)(), { x: 355, y: initLine - (17 * 36), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
-        //Guardar imagen
-        const x = 105;
-        const yImage = initLine - (17 * 37);
-        page.drawImage(embeddedImage, {
-            x,
-            y: yImage,
-            width: 100,
-            height: 50,
-        });
-        // Guardar el documento PDF como un archivo
-        const filePath = path_1.default.resolve(__dirname, `${folderPath}/formulario_consentimiento.pdf`);
-        console.log(filePath);
-        const pdfBytes = yield pdfDoc.save();
-        console.log(pdfBytes);
-        fs_1.default.writeFileSync(filePath, pdfBytes);
-        return [pdfBytes, filePath];
+        catch (err) {
+            throw CustomError_1.CustomError.InternalServerError(`${err}`);
+        }
     });
 }
 function generateStatementsPdf(base64Data, agente, statement, consentimientoId) {
     return __awaiter(this, void 0, void 0, function* () {
-        //Crear la carpeta
-        const folderPath = path_1.default.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/${consentimientoId}`);
-        //const folderPath = path.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/archivo`);
-        fs_1.default.mkdir(folderPath, { recursive: true }, (err) => {
-            if (err) {
-                console.error('Error creating directory:', err);
-            }
-            else {
-                console.log(`Directory created successfully! ${folderPath}`);
-            }
-        });
-        // Crear un nuevo documento PDF
-        const pdfDoc = yield pdf_lib_1.PDFDocument.create();
-        const page = pdfDoc.addPage();
-        const timesRomanFont = yield pdfDoc.embedFont(pdf_lib_1.StandardFonts.TimesRoman);
-        const base64Image = base64Data.replace(/^data:image\/png;base64,/, '');
-        const imageBytes = Buffer.from(base64Image, 'base64');
-        const embeddedImage = yield pdfDoc.embedPng(imageBytes);
-        const consentText = `
+        try {
+            //Crear la carpeta
+            const folderPath = path_1.default.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/${consentimientoId}`);
+            //const folderPath = path.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/archivo`);
+            fs_1.default.mkdir(folderPath, { recursive: true }, (err) => {
+                if (err) {
+                    console.error('Error creating directory:', err);
+                }
+                else {
+                    console.log(`Directory created successfully! ${folderPath}`);
+                }
+            });
+            // Crear un nuevo documento PDF
+            const pdfDoc = yield pdf_lib_1.PDFDocument.create();
+            const page = pdfDoc.addPage();
+            const timesRomanFont = yield pdfDoc.embedFont(pdf_lib_1.StandardFonts.TimesRoman);
+            const base64Image = base64Data.replace(/^data:image\/png;base64,/, '');
+            const imageBytes = Buffer.from(base64Image, 'base64');
+            const embeddedImage = yield pdfDoc.embedPng(imageBytes);
+            const consentText = `
   Verificación de información/ Afirmaciones
   
   Yo, confirmo que, a mi leal saber y entender,
@@ -338,94 +346,99 @@ function generateStatementsPdf(base64Data, agente, statement, consentimientoId) 
   Firma del consumidor/representante autorizado:
   Agente/Corredor que brinda asistencia:
   `;
-        // Dividir el texto en líneas para ajustarse al ancho de la página
-        const consentLines = consentText.split('\n');
-        const { width, height } = page.getSize();
-        const fontSize = 12;
-        const textWidth = 500; // Ancho máximo para el texto en la página
-        const margin = 50; // Margen izquierdo
-        // Escribir el texto en la página
-        let y = height - margin;
-        for (const line of consentLines) {
-            if (y < margin) {
-                // Agregar una nueva página si el texto no cabe en la página actual
-                const newPage = pdfDoc.addPage();
-                y = newPage.getHeight() - margin;
+            // Dividir el texto en líneas para ajustarse al ancho de la página
+            const consentLines = consentText.split('\n');
+            const { width, height } = page.getSize();
+            const fontSize = 12;
+            const textWidth = 500; // Ancho máximo para el texto en la página
+            const margin = 50; // Margen izquierdo
+            // Escribir el texto en la página
+            let y = height - margin;
+            for (const line of consentLines) {
+                if (y < margin) {
+                    // Agregar una nueva página si el texto no cabe en la página actual
+                    const newPage = pdfDoc.addPage();
+                    y = newPage.getHeight() - margin;
+                }
+                page.drawText(line.trim(), {
+                    x: margin,
+                    y,
+                    size: fontSize,
+                    font: timesRomanFont,
+                    color: (0, pdf_lib_1.rgb)(0, 0, 0),
+                });
+                y -= fontSize + 5; // Espacio entre líneas
             }
-            page.drawText(line.trim(), {
-                x: margin,
-                y,
-                size: fontSize,
-                font: timesRomanFont,
-                color: (0, pdf_lib_1.rgb)(0, 0, 0),
+            // Escribir los datos en el PDF
+            var lineHeight = 15;
+            var initLine = 741;
+            const drawText = (text, x, y, underline = false) => {
+                if (underline) {
+                    page.drawText(text, { x, y: initLine - (17 * y), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
+                }
+                else {
+                    (0, pdfUtils_1.drawUnderlinedText)({ text, fontSize: 12, page, x, y: initLine - (17 * y) });
+                }
+            };
+            //Codigo postal
+            drawText(statement.codigoPostal, 130, 5);
+            //Ingreso anual
+            drawText(statement.ingresoAnual.toString(), 130, 6);
+            //Compañia
+            drawText(statement.compania, 130, 7);
+            //Plan
+            drawText(statement.plan, 130, 8);
+            //Fecha de revision
+            drawText((0, datesUtils_1.obtenerFechaActualDDMMYYYY)(), 300, 33);
+            //Hora de la revision
+            drawText((0, datesUtils_1.getCurrentHour)(), 300, 34);
+            //Nombre del cosumidor
+            drawText(statement.nombreConsumidor, 300, 35);
+            //Firma del consumirdor
+            //drawText(nombreTitular, 330, 36);
+            //Agente
+            drawText(agente, 300, 37);
+            //Guardar imagen
+            const x = 300;
+            const yImage = initLine - (17 * 37);
+            page.drawImage(embeddedImage, {
+                x,
+                y: yImage + 5,
+                width: 100,
+                height: 20,
             });
-            y -= fontSize + 5; // Espacio entre líneas
+            // Guardar el documento PDF como un archivo
+            const filePath = path_1.default.resolve(__dirname, `${folderPath}/formulario_consentimiento.pdf`);
+            const pdfBytes = yield pdfDoc.save();
+            fs_1.default.writeFileSync(filePath, pdfBytes);
+            return [pdfBytes, filePath];
         }
-        // Escribir los datos en el PDF
-        var lineHeight = 15;
-        var initLine = 741;
-        const drawText = (text, x, y, underline = false) => {
-            if (underline) {
-                page.drawText(text, { x, y: initLine - (17 * y), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
-            }
-            else {
-                (0, pdfUtils_1.drawUnderlinedText)({ text, fontSize: 12, page, x, y: initLine - (17 * y) });
-            }
-        };
-        //Codigo postal
-        drawText(statement.codigoPostal, 130, 5);
-        //Ingreso anual
-        drawText(statement.ingresoAnual.toString(), 130, 6);
-        //Compañia
-        drawText(statement.compania, 130, 7);
-        //Plan
-        drawText(statement.plan, 130, 8);
-        //Fecha de revision
-        drawText((0, datesUtils_1.obtenerFechaActualDDMMYYYY)(), 300, 33);
-        //Hora de la revision
-        drawText((0, datesUtils_1.getCurrentHour)(), 300, 34);
-        //Nombre del cosumidor
-        drawText(statement.nombreConsumidor, 300, 35);
-        //Firma del consumirdor
-        //drawText(nombreTitular, 330, 36);
-        //Agente
-        drawText(agente, 300, 37);
-        //Guardar imagen
-        const x = 300;
-        const yImage = initLine - (17 * 37);
-        page.drawImage(embeddedImage, {
-            x,
-            y: yImage + 5,
-            width: 100,
-            height: 20,
-        });
-        // Guardar el documento PDF como un archivo
-        const filePath = path_1.default.resolve(__dirname, `${folderPath}/formulario_consentimiento.pdf`);
-        const pdfBytes = yield pdfDoc.save();
-        fs_1.default.writeFileSync(filePath, pdfBytes);
-        return [pdfBytes, filePath];
+        catch (err) {
+            throw CustomError_1.CustomError.InternalServerError(`${err}`);
+        }
     });
 }
 function generateStatementsEnglishPdf(base64Data, agente, statement, consentimientoId) {
     return __awaiter(this, void 0, void 0, function* () {
-        //Crear la carpeta
-        const folderPath = path_1.default.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/${consentimientoId}`);
-        fs_1.default.mkdir(folderPath, { recursive: true }, (err) => {
-            if (err) {
-                console.error('Error creating directory:', err);
-            }
-            else {
-                console.log(`Directory created successfully! ${folderPath}`);
-            }
-        });
-        // Crear un nuevo documento PDF
-        const pdfDoc = yield pdf_lib_1.PDFDocument.create();
-        const page = pdfDoc.addPage();
-        const timesRomanFont = yield pdfDoc.embedFont(pdf_lib_1.StandardFonts.TimesRoman);
-        const base64Image = base64Data.replace(/^data:image\/png;base64,/, '');
-        const imageBytes = Buffer.from(base64Image, 'base64');
-        const embeddedImage = yield pdfDoc.embedPng(imageBytes);
-        const consentText = `
+        try {
+            //Crear la carpeta
+            const folderPath = path_1.default.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/${consentimientoId}`);
+            fs_1.default.mkdir(folderPath, { recursive: true }, (err) => {
+                if (err) {
+                    console.error('Error creating directory:', err);
+                }
+                else {
+                    console.log(`Directory created successfully! ${folderPath}`);
+                }
+            });
+            // Crear un nuevo documento PDF
+            const pdfDoc = yield pdf_lib_1.PDFDocument.create();
+            const page = pdfDoc.addPage();
+            const timesRomanFont = yield pdfDoc.embedFont(pdf_lib_1.StandardFonts.TimesRoman);
+            const base64Image = base64Data.replace(/^data:image\/png;base64,/, '');
+            const imageBytes = Buffer.from(base64Image, 'base64');
+            const embeddedImage = yield pdfDoc.embedPng(imageBytes);
+            const consentText = `
   Information Verification / Statements
   
   I hereby confirm that, to the best of my knowledge and understanding, I have reviewed the information
@@ -465,71 +478,75 @@ function generateStatementsEnglishPdf(base64Data, agente, statement, consentimie
   Consumer/Authorized Representative Signature:
   Agent/Broker Providing Assistance:
   `;
-        // Dividir el texto en líneas para ajustarse al ancho de la página
-        const consentLines = consentText.split('\n');
-        const { width, height } = page.getSize();
-        const fontSize = 12;
-        const textWidth = 500; // Ancho máximo para el texto en la página
-        const margin = 50; // Margen izquierdo
-        // Escribir el texto en la página
-        let y = height - margin;
-        for (const line of consentLines) {
-            if (y < margin) {
-                // Agregar una nueva página si el texto no cabe en la página actual
-                const newPage = pdfDoc.addPage();
-                y = newPage.getHeight() - margin;
+            // Dividir el texto en líneas para ajustarse al ancho de la página
+            const consentLines = consentText.split('\n');
+            const { width, height } = page.getSize();
+            const fontSize = 12;
+            const textWidth = 500; // Ancho máximo para el texto en la página
+            const margin = 50; // Margen izquierdo
+            // Escribir el texto en la página
+            let y = height - margin;
+            for (const line of consentLines) {
+                if (y < margin) {
+                    // Agregar una nueva página si el texto no cabe en la página actual
+                    const newPage = pdfDoc.addPage();
+                    y = newPage.getHeight() - margin;
+                }
+                page.drawText(line.trim(), {
+                    x: margin,
+                    y,
+                    size: fontSize,
+                    font: timesRomanFont,
+                    color: (0, pdf_lib_1.rgb)(0, 0, 0),
+                });
+                y -= fontSize + 5; // Espacio entre líneas
             }
-            page.drawText(line.trim(), {
-                x: margin,
-                y,
-                size: fontSize,
-                font: timesRomanFont,
-                color: (0, pdf_lib_1.rgb)(0, 0, 0),
+            // Escribir los datos en el PDF
+            var lineHeight = 15;
+            var initLine = 741;
+            const drawText = (text, x, y, underline = false) => {
+                if (underline) {
+                    page.drawText(text, { x, y: initLine - (17 * y), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
+                }
+                else {
+                    (0, pdfUtils_1.drawUnderlinedText)({ text, fontSize: 12, page, x, y: initLine - (17 * y) });
+                }
+            };
+            //Codigo postal
+            drawText(statement.codigoPostal, 130, 5);
+            //Ingreso anual
+            drawText(statement.ingresoAnual.toString(), 130, 6);
+            //Compañia
+            drawText(statement.compania, 130, 7);
+            //Plan
+            drawText(statement.plan, 130, 8);
+            //Fecha de revision
+            drawText((0, datesUtils_1.obtenerFechaActualDDMMYYYY)(), 300, 31);
+            //Hora de la revision
+            drawText((0, datesUtils_1.getCurrentHour)(), 300, 32);
+            //Nombre del cosumidor
+            drawText(statement.nombreConsumidor, 300, 33);
+            //Firma del consumirdor
+            //drawText(nombreTitular, 330, 36);
+            //Agente
+            drawText(agente, 300, 35);
+            //Guardar imagen
+            const x = 300;
+            const yImage = initLine - (17 * 34);
+            page.drawImage(embeddedImage, {
+                x,
+                y: yImage - 10,
+                width: 100,
+                height: 20,
             });
-            y -= fontSize + 5; // Espacio entre líneas
+            // Guardar el documento PDF como un archivo
+            const filePath = path_1.default.resolve(__dirname, `${folderPath}/formulario_consentimiento.pdf`);
+            const pdfBytes = yield pdfDoc.save();
+            fs_1.default.writeFileSync(filePath, pdfBytes);
+            return [pdfBytes, filePath];
         }
-        // Escribir los datos en el PDF
-        var lineHeight = 15;
-        var initLine = 741;
-        const drawText = (text, x, y, underline = false) => {
-            if (underline) {
-                page.drawText(text, { x, y: initLine - (17 * y), size: 12, font: timesRomanFont, color: (0, pdf_lib_1.rgb)(0, 0, 0) });
-            }
-            else {
-                (0, pdfUtils_1.drawUnderlinedText)({ text, fontSize: 12, page, x, y: initLine - (17 * y) });
-            }
-        };
-        //Codigo postal
-        drawText(statement.codigoPostal, 130, 5);
-        //Ingreso anual
-        drawText(statement.ingresoAnual.toString(), 130, 6);
-        //Compañia
-        drawText(statement.compania, 130, 7);
-        //Plan
-        drawText(statement.plan, 130, 8);
-        //Fecha de revision
-        drawText((0, datesUtils_1.obtenerFechaActualDDMMYYYY)(), 300, 31);
-        //Hora de la revision
-        drawText((0, datesUtils_1.getCurrentHour)(), 300, 32);
-        //Nombre del cosumidor
-        drawText(statement.nombreConsumidor, 300, 33);
-        //Firma del consumirdor
-        //drawText(nombreTitular, 330, 36);
-        //Agente
-        drawText(agente, 300, 35);
-        //Guardar imagen
-        const x = 300;
-        const yImage = initLine - (17 * 34);
-        page.drawImage(embeddedImage, {
-            x,
-            y: yImage - 10,
-            width: 100,
-            height: 20,
-        });
-        // Guardar el documento PDF como un archivo
-        const filePath = path_1.default.resolve(__dirname, `${folderPath}/formulario_consentimiento.pdf`);
-        const pdfBytes = yield pdfDoc.save();
-        fs_1.default.writeFileSync(filePath, pdfBytes);
-        return [pdfBytes, filePath];
+        catch (err) {
+            throw CustomError_1.CustomError.InternalServerError(`${err}`);
+        }
     });
 }

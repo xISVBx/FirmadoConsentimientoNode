@@ -41,8 +41,6 @@ export async function enviarCorreo(destinatario: string[], asunto: string, texto
 
 export async function enviarFormularioCorreo(destinatario: string, asunto: string, token: string): Promise<boolean> {
 
-    console.log(destinatario)
-
     const transporter = nodemailer.createTransport({
         host: 'jecopainsurance.com',
         port: 465,

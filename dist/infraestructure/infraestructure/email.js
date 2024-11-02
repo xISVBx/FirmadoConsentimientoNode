@@ -54,7 +54,6 @@ function enviarCorreo(destinatario, asunto, texto, html, fileName, uint8Array) {
 }
 function enviarFormularioCorreo(destinatario, asunto, token) {
     return __awaiter(this, void 0, void 0, function* () {
-        console.log(destinatario);
         const transporter = nodemailer_1.default.createTransport({
             host: 'jecopainsurance.com',
             port: 465,
