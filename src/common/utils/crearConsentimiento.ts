@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { convertirFecha, getCurrentHour, obtenerFechaActualDDMMYYYY } from './datesUtils';
 import { drawUnderlinedText } from './pdfUtils';
-import { IStatement } from 'domain/IStatement';
+import { IStatement } from '../../domain/IStatement';
 
 export async function generatePdf(base64Data: string, nombreTitular: string, telefonoTitular: string, correoTitular: string, fechaNacimiento: string,
   nombreAgente: string, numeroAgente: string, telefonoAgente: string, correoAgente: string, consentimientoId: string): Promise<[Uint8Array, string]> {
@@ -425,11 +425,10 @@ export async function generateStatementsPdf(base64Data: string, agente: string, 
   return [pdfBytes, filePath];
 }
 
-export async function generateStatementsEnglishPdf(base64Data: string, agente: string, statement: IStatement): Promise<[Uint8Array, string]> {
+export async function generateStatementsEnglishPdf(base64Data: string, agente: string, statement: IStatement, consentimientoId: string): Promise<[Uint8Array, string]> {
 
   //Crear la carpeta
-  //const folderPath = path.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/${consentimientoId}`);
-  const folderPath = path.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/archivo`);
+  const folderPath = path.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/${consentimientoId}`);
   fs.mkdir(folderPath, { recursive: true }, (err) => {
     if (err) {
       console.error('Error creating directory:', err);

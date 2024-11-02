@@ -1,11 +1,12 @@
-import { generateToken, Agente } from "../utils/token";
-import { ResponseGeneric } from "../common/response";
-import { enviarCorreo, enviarFormularioAfirmacionesCorreo, enviarFormularioCorreo } from "../infraestructure/email";
-import { GuardarConsentimiento, GuardarStatement } from "../repository/consentimientosRepository";
-import { generateEnglishPdf, generatePdf, generateStatementsEnglishPdf, generateStatementsPdf } from "../utils/crearConsentimiento";
+import { generateToken, Agente } from "../common/utils/token";
+import { ResponseGeneric } from "../common/models/response";
+import { enviarCorreo, enviarFormularioAfirmacionesCorreo, enviarFormularioCorreo } from "../infraestructure/infraestructure/email";
+import { GuardarConsentimiento, GuardarStatement } from "../infraestructure/persistence/repository/consentimientosRepository";
+import { generateEnglishPdf, generatePdf, generateStatementsEnglishPdf, generateStatementsPdf } from "../common/utils/crearConsentimiento";
 import { v4 as uuidv4 } from 'uuid';
-import { Idioma } from '../domain/Idioma';
-import { IStatement } from "domain/IStatement";
+import { Idioma } from '../domain/enums/Idioma';
+import { IStatement } from "../domain/IStatement";
+import { CustomError } from "../common/errors/CustomError";
 
 
 export default class ConsentimientosService {
@@ -13,18 +14,10 @@ export default class ConsentimientosService {
     async GenerarConsentimiento(base64Image: string, nombreTitular: string, telefonoTitular: string,
         correoTitular: string, fechaNacimiento: string, agente: Agente, idioma: string): Promise<ResponseGeneric<boolean>> {
 
-        let response: ResponseGeneric<boolean> = {
-            data: false,
-            isSucces: false,
-            message: ""
-        }
         try {
             var consentimientoId = uuidv4()
 
             var pdfResponse;
-            console.log(idioma)
-            console.log(Idioma.Español === 'es')
-            console.log(Idioma.Inglés === 'en')
 
             if (idioma === Idioma.Español) {
                 pdfResponse = await generatePdf(base64Image, nombreTitular, telefonoTitular, correoTitular,
@@ -36,95 +29,63 @@ export default class ConsentimientosService {
                     fechaNacimiento, agente.nombreAgente, agente.numeroProductor, agente.telefonoAgente, agente.correoAgente,
                     consentimientoId);
             }
-            if(pdfResponse == undefined){
-                return response;
+            if (pdfResponse == undefined) {
+                throw CustomError.BadRequest('No se pudo general el Pdf correctamente, intente mas tarde');
             }
 
             var correoResponse = await enviarCorreo([correoTitular, 'consent@jecopagroup.com'], "Envio de consentimiento", "", "", "ConsentimientoFirmado.pdf", pdfResponse[0])
 
             if (!correoResponse) {
-                response.message = "No se pudo enviar el correo!!!"
-                return response
+                throw CustomError.InternalServerError("No se pudo enviar el correo!!!");
             }
 
             var result = await GuardarConsentimiento(pdfResponse[0], nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, consentimientoId, pdfResponse[1])
-            if (result) {
-                response.data = true;
-                response.isSucces = true;
-                response.message = "PDF Almacenado!!!";
+
+            if (!result) {
+                throw CustomError.InternalServerError("No se pudo almacenar la informacion correctamente");
             }
-            return response;
         } catch (e) {
-            if (e instanceof Error) {
-                response.message = e.message;
-            } else {
-                response.message = "Error desconocido";
-            }
-            return response
+            throw CustomError.InternalServerError(`${e}`);
         }
+        return ResponseGeneric.Success(true, 'Pdf Almacenado!!!');
     }
 
     async GenerarStatements(base64Image: string, idioma: Idioma, correoTitular: string, agente: Agente, statement: IStatement): Promise<ResponseGeneric<boolean>> {
 
-        let response: ResponseGeneric<boolean> = {
-            data: false,
-            isSucces: false,
-            message: ""
-        }
         try {
             var consentimientoId = uuidv4()
             var pdfResponse;
-
-            console.log(idioma)
 
             if (idioma === Idioma.Español) {
                 pdfResponse = await generateStatementsPdf(base64Image, agente.nombreAgente, statement, consentimientoId);
 
             } else if (idioma === Idioma.Inglés) {
-                pdfResponse = await generateStatementsEnglishPdf(base64Image, agente.nombreAgente, statement);
+                pdfResponse = await generateStatementsEnglishPdf(base64Image, agente.nombreAgente, statement, consentimientoId);
             }
-            if(pdfResponse == undefined){
-                return response;
+            if (pdfResponse == undefined) {
+                throw CustomError.BadRequest('No se pudo general el Pdf correctamente, intente mas tarde');
             }
 
             var correoResponse = await enviarCorreo([correoTitular, 'consent@jecopagroup.com'], "Envio de consentimiento", "", "", "ConsentimientoFirmado.pdf", pdfResponse[0])
 
             if (!correoResponse) {
-                response.message = "No se pudo enviar el correo!!!"
-                return response
+                throw CustomError.BadRequest('No se pudo enviar el correo!!!');
             }
-            
+
             var result = await GuardarStatement(pdfResponse[0], pdfResponse[1], statement);
 
-            if (result) {
-                response.data = true;
-                response.isSucces = true;
-                response.message = "PDF Almacenado!!!";
+            if (!result) {
+                throw CustomError.InternalServerError("No se pudo almacenar la informacion correctamente");
             }
-
-           //TODO: QUITAR ESTO Y QUITAR COMENTARIOS DE ARRIBA
-                response.data = true;
-                response.isSucces = true;
-                response.message = "PDF Almacenado!!!";
-            return response;
         } catch (e) {
-            console.log(e);
-            if (e instanceof Error) {
-                response.message = e.message;
-            } else {
-                response.message = "Error desconocido";
-            }
-            return response
+            console.log('si entro aca eres un crqack')
+            throw CustomError.InternalServerError(`${e}`);
         }
+        return ResponseGeneric.Success(true, 'Pdf Almacenado!!!');
     }
 
     async EnviarFormularioConsentimiento(nombreAgente: string, numeroProductor: string,
         telefonoAgente: string, correoAgente: string, destinatario: string): Promise<ResponseGeneric<boolean>> {
-        let response: ResponseGeneric<boolean> = {
-            data: false,
-            isSucces: false,
-            message: ""
-        }
         try {
             var payload: Agente = {
                 correoAgente: correoAgente,
@@ -133,24 +94,19 @@ export default class ConsentimientosService {
                 telefonoAgente: telefonoAgente
             }
             var token = generateToken(payload)
-            response.data = await enviarFormularioCorreo(destinatario, "Formulario de consentimiento", token)
-            if (response.data) {
-                response.isSucces = true
-                response.message = "Correo enviado correctamente!!!"
+            var response = await enviarFormularioCorreo(destinatario, "Formulario de consentimiento", token)
+
+            if(!response){
+                throw CustomError.BadRequest('No se pudo enviar el correo!!!');
             }
         } catch (e) {
-            response.message = `${e}`
+            throw CustomError.InternalServerError(`${e}`);
         }
-        return response
+        return ResponseGeneric.Success(true, 'Correo enviado correctamente!!!');
     }
 
     async EnviarFormularioAfirmaciones(nombreAgente: string, numeroProductor: string,
         telefonoAgente: string, correoAgente: string, destinatario: string): Promise<ResponseGeneric<boolean>> {
-        let response: ResponseGeneric<boolean> = {
-            data: false,
-            isSucces: false,
-            message: ""
-        }
         try {
             var payload: Agente = {
                 correoAgente: correoAgente,
@@ -159,14 +115,15 @@ export default class ConsentimientosService {
                 telefonoAgente: telefonoAgente
             }
             var token = generateToken(payload)
-            response.data = await enviarFormularioAfirmacionesCorreo(destinatario, "Formulario de consentimiento", token)
-            if (response.data) {
-                response.isSucces = true
-                response.message = "Correo enviado correctamente!!!"
+            var response = await enviarFormularioAfirmacionesCorreo(destinatario, "Formulario de consentimiento", token)
+
+            if(!response){
+                throw CustomError.BadRequest('No se pudo enviar el correo!!!');
             }
         } catch (e) {
-            response.message = `${e}`
+            throw CustomError.InternalServerError(`${e}`);
+
         }
-        return response
+        return ResponseGeneric.Success(true, 'Correo enviado correctamente!!!');
     }
 }

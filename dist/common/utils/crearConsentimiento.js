@@ -406,11 +406,10 @@ function generateStatementsPdf(base64Data, agente, statement, consentimientoId) 
         return [pdfBytes, filePath];
     });
 }
-function generateStatementsEnglishPdf(base64Data, agente, statement) {
+function generateStatementsEnglishPdf(base64Data, agente, statement, consentimientoId) {
     return __awaiter(this, void 0, void 0, function* () {
         //Crear la carpeta
-        //const folderPath = path.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/${consentimientoId}`);
-        const folderPath = path_1.default.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/archivo`);
+        const folderPath = path_1.default.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/${consentimientoId}`);
         fs_1.default.mkdir(folderPath, { recursive: true }, (err) => {
             if (err) {
                 console.error('Error creating directory:', err);

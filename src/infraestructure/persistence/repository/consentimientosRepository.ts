@@ -1,5 +1,6 @@
-import { IStatement } from "domain/IStatement";
-import { getConnection } from "../database/database";
+import { IStatement } from "../../../domain/IStatement";
+import { getConnection } from "../context/database";
+import { CustomError } from "../../../common/errors/CustomError";
 
 export const GuardarConsentimiento = async (base64Consentimiento: Uint8Array, nombreTitular: string, telefonoTitular: string,
     correoTitular: string, fechaNacimiento: string, idConsentimiento: string,
@@ -8,10 +9,8 @@ export const GuardarConsentimiento = async (base64Consentimiento: Uint8Array, no
     await conn.beginTransaction();
     try {
 
-        // Convertir Uint8Array a Buffer
         const bufferConsentimiento = Buffer.from(base64Consentimiento);
 
-        // Usar new Date() para el campo TIMESTAMP
         const resultConsentimiento = await conn.execute(
             `INSERT INTO consentimientos
             (id, path_consentimiento, consentimiento, created)
@@ -19,15 +18,14 @@ export const GuardarConsentimiento = async (base64Consentimiento: Uint8Array, no
             [idConsentimiento, pathConsentimiento, bufferConsentimiento, new Date()]
         );
 
-        // Convertir fechaNacimiento a un objeto Date y manejar valores inválidos
         let fechaNacimientoDate;
         if (fechaNacimiento) {
             fechaNacimientoDate = new Date(fechaNacimiento);
             if (isNaN(fechaNacimientoDate.getTime())) {
-                fechaNacimientoDate = null; // O el valor que prefieras para fechas inválidas
+                fechaNacimientoDate = null; 
             }
         } else {
-            fechaNacimientoDate = null; // O el valor que prefieras si fechaNacimiento es nulo o vacío
+            fechaNacimientoDate = null; 
         }
 
         const resultDatos = await conn.execute(
@@ -41,7 +39,7 @@ export const GuardarConsentimiento = async (base64Consentimiento: Uint8Array, no
     } catch (e) {
         console.log(e);
         await conn.rollback();
-        return false;
+        throw CustomError.InternalServerError(`${e}`)
     }
 }
 
@@ -50,10 +48,8 @@ export const GuardarStatement = async (base64Consentimiento: Uint8Array, path: s
     await conn.beginTransaction();
     try {
 
-        // Convertir Uint8Array a Buffer
         const bufferConsentimiento = Buffer.from(base64Consentimiento);
 
-        // Usar new Date() para el campo TIMESTAMP
         const resultConsentimiento = await conn.execute(
             `INSERT INTO consentimientos
             (id, path_consentimiento, consentimiento, created)
@@ -61,28 +57,19 @@ export const GuardarStatement = async (base64Consentimiento: Uint8Array, path: s
             [statement.idConsentimiento, path, bufferConsentimiento, new Date()]
         );
 
-        // // Convertir fechaNacimiento a un objeto Date y manejar valores inválidos
-        // let fechaNacimientoDate;
-        // if (fechaNacimiento) {
-        //     fechaNacimientoDate = new Date(fechaNacimiento);
-        //     if (isNaN(fechaNacimientoDate.getTime())) {
-        //         fechaNacimientoDate = null; // O el valor que prefieras para fechas inválidas
-        //     }
-        // } else {
-        //     fechaNacimientoDate = null; // O el valor que prefieras si fechaNacimiento es nulo o vacío
-        // }
-
         const resultDatos = await conn.execute(
             `INSERT INTO datos_afirmaciones
             (id_consentimiento, codigoPostal, ingresoAnual, compania, plan, nombreConsumidor)
-            VALUES (?, ?, ?, ?, ?);`,
+            VALUES (?, ?, ?, ?, ?, ?);`,
             [statement.idConsentimiento, statement.codigoPostal, statement.ingresoAnual, statement.compania, statement.plan, statement.nombreConsumidor]
         );
+
+        console.log(resultDatos)
+
         await conn.commit();
         return true;
     } catch (e) {
-        console.log(e);
         await conn.rollback();
-        return false;
+        throw CustomError.InternalServerError(`${e}`)
     }
 }
