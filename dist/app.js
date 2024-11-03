@@ -16,6 +16,7 @@ const express_1 = __importDefault(require("express"));
 const morgan_1 = __importDefault(require("morgan"));
 const cors_1 = __importDefault(require("cors"));
 const consentimientosRouter_js_1 = __importDefault(require("./router/routes/consentimientosRouter.js"));
+const errorRouter_js_1 = __importDefault(require("./router/routes/errorRouter.js"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const swagger_js_1 = __importDefault(require("./common/utils/swagger.js"));
 const uuid_1 = require("uuid");
@@ -63,6 +64,7 @@ class Server {
             message TEXT,
             stack TEXT
         )`);
+            yield db.exec(`CREATE INDEX IF NOT EXISTS idx_start_time ON requests(start_time)`);
         });
     }
     config() {
@@ -73,6 +75,7 @@ class Server {
             this.app.use(express_1.default.json());
             this.app.use('/api-docs', swagger_js_1.default.swaggerUi.serve, swagger_js_1.default.swaggerUi.setup(swagger_js_1.default.swaggerDocs));
             this.app.use((req, res, next) => __awaiter(this, void 0, void 0, function* () {
+                console.log('entro');
                 const requestId = (0, uuid_1.v4)();
                 const startTime = Date.now();
                 req.requestId = requestId;
@@ -101,11 +104,9 @@ class Server {
     }
     routes() {
         this.app.use('/api', consentimientosRouter_js_1.default.router);
+        this.app.use('/api', errorRouter_js_1.default.router);
         this.app.get('/api', (req, res) => {
             res.status(200).send({ message: 'API is running' });
-        });
-        this.app.post('/api', (req, res) => {
-            res.status(200).send({ message: 'post passed' });
         });
     }
     start() {

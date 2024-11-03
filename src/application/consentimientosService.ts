@@ -5,7 +5,7 @@ import { GuardarConsentimiento, GuardarStatement } from "../infraestructure/pers
 import { generateEnglishPdf, generatePdf, generateStatementsEnglishPdf, generateStatementsPdf } from "../common/utils/crearConsentimiento";
 import { v4 as uuidv4 } from 'uuid';
 import { Idioma } from '../domain/enums/Idioma';
-import { IStatement } from "../domain/IStatement";
+import { IStatement } from "../domain/entities/IStatement";
 import { CustomError } from "../common/errors/CustomError";
 
 

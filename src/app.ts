@@ -2,11 +2,13 @@ import express, { Request, Response, NextFunction } from 'express';
 import morgan from 'morgan';
 import cors from 'cors';
 import ConsentimientoRouter from './router/routes/consentimientosRouter.js'
+import ErrorRouter from './router/routes/errorRouter.js'
 import dotenv from 'dotenv';
 import swagger from './common/utils/swagger.js';
 import { v4 as uuidv4 } from 'uuid';
 import { getDb } from './infraestructure/persistence/context/sqlite.js';
 import { ResponseGeneric } from './common/models/response.js';
+
 
 declare global {
     namespace Express {
@@ -47,6 +49,7 @@ class Server {
             message TEXT,
             stack TEXT
         )`);
+        await db.exec(`CREATE INDEX IF NOT EXISTS idx_start_time ON requests(start_time)`);
     }
 
     private async config() {
@@ -59,6 +62,7 @@ class Server {
         this.app.use('/api-docs', swagger.swaggerUi.serve, swagger.swaggerUi.setup(swagger.swaggerDocs));
 
         this.app.use(async (req: Request, res: Response, next: NextFunction) => {
+            console.log('entro')
             const requestId = uuidv4();
             const startTime = Date.now();
 
@@ -95,11 +99,9 @@ class Server {
 
     private routes() {
         this.app.use('/api', ConsentimientoRouter.router)
+        this.app.use('/api', ErrorRouter.router)
         this.app.get('/api', (req, res) => {
             res.status(200).send({ message: 'API is running' });
-        });
-        this.app.post('/api', (req, res) => {
-            res.status(200).send({ message: 'post passed' });
         });
     }
 

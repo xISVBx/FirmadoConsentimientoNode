@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { convertirFecha, getCurrentHour, obtenerFechaActualDDMMYYYY } from './datesUtils';
 import { drawUnderlinedText } from './pdfUtils';
-import { IStatement } from '../../domain/IStatement';
+import { IStatement } from '../../domain/entities/IStatement';
 import { CustomError } from '../../common/errors/CustomError';
 
 export async function generatePdf(base64Data: string, nombreTitular: string, telefonoTitular: string, correoTitular: string, fechaNacimiento: string,

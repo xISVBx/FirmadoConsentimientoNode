@@ -1,4 +1,4 @@
-import { IStatement } from "../../../domain/IStatement";
+import { IStatement } from "../../../domain/entities/IStatement";
 import { getConnection } from "../context/database";
 import { CustomError } from "../../../common/errors/CustomError";
 
