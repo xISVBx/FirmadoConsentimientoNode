@@ -62,7 +62,6 @@ class Server {
         this.app.use('/api-docs', swagger.swaggerUi.serve, swagger.swaggerUi.setup(swagger.swaggerDocs));
 
         this.app.use(async (req: Request, res: Response, next: NextFunction) => {
-            console.log('entro')
             const requestId = uuidv4();
             const startTime = Date.now();
 

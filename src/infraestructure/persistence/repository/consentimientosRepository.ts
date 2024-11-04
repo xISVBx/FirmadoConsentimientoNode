@@ -1,6 +1,7 @@
 import { IStatement } from "../../../domain/entities/IStatement";
 import { getConnection } from "../context/database";
 import { CustomError } from "../../../common/errors/CustomError";
+import { AgenteStatement } from "common/utils/token";
 
 export const GuardarConsentimiento = async (base64Consentimiento: Uint8Array, nombreTitular: string, telefonoTitular: string,
     correoTitular: string, fechaNacimiento: string, idConsentimiento: string,
@@ -37,13 +38,12 @@ export const GuardarConsentimiento = async (base64Consentimiento: Uint8Array, no
         await conn.commit();
         return true;
     } catch (e) {
-        console.log(e);
         await conn.rollback();
         throw CustomError.InternalServerError(`${e}`)
     }
 }
 
-export const GuardarStatement = async (base64Consentimiento: Uint8Array, path: string, statement: IStatement): Promise<boolean> => {
+export const GuardarStatement = async (base64Consentimiento: Uint8Array, path: string, statement: IStatement, agente: AgenteStatement): Promise<boolean> => {
     var conn = await getConnection();
     await conn.beginTransaction();
     try {
@@ -61,10 +61,8 @@ export const GuardarStatement = async (base64Consentimiento: Uint8Array, path: s
             `INSERT INTO datos_afirmaciones
             (id_consentimiento, codigoPostal, ingresoAnual, compania, plan, nombreConsumidor)
             VALUES (?, ?, ?, ?, ?, ?);`,
-            [statement.idConsentimiento, statement.codigoPostal, statement.ingresoAnual, statement.compania, statement.plan, statement.nombreConsumidor]
+            [statement.idConsentimiento, statement.codigoPostal, statement.ingresoAnual, statement.compania, agente.plan, statement.nombreConsumidor]
         );
-
-        console.log(resultDatos)
 
         await conn.commit();
         return true;

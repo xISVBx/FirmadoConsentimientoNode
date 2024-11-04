@@ -5,6 +5,7 @@ import { convertirFecha, getCurrentHour, obtenerFechaActualDDMMYYYY } from './da
 import { drawUnderlinedText } from './pdfUtils';
 import { IStatement } from '../../domain/entities/IStatement';
 import { CustomError } from '../../common/errors/CustomError';
+import { AgenteStatement } from './token';
 
 export async function generatePdf(base64Data: string, nombreTitular: string, telefonoTitular: string, correoTitular: string, fechaNacimiento: string,
   nombreAgente: string, numeroAgente: string, telefonoAgente: string, correoAgente: string, consentimientoId: string): Promise<[Uint8Array, string]> {
@@ -14,8 +15,7 @@ export async function generatePdf(base64Data: string, nombreTitular: string, tel
     fs.mkdir(folderPath, { recursive: true }, (err) => {
       if (err) {
         console.error('Error creating directory:', err);
-      } else {
-        console.log(`Directory created successfully! ${folderPath}`);
+        throw CustomError.InternalServerError(`Error creating directory: ${err}`);
       }
     });
 
@@ -152,9 +152,7 @@ export async function generateEnglishPdf(base64Data: string, nombreTitular: stri
     const folderPath = path.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/${consentimientoId}`);
     fs.mkdir(folderPath, { recursive: true }, (err) => {
       if (err) {
-        console.error('Error creating directory:', err);
-      } else {
-        console.log(`Directory created successfully! ${folderPath}`);
+        throw CustomError.InternalServerError(`Error creating directory: ${err}`);
       }
     });
 
@@ -284,16 +282,14 @@ Signature: ____________________________________ Date: __________________________
   }
 }
 
-export async function generateStatementsPdf(base64Data: string, agente: string, statement: IStatement, consentimientoId: string): Promise<[Uint8Array, string]> {
+export async function generateStatementsPdf(base64Data: string, agente: AgenteStatement, statement: IStatement, consentimientoId: string): Promise<[Uint8Array, string]> {
   try {
     //Crear la carpeta
     const folderPath = path.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/${consentimientoId}`);
     //const folderPath = path.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/archivo`);
     fs.mkdir(folderPath, { recursive: true }, (err) => {
       if (err) {
-        console.error('Error creating directory:', err);
-      } else {
-        console.log(`Directory created successfully! ${folderPath}`);
+        throw CustomError.InternalServerError(`Error creating directory: ${err}`);
       }
     });
 
@@ -396,7 +392,7 @@ export async function generateStatementsPdf(base64Data: string, agente: string, 
     //Compañia
     drawText(statement.compania, 130, 7);
     //Plan
-    drawText(statement.plan, 130, 8);
+    drawText(agente.plan, 130, 8);
 
 
     //Fecha de revision
@@ -408,7 +404,7 @@ export async function generateStatementsPdf(base64Data: string, agente: string, 
     //Firma del consumirdor
     //drawText(nombreTitular, 330, 36);
     //Agente
-    drawText(agente, 300, 37);
+    drawText(agente.nombreAgente, 300, 37);
 
     //Guardar imagen
     const x: number = 300
@@ -431,15 +427,13 @@ export async function generateStatementsPdf(base64Data: string, agente: string, 
   }
 }
 
-export async function generateStatementsEnglishPdf(base64Data: string, agente: string, statement: IStatement, consentimientoId: string): Promise<[Uint8Array, string]> {
+export async function generateStatementsEnglishPdf(base64Data: string, agente: AgenteStatement, statement: IStatement, consentimientoId: string): Promise<[Uint8Array, string]> {
   try {
     //Crear la carpeta
     const folderPath = path.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/${consentimientoId}`);
     fs.mkdir(folderPath, { recursive: true }, (err) => {
       if (err) {
-        console.error('Error creating directory:', err);
-      } else {
-        console.log(`Directory created successfully! ${folderPath}`);
+        throw CustomError.InternalServerError(`Error creating directory: ${err}`);
       }
     });
 
@@ -540,7 +534,7 @@ export async function generateStatementsEnglishPdf(base64Data: string, agente: s
     //Compañia
     drawText(statement.compania, 130, 7);
     //Plan
-    drawText(statement.plan, 130, 8);
+    drawText(agente.plan, 130, 8);
 
 
     //Fecha de revision
@@ -552,7 +546,7 @@ export async function generateStatementsEnglishPdf(base64Data: string, agente: s
     //Firma del consumirdor
     //drawText(nombreTitular, 330, 36);
     //Agente
-    drawText(agente, 300, 35);
+    drawText(agente.nombreAgente, 300, 35);
 
     //Guardar imagen
     const x: number = 300

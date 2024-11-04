@@ -53,10 +53,10 @@ class ConsentimientosService {
                 var consentimientoId = (0, uuid_1.v4)();
                 var pdfResponse;
                 if (idioma === Idioma_1.Idioma.Español) {
-                    pdfResponse = yield (0, crearConsentimiento_1.generateStatementsPdf)(base64Image, agente.nombreAgente, statement, consentimientoId);
+                    pdfResponse = yield (0, crearConsentimiento_1.generateStatementsPdf)(base64Image, agente, statement, consentimientoId);
                 }
                 else if (idioma === Idioma_1.Idioma.Inglés) {
-                    pdfResponse = yield (0, crearConsentimiento_1.generateStatementsEnglishPdf)(base64Image, agente.nombreAgente, statement, consentimientoId);
+                    pdfResponse = yield (0, crearConsentimiento_1.generateStatementsEnglishPdf)(base64Image, agente, statement, consentimientoId);
                 }
                 if (pdfResponse == undefined) {
                     throw CustomError_1.CustomError.BadRequest('No se pudo general el Pdf correctamente, intente mas tarde');
@@ -65,7 +65,7 @@ class ConsentimientosService {
                 if (!correoResponse) {
                     throw CustomError_1.CustomError.BadRequest('No se pudo enviar el correo!!!');
                 }
-                var result = yield (0, consentimientosRepository_1.GuardarStatement)(pdfResponse[0], pdfResponse[1], statement);
+                var result = yield (0, consentimientosRepository_1.GuardarStatement)(pdfResponse[0], pdfResponse[1], statement, agente);
                 if (!result) {
                     throw CustomError_1.CustomError.InternalServerError("No se pudo almacenar la informacion correctamente");
                 }
@@ -97,14 +97,15 @@ class ConsentimientosService {
             return response_1.ResponseGeneric.Success(true, 'Correo enviado correctamente!!!');
         });
     }
-    EnviarFormularioAfirmaciones(nombreAgente, numeroProductor, telefonoAgente, correoAgente, destinatario) {
+    EnviarFormularioAfirmaciones(nombreAgente, numeroProductor, telefonoAgente, correoAgente, destinatario, plan) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 var payload = {
                     correoAgente: correoAgente,
                     nombreAgente: nombreAgente,
                     numeroProductor: numeroProductor,
-                    telefonoAgente: telefonoAgente
+                    telefonoAgente: telefonoAgente,
+                    plan: plan
                 };
                 var token = (0, token_1.generateToken)(payload);
                 var response = yield (0, email_1.enviarFormularioAfirmacionesCorreo)(destinatario, "Formulario de consentimiento", token);

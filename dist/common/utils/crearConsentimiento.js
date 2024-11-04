@@ -30,9 +30,7 @@ function generatePdf(base64Data, nombreTitular, telefonoTitular, correoTitular, 
             fs_1.default.mkdir(folderPath, { recursive: true }, (err) => {
                 if (err) {
                     console.error('Error creating directory:', err);
-                }
-                else {
-                    console.log(`Directory created successfully! ${folderPath}`);
+                    throw CustomError_1.CustomError.InternalServerError(`Error creating directory: ${err}`);
                 }
             });
             // Crear un nuevo documento PDF
@@ -161,10 +159,7 @@ function generateEnglishPdf(base64Data, nombreTitular, telefonoTitular, correoTi
             const folderPath = path_1.default.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/${consentimientoId}`);
             fs_1.default.mkdir(folderPath, { recursive: true }, (err) => {
                 if (err) {
-                    console.error('Error creating directory:', err);
-                }
-                else {
-                    console.log(`Directory created successfully! ${folderPath}`);
+                    throw CustomError_1.CustomError.InternalServerError(`Error creating directory: ${err}`);
                 }
             });
             // Crear un nuevo documento PDF
@@ -291,10 +286,7 @@ function generateStatementsPdf(base64Data, agente, statement, consentimientoId) 
             //const folderPath = path.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/archivo`);
             fs_1.default.mkdir(folderPath, { recursive: true }, (err) => {
                 if (err) {
-                    console.error('Error creating directory:', err);
-                }
-                else {
-                    console.log(`Directory created successfully! ${folderPath}`);
+                    throw CustomError_1.CustomError.InternalServerError(`Error creating directory: ${err}`);
                 }
             });
             // Crear un nuevo documento PDF
@@ -387,7 +379,7 @@ function generateStatementsPdf(base64Data, agente, statement, consentimientoId) 
             //Compañia
             drawText(statement.compania, 130, 7);
             //Plan
-            drawText(statement.plan, 130, 8);
+            drawText(agente.plan, 130, 8);
             //Fecha de revision
             drawText((0, datesUtils_1.obtenerFechaActualDDMMYYYY)(), 300, 33);
             //Hora de la revision
@@ -397,7 +389,7 @@ function generateStatementsPdf(base64Data, agente, statement, consentimientoId) 
             //Firma del consumirdor
             //drawText(nombreTitular, 330, 36);
             //Agente
-            drawText(agente, 300, 37);
+            drawText(agente.nombreAgente, 300, 37);
             //Guardar imagen
             const x = 300;
             const yImage = initLine - (17 * 37);
@@ -425,10 +417,7 @@ function generateStatementsEnglishPdf(base64Data, agente, statement, consentimie
             const folderPath = path_1.default.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/${consentimientoId}`);
             fs_1.default.mkdir(folderPath, { recursive: true }, (err) => {
                 if (err) {
-                    console.error('Error creating directory:', err);
-                }
-                else {
-                    console.log(`Directory created successfully! ${folderPath}`);
+                    throw CustomError_1.CustomError.InternalServerError(`Error creating directory: ${err}`);
                 }
             });
             // Crear un nuevo documento PDF
@@ -519,7 +508,7 @@ function generateStatementsEnglishPdf(base64Data, agente, statement, consentimie
             //Compañia
             drawText(statement.compania, 130, 7);
             //Plan
-            drawText(statement.plan, 130, 8);
+            drawText(agente.plan, 130, 8);
             //Fecha de revision
             drawText((0, datesUtils_1.obtenerFechaActualDDMMYYYY)(), 300, 31);
             //Hora de la revision
@@ -529,7 +518,7 @@ function generateStatementsEnglishPdf(base64Data, agente, statement, consentimie
             //Firma del consumirdor
             //drawText(nombreTitular, 330, 36);
             //Agente
-            drawText(agente, 300, 35);
+            drawText(agente.nombreAgente, 300, 35);
             //Guardar imagen
             const x = 300;
             const yImage = initLine - (17 * 34);

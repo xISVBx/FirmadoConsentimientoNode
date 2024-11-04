@@ -75,7 +75,6 @@ class Server {
             this.app.use(express_1.default.json());
             this.app.use('/api-docs', swagger_js_1.default.swaggerUi.serve, swagger_js_1.default.swaggerUi.setup(swagger_js_1.default.swaggerDocs));
             this.app.use((req, res, next) => __awaiter(this, void 0, void 0, function* () {
-                console.log('entro');
                 const requestId = (0, uuid_1.v4)();
                 const startTime = Date.now();
                 req.requestId = requestId;

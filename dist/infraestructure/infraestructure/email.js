@@ -43,7 +43,6 @@ function enviarCorreo(destinatario, asunto, texto, html, fileName, uint8Array) {
         };
         try {
             const info = yield transporter.sendMail(mailOptions);
-            console.log('Correo enviado: %s', info.messageId);
             return true;
         }
         catch (error) {
@@ -132,18 +131,15 @@ function enviarFormularioCorreo(destinatario, asunto, token) {
         };
         try {
             const info = yield transporter.sendMail(mailOptions);
-            console.log('Correo enviado: %s', info.messageId);
             return true;
         }
         catch (error) {
-            console.error('Error enviando correo: ', error);
             return false;
         }
     });
 }
 function enviarFormularioAfirmacionesCorreo(destinatario, asunto, token) {
     return __awaiter(this, void 0, void 0, function* () {
-        console.log(destinatario);
         const transporter = nodemailer_1.default.createTransport({
             host: 'jecopainsurance.com',
             port: 465,
@@ -222,11 +218,9 @@ function enviarFormularioAfirmacionesCorreo(destinatario, asunto, token) {
         };
         try {
             const info = yield transporter.sendMail(mailOptions);
-            console.log('Correo enviado: %s', info.messageId);
             return true;
         }
         catch (error) {
-            console.error('Error enviando correo: ', error);
             return false;
         }
     });

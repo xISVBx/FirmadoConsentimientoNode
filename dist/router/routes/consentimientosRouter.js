@@ -31,7 +31,6 @@ class ConsentimientoRouter {
                     throw CustomError_1.CustomError.BadRequest('Se debe firmar el formulario requerido!!!');
                 }
                 if (!token) {
-                    console.log(token);
                     throw CustomError_1.CustomError.BadRequest('No se envio el token!!!');
                 }
                 var decodedToken = (0, token_1.verifyToken)(token);
@@ -69,12 +68,11 @@ class ConsentimientoRouter {
         }));
         this.router.post('/statements', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
             try {
-                const { base64Image, plan, codigoPostal, correoTitular, compania, ingresoAnual, nombreConsumidor, token, idioma } = req.body;
+                const { base64Image, codigoPostal, correoTitular, compania, ingresoAnual, nombreConsumidor, token, idioma } = req.body;
                 if (!base64Image) {
                     throw CustomError_1.CustomError.BadRequest('Se debe firmar el formulario requerido!!!');
                 }
                 if (!token) {
-                    console.log(token);
                     throw CustomError_1.CustomError.BadRequest('No se envio el token!!!');
                 }
                 var decodedToken = (0, token_1.verifyToken)(token);
@@ -82,7 +80,6 @@ class ConsentimientoRouter {
                     throw CustomError_1.CustomError.BadRequest('Token no valido!!!');
                 }
                 var response = yield this.service.GenerarStatements(base64Image, idioma, correoTitular, decodedToken, {
-                    plan,
                     codigoPostal,
                     compania,
                     idConsentimiento: (0, uuid_1.v4)(),
@@ -103,8 +100,8 @@ class ConsentimientoRouter {
         }));
         this.router.post('/statements/correo', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
             try {
-                const { nombreAgente, numeroProductor, telefonoAgente, correoAgente, destinatario } = req.body;
-                var response = yield this.service.EnviarFormularioAfirmaciones(nombreAgente, numeroProductor, telefonoAgente, correoAgente, destinatario);
+                const { nombreAgente, numeroProductor, telefonoAgente, correoAgente, destinatario, plan } = req.body;
+                var response = yield this.service.EnviarFormularioAfirmaciones(nombreAgente, numeroProductor, telefonoAgente, correoAgente, destinatario, plan);
                 if (response) {
                     res.status(200).send(response);
                 }

@@ -50,17 +50,17 @@ export default class ConsentimientosService {
         return ResponseGeneric.Success(true, 'Pdf Almacenado!!!');
     }
 
-    async GenerarStatements(base64Image: string, idioma: Idioma, correoTitular: string, agente: Agente, statement: IStatement): Promise<ResponseGeneric<boolean>> {
+    async GenerarStatements(base64Image: string, idioma: Idioma, correoTitular: string, agente: AgenteStatement, statement: IStatement): Promise<ResponseGeneric<boolean>> {
 
         try {
             var consentimientoId = uuidv4()
             var pdfResponse;
 
             if (idioma === Idioma.Español) {
-                pdfResponse = await generateStatementsPdf(base64Image, agente.nombreAgente, statement, consentimientoId);
+                pdfResponse = await generateStatementsPdf(base64Image, agente, statement, consentimientoId);
 
             } else if (idioma === Idioma.Inglés) {
-                pdfResponse = await generateStatementsEnglishPdf(base64Image, agente.nombreAgente, statement, consentimientoId);
+                pdfResponse = await generateStatementsEnglishPdf(base64Image, agente, statement, consentimientoId);
             }
             if (pdfResponse == undefined) {
                 throw CustomError.BadRequest('No se pudo general el Pdf correctamente, intente mas tarde');
@@ -72,7 +72,7 @@ export default class ConsentimientosService {
                 throw CustomError.BadRequest('No se pudo enviar el correo!!!');
             }
 
-            var result = await GuardarStatement(pdfResponse[0], pdfResponse[1], statement);
+            var result = await GuardarStatement(pdfResponse[0], pdfResponse[1], statement, agente);
 
             if (!result) {
                 throw CustomError.InternalServerError("No se pudo almacenar la informacion correctamente");

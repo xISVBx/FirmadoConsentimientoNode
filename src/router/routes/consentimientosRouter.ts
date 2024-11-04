@@ -25,7 +25,6 @@ class ConsentimientoRouter {
                     throw CustomError.BadRequest('Se debe firmar el formulario requerido!!!');
                 }
                 if (!token) {
-                    console.log(token)
                     throw CustomError.BadRequest('No se envio el token!!!');
                 }
                 var decodedToken = verifyToken(token)
@@ -62,12 +61,11 @@ class ConsentimientoRouter {
 
         this.router.post('/statements', async (req: Request, res: Response, next: NextFunction) => {
             try {
-                const { base64Image, plan, codigoPostal, correoTitular, compania, ingresoAnual, nombreConsumidor, token, idioma } = req.body
+                const { base64Image, codigoPostal, correoTitular, compania, ingresoAnual, nombreConsumidor, token, idioma } = req.body
                 if (!base64Image) {
                     throw CustomError.BadRequest('Se debe firmar el formulario requerido!!!');
                 }
                 if (!token) {
-                    console.log(token)
                     throw CustomError.BadRequest('No se envio el token!!!');
                 }
                 var decodedToken = verifyToken(token)
@@ -75,8 +73,8 @@ class ConsentimientoRouter {
                     throw CustomError.BadRequest('Token no valido!!!');
                 }
 
+
                 var response = await this.service.GenerarStatements(base64Image, idioma, correoTitular, decodedToken!, {
-                    plan,
                     codigoPostal,
                     compania,
                     idConsentimiento: uuidv4(),

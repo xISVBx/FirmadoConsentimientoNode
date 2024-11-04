@@ -14,10 +14,8 @@ const response_1 = require("../common/models/response");
 const errorsRepository_1 = require("../infraestructure/persistence/repository/errorsRepository");
 class ErrorService {
     getFilteredRequests() {
-        return __awaiter(this, arguments, void 0, function* (status = null, method = null, // Agregado el método como parámetro
-        page = 1, limit = 10) {
+        return __awaiter(this, arguments, void 0, function* (status = null, method = null, page = 1, limit = 10) {
             try {
-                // Llama a la función de repositorio con el nuevo parámetro
                 const response = yield (0, errorsRepository_1.getRequestsWithPagination)(status, method, page, limit);
                 return response_1.ResponseGeneric.Success(response);
             }
@@ -29,14 +27,11 @@ class ErrorService {
     getErrorsForRequest(requestId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                // Obtener la solicitud por ID
                 const request = yield (0, errorsRepository_1.getRequestById)(requestId);
                 if (!request) {
                     throw CustomError_1.CustomError.NotFound('Solicitud no encontrada.');
                 }
-                // Obtener los errores para la solicitud
                 const errors = yield (0, errorsRepository_1.getErrorsByRequestId)(requestId);
-                // Retornar la respuesta con la solicitud y los errores
                 return response_1.ResponseGeneric.Success({ request, errors });
             }
             catch (err) {

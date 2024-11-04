@@ -31,7 +31,6 @@ export async function enviarCorreo(destinatario: string[], asunto: string, texto
 
     try {
         const info = await transporter.sendMail(mailOptions);
-        console.log('Correo enviado: %s', info.messageId);
         return true;
     } catch (error) {
         console.error('Error enviando correo: ', error);
@@ -120,18 +119,13 @@ export async function enviarFormularioCorreo(destinatario: string, asunto: strin
 
     try {
         const info = await transporter.sendMail(mailOptions);
-        console.log('Correo enviado: %s', info.messageId);
         return true;
     } catch (error) {
-        console.error('Error enviando correo: ', error);
         return false;
     }
 }
 
 export async function enviarFormularioAfirmacionesCorreo(destinatario: string, asunto: string, token: string): Promise<boolean> {
-
-    console.log(destinatario)
-
     const transporter = nodemailer.createTransport({
         host: 'jecopainsurance.com',
         port: 465,
@@ -211,10 +205,8 @@ export async function enviarFormularioAfirmacionesCorreo(destinatario: string, a
 
     try {
         const info = await transporter.sendMail(mailOptions);
-        console.log('Correo enviado: %s', info.messageId);
         return true;
     } catch (error) {
-        console.error('Error enviando correo: ', error);
         return false;
     }
 }

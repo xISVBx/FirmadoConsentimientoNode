@@ -3,6 +3,5 @@ export interface IStatement {
     codigoPostal: string;
     ingresoAnual: number;
     compania: string;
-    plan: string;
     nombreConsumidor: string;
 }

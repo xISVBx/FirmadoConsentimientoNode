@@ -37,13 +37,12 @@ const GuardarConsentimiento = (base64Consentimiento, nombreTitular, telefonoTitu
         return true;
     }
     catch (e) {
-        console.log(e);
         yield conn.rollback();
         throw CustomError_1.CustomError.InternalServerError(`${e}`);
     }
 });
 exports.GuardarConsentimiento = GuardarConsentimiento;
-const GuardarStatement = (base64Consentimiento, path, statement) => __awaiter(void 0, void 0, void 0, function* () {
+const GuardarStatement = (base64Consentimiento, path, statement, agente) => __awaiter(void 0, void 0, void 0, function* () {
     var conn = yield (0, database_1.getConnection)();
     yield conn.beginTransaction();
     try {
@@ -53,8 +52,7 @@ const GuardarStatement = (base64Consentimiento, path, statement) => __awaiter(vo
             VALUES (?, ?, ?, ?);`, [statement.idConsentimiento, path, bufferConsentimiento, new Date()]);
         const resultDatos = yield conn.execute(`INSERT INTO datos_afirmaciones
             (id_consentimiento, codigoPostal, ingresoAnual, compania, plan, nombreConsumidor)
-            VALUES (?, ?, ?, ?, ?, ?);`, [statement.idConsentimiento, statement.codigoPostal, statement.ingresoAnual, statement.compania, statement.plan, statement.nombreConsumidor]);
-        console.log(resultDatos);
+            VALUES (?, ?, ?, ?, ?, ?);`, [statement.idConsentimiento, statement.codigoPostal, statement.ingresoAnual, statement.compania, agente.plan, statement.nombreConsumidor]);
         yield conn.commit();
         return true;
     }
