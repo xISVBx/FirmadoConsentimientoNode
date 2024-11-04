@@ -8,13 +8,21 @@ export interface Agente {
     correoAgente: string;
 }
 
-export function generateToken(payload: Agente, expiresIn?: string): string {
+export interface AgenteStatement {
+    nombreAgente: string;
+    numeroProductor: string;
+    telefonoAgente: string;
+    correoAgente: string;
+    plan: string
+}
+
+export function generateToken(payload: any, expiresIn?: string): string {
     const options = expiresIn ? { expiresIn } : {};
     const SECRET_KEY = process.env.SECRET_KEY || "secreto secretoso";
     return jwt.sign(payload, SECRET_KEY, options);
 }
 
-export function verifyToken(token: string): Agente | null {
+export function verifyToken(token: string): any | null {
     const SECRET_KEY = process.env.SECRET_KEY || 'secreto secretoso'; // Usa la misma clave secreta que al generar el token
 
     try {

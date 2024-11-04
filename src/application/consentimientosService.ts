@@ -1,4 +1,4 @@
-import { generateToken, Agente } from "../common/utils/token";
+import { generateToken, Agente, AgenteStatement } from "../common/utils/token";
 import { ResponseGeneric } from "../common/models/response";
 import { enviarCorreo, enviarFormularioAfirmacionesCorreo, enviarFormularioCorreo } from "../infraestructure/infraestructure/email";
 import { GuardarConsentimiento, GuardarStatement } from "../infraestructure/persistence/repository/consentimientosRepository";
@@ -105,13 +105,14 @@ export default class ConsentimientosService {
     }
 
     async EnviarFormularioAfirmaciones(nombreAgente: string, numeroProductor: string,
-        telefonoAgente: string, correoAgente: string, destinatario: string): Promise<ResponseGeneric<boolean>> {
+        telefonoAgente: string, correoAgente: string, destinatario: string, plan: string): Promise<ResponseGeneric<boolean>> {
         try {
-            var payload: Agente = {
+            var payload: AgenteStatement = {
                 correoAgente: correoAgente,
                 nombreAgente: nombreAgente,
                 numeroProductor: numeroProductor,
-                telefonoAgente: telefonoAgente
+                telefonoAgente: telefonoAgente,
+                plan: plan
             }
             var token = generateToken(payload)
             var response = await enviarFormularioAfirmacionesCorreo(destinatario, "Formulario de consentimiento", token)
