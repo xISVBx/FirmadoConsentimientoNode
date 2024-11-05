@@ -5,7 +5,7 @@ import { convertirFecha, getCurrentHour, obtenerFechaActualDDMMYYYY } from './da
 import { drawUnderlinedText } from './pdfUtils';
 import { IStatement } from '../../domain/entities/IStatement';
 import { CustomError } from '../../common/errors/CustomError';
-import { AgenteStatement } from './token';
+import { StatementSend } from './token';
 
 export async function generatePdf(base64Data: string, nombreTitular: string, telefonoTitular: string, correoTitular: string, fechaNacimiento: string,
   nombreAgente: string, numeroAgente: string, telefonoAgente: string, correoAgente: string, consentimientoId: string): Promise<[Uint8Array, string]> {
@@ -282,10 +282,10 @@ Signature: ____________________________________ Date: __________________________
   }
 }
 
-export async function generateStatementsPdf(base64Data: string, agente: AgenteStatement, statement: IStatement, consentimientoId: string): Promise<[Uint8Array, string]> {
+export async function generateStatementsPdf(base64Data: string, agente: StatementSend, statement: IStatement): Promise<[Uint8Array, string]> {
   try {
     //Crear la carpeta
-    const folderPath = path.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/${consentimientoId}`);
+    const folderPath = path.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/${statement.idConsentimiento}`);
     //const folderPath = path.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/archivo`);
     fs.mkdir(folderPath, { recursive: true }, (err) => {
       if (err) {
@@ -386,14 +386,13 @@ export async function generateStatementsPdf(base64Data: string, agente: AgenteSt
     }
 
     //Codigo postal
-    drawText(statement.codigoPostal, 130, 5);
+    drawText(agente.codigoPostal, 130, 5);
     //Ingreso anual
-    drawText(statement.ingresoAnual.toString(), 130, 6);
+    drawText(agente.ingresoAnual.toString(), 130, 6);
     //Compañia
-    drawText(statement.compania, 130, 7);
+    drawText(agente.compania, 130, 7);
     //Plan
     drawText(agente.plan, 130, 8);
-
 
     //Fecha de revision
     drawText(obtenerFechaActualDDMMYYYY(), 300, 33);
@@ -427,7 +426,7 @@ export async function generateStatementsPdf(base64Data: string, agente: AgenteSt
   }
 }
 
-export async function generateStatementsEnglishPdf(base64Data: string, agente: AgenteStatement, statement: IStatement, consentimientoId: string): Promise<[Uint8Array, string]> {
+export async function generateStatementsEnglishPdf(base64Data: string, agente: StatementSend, statement: IStatement, consentimientoId: string): Promise<[Uint8Array, string]> {
   try {
     //Crear la carpeta
     const folderPath = path.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/${consentimientoId}`);
@@ -528,11 +527,11 @@ export async function generateStatementsEnglishPdf(base64Data: string, agente: A
     }
 
     //Codigo postal
-    drawText(statement.codigoPostal, 130, 5);
+    drawText(agente.codigoPostal, 130, 5);
     //Ingreso anual
-    drawText(statement.ingresoAnual.toString(), 130, 6);
+    drawText(agente.ingresoAnual.toString(), 130, 6);
     //Compañia
-    drawText(statement.compania, 130, 7);
+    drawText(agente.compania, 130, 7);
     //Plan
     drawText(agente.plan, 130, 8);
 

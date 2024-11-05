@@ -278,11 +278,11 @@ Signature: ____________________________________ Date: __________________________
         }
     });
 }
-function generateStatementsPdf(base64Data, agente, statement, consentimientoId) {
+function generateStatementsPdf(base64Data, agente, statement) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             //Crear la carpeta
-            const folderPath = path_1.default.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/${consentimientoId}`);
+            const folderPath = path_1.default.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/${statement.idConsentimiento}`);
             //const folderPath = path.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/archivo`);
             fs_1.default.mkdir(folderPath, { recursive: true }, (err) => {
                 if (err) {
@@ -373,11 +373,11 @@ function generateStatementsPdf(base64Data, agente, statement, consentimientoId) 
                 }
             };
             //Codigo postal
-            drawText(statement.codigoPostal, 130, 5);
+            drawText(agente.codigoPostal, 130, 5);
             //Ingreso anual
-            drawText(statement.ingresoAnual.toString(), 130, 6);
+            drawText(agente.ingresoAnual.toString(), 130, 6);
             //Compañia
-            drawText(statement.compania, 130, 7);
+            drawText(agente.compania, 130, 7);
             //Plan
             drawText(agente.plan, 130, 8);
             //Fecha de revision
@@ -502,11 +502,11 @@ function generateStatementsEnglishPdf(base64Data, agente, statement, consentimie
                 }
             };
             //Codigo postal
-            drawText(statement.codigoPostal, 130, 5);
+            drawText(agente.codigoPostal, 130, 5);
             //Ingreso anual
-            drawText(statement.ingresoAnual.toString(), 130, 6);
+            drawText(agente.ingresoAnual.toString(), 130, 6);
             //Compañia
-            drawText(statement.compania, 130, 7);
+            drawText(agente.compania, 130, 7);
             //Plan
             drawText(agente.plan, 130, 8);
             //Fecha de revision

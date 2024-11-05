@@ -8,11 +8,11 @@ export interface Agente {
     correoAgente: string;
 }
 
-export interface AgenteStatement {
+export interface StatementSend {
     nombreAgente: string;
-    numeroProductor: string;
-    telefonoAgente: string;
-    correoAgente: string;
+    codigoPostal: string;
+    ingresoAnual: string;
+    compania: string;
     plan: string
 }
 

@@ -52,7 +52,7 @@ const GuardarStatement = (base64Consentimiento, path, statement, agente) => __aw
             VALUES (?, ?, ?, ?);`, [statement.idConsentimiento, path, bufferConsentimiento, new Date()]);
         const resultDatos = yield conn.execute(`INSERT INTO datos_afirmaciones
             (id_consentimiento, codigoPostal, ingresoAnual, compania, plan, nombreConsumidor)
-            VALUES (?, ?, ?, ?, ?, ?);`, [statement.idConsentimiento, statement.codigoPostal, statement.ingresoAnual, statement.compania, agente.plan, statement.nombreConsumidor]);
+            VALUES (?, ?, ?, ?, ?, ?);`, [statement.idConsentimiento, agente.codigoPostal, agente.ingresoAnual, agente.compania, agente.plan, statement.nombreConsumidor]);
         yield conn.commit();
         return true;
     }

@@ -1,4 +1,4 @@
-import { generateToken, Agente, AgenteStatement } from "../common/utils/token";
+import { generateToken, Agente, StatementSend } from "../common/utils/token";
 import { ResponseGeneric } from "../common/models/response";
 import { enviarCorreo, enviarFormularioAfirmacionesCorreo, enviarFormularioCorreo } from "../infraestructure/infraestructure/email";
 import { GuardarConsentimiento, GuardarStatement } from "../infraestructure/persistence/repository/consentimientosRepository";
@@ -50,17 +50,18 @@ export default class ConsentimientosService {
         return ResponseGeneric.Success(true, 'Pdf Almacenado!!!');
     }
 
-    async GenerarStatements(base64Image: string, idioma: Idioma, correoTitular: string, agente: AgenteStatement, statement: IStatement): Promise<ResponseGeneric<boolean>> {
+    async GenerarStatements(base64Image: string, idioma: Idioma, correoTitular: string, agente: StatementSend, statement: IStatement): Promise<ResponseGeneric<boolean>> {
 
         try {
-            var consentimientoId = uuidv4()
             var pdfResponse;
 
             if (idioma === Idioma.Español) {
-                pdfResponse = await generateStatementsPdf(base64Image, agente, statement, consentimientoId);
+
+              pdfResponse = await generateStatementsPdf(base64Image, agente, statement,);
 
             } else if (idioma === Idioma.Inglés) {
-                pdfResponse = await generateStatementsEnglishPdf(base64Image, agente, statement, consentimientoId);
+                
+                pdfResponse = await generateStatementsEnglishPdf(base64Image, agente, statement, statement.idConsentimiento);
             }
             if (pdfResponse == undefined) {
                 throw CustomError.BadRequest('No se pudo general el Pdf correctamente, intente mas tarde');
@@ -104,14 +105,14 @@ export default class ConsentimientosService {
         return ResponseGeneric.Success(true, 'Correo enviado correctamente!!!');
     }
 
-    async EnviarFormularioAfirmaciones(nombreAgente: string, numeroProductor: string,
-        telefonoAgente: string, correoAgente: string, destinatario: string, plan: string): Promise<ResponseGeneric<boolean>> {
+    async EnviarFormularioAfirmaciones(nombreAgente: string, codigoPostal: string,
+        ingresoAnual: string, compania: string, destinatario: string, plan: string): Promise<ResponseGeneric<boolean>> {
         try {
-            var payload: AgenteStatement = {
-                correoAgente: correoAgente,
+            var payload: StatementSend = {
                 nombreAgente: nombreAgente,
-                numeroProductor: numeroProductor,
-                telefonoAgente: telefonoAgente,
+                codigoPostal: codigoPostal,
+                ingresoAnual: ingresoAnual,
+                compania: compania,
                 plan: plan
             }
             var token = generateToken(payload)

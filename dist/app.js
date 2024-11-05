@@ -71,11 +71,14 @@ class Server {
         return __awaiter(this, void 0, void 0, function* () {
             dotenv_1.default.config();
             yield this.setupDatabase();
-            this.app.use((0, cors_1.default)({
-                origin: 'https://www.jecopainsurance.com', // Permitir solo este dominio
+            //'https://www.jecopainsurance.com'
+            /*
+            this.app.use(cors({
+                origin: '*', // Permitir solo este dominio
                 methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
                 credentials: true, // Si necesitas enviar cookies o encabezados de autorización
-            }));
+            }));*/
+            this.app.options('*', (0, cors_1.default)()); // Esto maneja las preflight requests CORS
             this.app.use(express_1.default.json());
             this.app.use('/api-docs', swagger_js_1.default.swaggerUi.serve, swagger_js_1.default.swaggerUi.setup(swagger_js_1.default.swaggerDocs));
             this.app.use((req, res, next) => __awaiter(this, void 0, void 0, function* () {

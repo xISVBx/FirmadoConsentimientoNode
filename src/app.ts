@@ -56,11 +56,15 @@ class Server {
         dotenv.config();
         await this.setupDatabase();
 
+        //'https://www.jecopainsurance.com'
+        /*
         this.app.use(cors({
-            origin: 'https://www.jecopainsurance.com', // Permitir solo este dominio
+            origin: '*', // Permitir solo este dominio
             methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
             credentials: true, // Si necesitas enviar cookies o encabezados de autorización
-        }));
+        }));*/
+        this.app.options('*', cors()); // Esto maneja las preflight requests CORS
+
 
         this.app.use(express.json());
         this.app.use('/api-docs', swagger.swaggerUi.serve, swagger.swaggerUi.setup(swagger.swaggerDocs));

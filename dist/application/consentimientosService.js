@@ -50,13 +50,12 @@ class ConsentimientosService {
     GenerarStatements(base64Image, idioma, correoTitular, agente, statement) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                var consentimientoId = (0, uuid_1.v4)();
                 var pdfResponse;
                 if (idioma === Idioma_1.Idioma.Español) {
-                    pdfResponse = yield (0, crearConsentimiento_1.generateStatementsPdf)(base64Image, agente, statement, consentimientoId);
+                    pdfResponse = yield (0, crearConsentimiento_1.generateStatementsPdf)(base64Image, agente, statement);
                 }
                 else if (idioma === Idioma_1.Idioma.Inglés) {
-                    pdfResponse = yield (0, crearConsentimiento_1.generateStatementsEnglishPdf)(base64Image, agente, statement, consentimientoId);
+                    pdfResponse = yield (0, crearConsentimiento_1.generateStatementsEnglishPdf)(base64Image, agente, statement, statement.idConsentimiento);
                 }
                 if (pdfResponse == undefined) {
                     throw CustomError_1.CustomError.BadRequest('No se pudo general el Pdf correctamente, intente mas tarde');
@@ -97,14 +96,14 @@ class ConsentimientosService {
             return response_1.ResponseGeneric.Success(true, 'Correo enviado correctamente!!!');
         });
     }
-    EnviarFormularioAfirmaciones(nombreAgente, numeroProductor, telefonoAgente, correoAgente, destinatario, plan) {
+    EnviarFormularioAfirmaciones(nombreAgente, codigoPostal, ingresoAnual, compania, destinatario, plan) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 var payload = {
-                    correoAgente: correoAgente,
                     nombreAgente: nombreAgente,
-                    numeroProductor: numeroProductor,
-                    telefonoAgente: telefonoAgente,
+                    codigoPostal: codigoPostal,
+                    ingresoAnual: ingresoAnual,
+                    compania: compania,
                     plan: plan
                 };
                 var token = (0, token_1.generateToken)(payload);
