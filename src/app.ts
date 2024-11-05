@@ -59,7 +59,7 @@ class Server {
         //'https://www.jecopainsurance.com'
         
         this.app.use(cors({
-            origin: '*', // Permitir solo este dominio
+            origin: 'https://www.jecopainsurance.com', // Permitir solo este dominio
             methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
             credentials: true, // Si necesitas enviar cookies o encabezados de autorización
         }));
