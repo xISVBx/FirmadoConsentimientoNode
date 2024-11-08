@@ -116,7 +116,7 @@ export default class ConsentimientosService {
                 plan: plan
             }
             var token = generateToken(payload)
-            var response = await enviarFormularioAfirmacionesCorreo(destinatario, "Formulario de consentimiento", token)
+            var response = await enviarFormularioAfirmacionesCorreo(destinatario, "Formulario de Atestamiento", token)
 
             if(!response){
                 throw CustomError.BadRequest('No se pudo enviar el correo!!!');

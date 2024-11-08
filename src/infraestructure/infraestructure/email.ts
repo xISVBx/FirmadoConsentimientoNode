@@ -187,7 +187,7 @@ export async function enviarFormularioAfirmacionesCorreo(destinatario: string, a
     <div class="container">
         <h1 class="center">Formulario de atestamiento</h1>
         <h4 class="text">Acción requerida.</h4>
-        <h4 class="text">Requerimos su autorización para actuar como su agente o corredor de seguros de salud, con el fin de inscribirlo en un plan de salud calificado ofrecido en el mercado y facilitado por el gobierno federal.</h4>
+        <h4 class="text">Acción requerida: Con esta forma usted está autorizando el plan médico elegido, su ingresos y la elegibilidad del mercado de salud.</h4>
         <div class="center">
             <a href="${link}" class="button">Rellenar Formulario</a>
         </div>

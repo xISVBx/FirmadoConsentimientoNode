@@ -107,7 +107,7 @@ class ConsentimientosService {
                     plan: plan
                 };
                 var token = (0, token_1.generateToken)(payload);
-                var response = yield (0, email_1.enviarFormularioAfirmacionesCorreo)(destinatario, "Formulario de consentimiento", token);
+                var response = yield (0, email_1.enviarFormularioAfirmacionesCorreo)(destinatario, "Formulario de Atestamiento", token);
                 if (!response) {
                     throw CustomError_1.CustomError.BadRequest('No se pudo enviar el correo!!!');
                 }
