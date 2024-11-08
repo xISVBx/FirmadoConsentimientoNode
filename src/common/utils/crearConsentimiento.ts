@@ -1,4 +1,4 @@
-import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
+import { PDFDocument, PDFImage, PDFPage, rgb, StandardFonts } from 'pdf-lib';
 import fs from 'fs';
 import path from 'path';
 import { convertirFecha, getCurrentHour, obtenerFechaActualDDMMYYYY } from './datesUtils';
@@ -7,8 +7,133 @@ import { IStatement } from '../../domain/entities/IStatement';
 import { CustomError } from '../../common/errors/CustomError';
 import { StatementSend } from './token';
 
+export async function obtenerTemplatePdf(
+  consentimientoId: string,
+  nombreTitular: string,
+  correoTitular: string,
+  telefonoTitular: string,
+  consentimiento: any,
+  firma: Buffer,
+  createdDate: Date
+): Promise<PDFDocument> {  // Aquí retornamos void ya que no necesitamos retornar el PDF.
+  try {
+    console.log("Iniciando generación de PDF con los siguientes parámetros:");
+    console.log(`consentimientoId: ${consentimientoId}`);
+    console.log(`nombreTitular: ${nombreTitular}`);
+    console.log(`correoTitular: ${correoTitular}`);
+    console.log(`telefonoTitular: ${telefonoTitular}`);
+    console.log(`Consentimiento ID: ${consentimiento.id}`);
+    console.log(`Estado: ${consentimiento.estado}`);
+    console.log(`Fecha de Creación: ${consentimiento.created}`);
+    console.log(`createdDate: ${createdDate}`);
+    // Ruta del template PD
+    const templatePdfPath = path.resolve(__dirname, '../../..', 'templates', 'Certificado.pdf');
+
+    // Cargar el archivo PDF del template en memoria
+    const templatePdfBytes = fs.readFileSync(templatePdfPath);
+
+    // Cargar el documento PDF usando pdf-lib
+    const templatePdf = await PDFDocument.load(templatePdfBytes);
+
+    // Obtener la primera página del template
+    const templatePage = templatePdf.getPages()[0]; // Obtenemos la primer página
+
+    // Obtener las dimensiones de la página
+    const { width, height } = templatePage.getSize(); // 612 x 792 puntos para tamaño carta
+
+    // Configuración de la fuente y tamaño (más grande para mayor visibilidad)
+    const font = await templatePdf.embedFont(StandardFonts.TimesRoman);
+    const fontSize = 10; // Aumentamos el tamaño de la fuente
+
+
+    // Agregar texto en diferentes ubicaciones del template
+    // Nombre del titular (más grande)
+    templatePage.drawText(nombreTitular, {
+      x: 50,
+      y: height - 245,
+      size: fontSize,
+      font: font,
+      color: rgb(0, 0, 0),
+    });
+
+    // Correo del titular (más grande)
+    templatePage.drawText(correoTitular, {
+      x: 50,
+      y: height - 257,
+      size: fontSize,
+      font: font,
+      color: rgb(0, 0, 0),
+    });
+
+    // Teléfono del titular (más grande)
+    templatePage.drawText(telefonoTitular, {
+      x: 50,
+      y: height - 270,
+      size: fontSize,
+      font: font,
+      color: rgb(0, 0, 0),
+    });
+
+    // Información del consentimiento (más grande)
+    templatePage.drawText(consentimientoId, {
+      x: 50,
+      y: height - 133,
+      size: fontSize,
+      font: font,
+      color: rgb(0, 0, 0),
+    });
+
+    console.log(consentimiento)
+    templatePage.drawText((consentimiento.created as Date).toISOString(), {
+      x: 210,
+      y: height - 300,
+      size: fontSize,
+      font: font,
+      color: rgb(0, 0, 0),
+    });
+
+    templatePage.drawText((createdDate).toISOString(), {
+      x: 210,
+      y: height - 312,
+      size: fontSize,
+      font: font,
+      color: rgb(0, 0, 0),
+    });
+
+    templatePage.drawText((createdDate).toISOString(), {
+      x: 210,
+      y: height - 326,
+      size: fontSize,
+      font: font,
+      color: rgb(0, 0, 0),
+    });
+
+    // Agregar la firma (haciendo la firma mucho más grande y visible)
+    const firmaX =  50;  // Ajustamos la posición X para mayor visibilidad
+    const firmaY = 50;  // Mantener la posición Y para que no se solape con el texto
+
+    const embeddedImage = await templatePdf.embedPng(firma);
+
+    templatePage.drawImage(embeddedImage, {
+      x: 445,
+      y: height - 315,
+      width: 60,  // Hacemos la firma mucho más grande
+      height: 60,  // Hacemos la firma mucho más grande
+    });
+
+    console.log(firma)
+    console.log(consentimientoId)
+
+    return templatePdf;
+  } catch (err) {
+    console.error("Error al cargar o modificar el template PDF:", err);
+    throw new Error("No se pudo cargar el template PDF");
+  }
+}
+
+
 export async function generatePdf(base64Data: string, nombreTitular: string, telefonoTitular: string, correoTitular: string, fechaNacimiento: string,
-  nombreAgente: string, numeroAgente: string, telefonoAgente: string, correoAgente: string, consentimientoId: string): Promise<[Uint8Array, string]> {
+  nombreAgente: string, numeroAgente: string, telefonoAgente: string, correoAgente: string, consentimientoId: string, createdDate: Date, consentimiento:any): Promise<[Uint8Array, string]> {
   try {
     //Crear la carpeta
     const folderPath = path.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/${consentimientoId}`);
@@ -21,6 +146,7 @@ export async function generatePdf(base64Data: string, nombreTitular: string, tel
 
     // Crear un nuevo documento PDF
     const pdfDoc = await PDFDocument.create();
+
     const page = pdfDoc.addPage();
     const timesRomanFont = await pdfDoc.embedFont(StandardFonts.TimesRoman);
 
@@ -136,6 +262,12 @@ export async function generatePdf(base64Data: string, nombreTitular: string, tel
     });
     // Guardar el documento PDF como un archivo
 
+    const templatePage = await obtenerTemplatePdf(consentimientoId, nombreTitular, correoTitular, telefonoTitular, consentimiento, imageBytes, createdDate);
+
+    // Copiar la página modificada del template y agregarla al documento
+    const [copiedTemplatePage] = await pdfDoc.copyPages(templatePage, [0]);
+    pdfDoc.addPage(copiedTemplatePage);  // Añadir la página copiada del template
+
     const filePath = path.resolve(__dirname, `${folderPath}/formulario_consentimiento.pdf`);
     const pdfBytes = await pdfDoc.save();
     fs.writeFileSync(filePath, pdfBytes);
@@ -146,7 +278,7 @@ export async function generatePdf(base64Data: string, nombreTitular: string, tel
 }
 
 export async function generateEnglishPdf(base64Data: string, nombreTitular: string, telefonoTitular: string, correoTitular: string, fechaNacimiento: string,
-  nombreAgente: string, numeroAgente: string, telefonoAgente: string, correoAgente: string, consentimientoId: string): Promise<[Uint8Array, string]> {
+  nombreAgente: string, numeroAgente: string, telefonoAgente: string, correoAgente: string, consentimientoId: string, createdDate: Date, consentimiento:any): Promise<[Uint8Array, string]> {
   try {
     //Crear la carpeta
     const folderPath = path.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/${consentimientoId}`);
@@ -272,6 +404,11 @@ Signature: ____________________________________ Date: __________________________
       height: 50,
     });
     // Guardar el documento PDF como un archivo
+    const templatePage = await obtenerTemplatePdf(consentimientoId, nombreTitular, correoTitular, telefonoTitular, consentimiento, imageBytes, createdDate);
+
+    // Copiar la página modificada del template y agregarla al documento
+    const [copiedTemplatePage] = await pdfDoc.copyPages(templatePage, [0]);
+    pdfDoc.addPage(copiedTemplatePage);  // Añadir la página copiada del template
 
     const filePath = path.resolve(__dirname, `${folderPath}/formulario_consentimiento.pdf`);
     const pdfBytes = await pdfDoc.save();
@@ -282,8 +419,9 @@ Signature: ____________________________________ Date: __________________________
   }
 }
 
-export async function generateStatementsPdf(base64Data: string, agente: StatementSend, statement: IStatement): Promise<[Uint8Array, string]> {
+export async function generateStatementsPdf(base64Data: string, agente: StatementSend, statement: IStatement, correoTitular:string, createdDate:Date, consentimiento:any): Promise<[Uint8Array, string]> {
   try {
+    console.log(createdDate)
     //Crear la carpeta
     const folderPath = path.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/${statement.idConsentimiento}`);
     //const folderPath = path.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/archivo`);
@@ -416,7 +554,14 @@ export async function generateStatementsPdf(base64Data: string, agente: Statemen
       height: 20,
     });
     // Guardar el documento PDF como un archivo
+    console.log('mano no joa: ')
+    console.log(createdDate)
+    const templatePage = await obtenerTemplatePdf(statement.idConsentimiento, statement.nombreConsumidor, correoTitular, '', consentimiento, imageBytes, createdDate);
 
+    // Copiar la página modificada del template y agregarla al documento
+    const [copiedTemplatePage] = await pdfDoc.copyPages(templatePage, [0]);
+    pdfDoc.addPage(copiedTemplatePage);  // Añadir la página copiada del template
+    
     const filePath = path.resolve(__dirname, `${folderPath}/formulario_consentimiento.pdf`);
     const pdfBytes = await pdfDoc.save();
     fs.writeFileSync(filePath, pdfBytes);
@@ -426,10 +571,10 @@ export async function generateStatementsPdf(base64Data: string, agente: Statemen
   }
 }
 
-export async function generateStatementsEnglishPdf(base64Data: string, agente: StatementSend, statement: IStatement, consentimientoId: string): Promise<[Uint8Array, string]> {
+export async function generateStatementsEnglishPdf(base64Data: string, agente: StatementSend, statement: IStatement, correoTitular:string, createdDate:Date, consentimiento:any): Promise<[Uint8Array, string]> {
   try {
     //Crear la carpeta
-    const folderPath = path.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/${consentimientoId}`);
+    const folderPath = path.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/${agente.consentimientoId}`);
     fs.mkdir(folderPath, { recursive: true }, (err) => {
       if (err) {
         throw CustomError.InternalServerError(`Error creating directory: ${err}`);
@@ -558,6 +703,11 @@ export async function generateStatementsEnglishPdf(base64Data: string, agente: S
       height: 20,
     });
     // Guardar el documento PDF como un archivo
+    const templatePage = await obtenerTemplatePdf(statement.idConsentimiento, statement.nombreConsumidor, correoTitular, '', consentimiento, imageBytes, createdDate);
+
+    // Copiar la página modificada del template y agregarla al documento
+    const [copiedTemplatePage] = await pdfDoc.copyPages(templatePage, [0]);
+    pdfDoc.addPage(copiedTemplatePage);  // Añadir la página copiada del template
 
     const filePath = path.resolve(__dirname, `${folderPath}/formulario_consentimiento.pdf`);
     const pdfBytes = await pdfDoc.save();

@@ -37,7 +37,8 @@ class ConsentimientoRouter {
                 if (decodedToken == null) {
                     throw CustomError_1.CustomError.BadRequest('Token no valido!!!');
                 }
-                var response = yield this.service.GenerarConsentimiento(base64Image, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, decodedToken, idioma);
+                const ipCliente = req.socket.remoteAddress;
+                var response = yield this.service.GenerarConsentimiento(base64Image, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, decodedToken, idioma, '');
                 if (response) {
                     res.status(200).send(response);
                     return;

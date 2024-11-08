@@ -1,11 +1,12 @@
 import jwt from 'jsonwebtoken';
 
 // Define la interfaz para el payload del JWT
-export interface Agente {
+export interface ConsentimientoSend {
     nombreAgente: string;
     numeroProductor: string;
     telefonoAgente: string;
     correoAgente: string;
+    consentimientoId: string;
 }
 
 export interface StatementSend {
@@ -13,7 +14,8 @@ export interface StatementSend {
     codigoPostal: string;
     ingresoAnual: string;
     compania: string;
-    plan: string
+    plan: string;
+    consentimientoId: string;
 }
 
 export function generateToken(payload: any, expiresIn?: string): string {
@@ -27,7 +29,7 @@ export function verifyToken(token: string): any | null {
 
     try {
         // Verifica el token y decodifica el payload
-        const decoded = jwt.verify(token, SECRET_KEY) as Agente;
+        const decoded = jwt.verify(token, SECRET_KEY) as ConsentimientoSend;
         return decoded;
     } catch (error) {
         console.error('Error al verificar el token: ', error);

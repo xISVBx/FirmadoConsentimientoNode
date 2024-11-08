@@ -1,7 +1,7 @@
-import { generateToken, Agente, StatementSend } from "../common/utils/token";
+import { generateToken, ConsentimientoSend, StatementSend } from "../common/utils/token";
 import { ResponseGeneric } from "../common/models/response";
 import { enviarCorreo, enviarFormularioAfirmacionesCorreo, enviarFormularioCorreo } from "../infraestructure/infraestructure/email";
-import { GuardarConsentimiento, GuardarStatement } from "../infraestructure/persistence/repository/consentimientosRepository";
+import { createConsentimiento, getConsentimientoById, GuardarConsentimiento, GuardarStatement } from "../infraestructure/persistence/repository/consentimientosRepository";
 import { generateEnglishPdf, generatePdf, generateStatementsEnglishPdf, generateStatementsPdf } from "../common/utils/crearConsentimiento";
 import { v4 as uuidv4 } from 'uuid';
 import { Idioma } from '../domain/enums/Idioma';
@@ -12,22 +12,24 @@ import { CustomError } from "../common/errors/CustomError";
 export default class ConsentimientosService {
 
     async GenerarConsentimiento(base64Image: string, nombreTitular: string, telefonoTitular: string,
-        correoTitular: string, fechaNacimiento: string, agente: Agente, idioma: string): Promise<ResponseGeneric<boolean>> {
+        correoTitular: string, fechaNacimiento: string, agente: ConsentimientoSend, idioma: string, ip: string): Promise<ResponseGeneric<boolean>> {
 
         try {
-            var consentimientoId = uuidv4()
-
             var pdfResponse;
+
+            const createdDate = new Date();
+
+            var consentimiento = await getConsentimientoById(agente.consentimientoId)
 
             if (idioma === Idioma.Español) {
                 pdfResponse = await generatePdf(base64Image, nombreTitular, telefonoTitular, correoTitular,
                     fechaNacimiento, agente.nombreAgente, agente.numeroProductor, agente.telefonoAgente, agente.correoAgente,
-                    consentimientoId);
+                    agente.consentimientoId, createdDate, consentimiento);
 
             } else if (idioma === Idioma.Inglés) {
                 pdfResponse = await generateEnglishPdf(base64Image, nombreTitular, telefonoTitular, correoTitular,
                     fechaNacimiento, agente.nombreAgente, agente.numeroProductor, agente.telefonoAgente, agente.correoAgente,
-                    consentimientoId);
+                    agente.consentimientoId, createdDate, consentimiento);
             }
             if (pdfResponse == undefined) {
                 throw CustomError.BadRequest('No se pudo general el Pdf correctamente, intente mas tarde');
@@ -39,7 +41,7 @@ export default class ConsentimientosService {
                 throw CustomError.InternalServerError("No se pudo enviar el correo!!!");
             }
 
-            var result = await GuardarConsentimiento(pdfResponse[0], nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, consentimientoId, pdfResponse[1])
+            var result = await GuardarConsentimiento(pdfResponse[0], nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, agente.consentimientoId, pdfResponse[1], ip, '', '')
 
             if (!result) {
                 throw CustomError.InternalServerError("No se pudo almacenar la informacion correctamente");
@@ -55,13 +57,19 @@ export default class ConsentimientosService {
         try {
             var pdfResponse;
 
+            const createdDate = new Date();
+
+            var consentimiento = await getConsentimientoById(agente.consentimientoId)
+
+            console.log(consentimiento)
+
             if (idioma === Idioma.Español) {
 
-              pdfResponse = await generateStatementsPdf(base64Image, agente, statement,);
+                pdfResponse = await generateStatementsPdf(base64Image, agente, statement, correoTitular, createdDate, consentimiento);
 
             } else if (idioma === Idioma.Inglés) {
-                
-                pdfResponse = await generateStatementsEnglishPdf(base64Image, agente, statement, statement.idConsentimiento);
+
+                pdfResponse = await generateStatementsEnglishPdf(base64Image, agente, statement, correoTitular, consentimiento, createdDate );
             }
             if (pdfResponse == undefined) {
                 throw CustomError.BadRequest('No se pudo general el Pdf correctamente, intente mas tarde');
@@ -87,16 +95,22 @@ export default class ConsentimientosService {
     async EnviarFormularioConsentimiento(nombreAgente: string, numeroProductor: string,
         telefonoAgente: string, correoAgente: string, destinatario: string): Promise<ResponseGeneric<boolean>> {
         try {
-            var payload: Agente = {
+            var consentimientoId = uuidv4()
+
+            var payload: ConsentimientoSend = {
                 correoAgente: correoAgente,
                 nombreAgente: nombreAgente,
                 numeroProductor: numeroProductor,
-                telefonoAgente: telefonoAgente
+                telefonoAgente: telefonoAgente,
+                consentimientoId: consentimientoId
             }
+
+
             var token = generateToken(payload)
+            var responseCreate = createConsentimiento(consentimientoId)
             var response = await enviarFormularioCorreo(destinatario, "Formulario de consentimiento", token)
 
-            if(!response){
+            if (!response) {
                 throw CustomError.BadRequest('No se pudo enviar el correo!!!');
             }
         } catch (e) {
@@ -108,17 +122,21 @@ export default class ConsentimientosService {
     async EnviarFormularioAfirmaciones(nombreAgente: string, codigoPostal: string,
         ingresoAnual: string, compania: string, destinatario: string, plan: string): Promise<ResponseGeneric<boolean>> {
         try {
+            var consentimientoId = uuidv4()
+
             var payload: StatementSend = {
                 nombreAgente: nombreAgente,
                 codigoPostal: codigoPostal,
                 ingresoAnual: ingresoAnual,
                 compania: compania,
-                plan: plan
+                plan: plan,
+                consentimientoId: consentimientoId
             }
             var token = generateToken(payload)
+            var responseCreate = createConsentimiento(consentimientoId)
             var response = await enviarFormularioAfirmacionesCorreo(destinatario, "Formulario de Atestamiento", token)
 
-            if(!response){
+            if (!response) {
                 throw CustomError.BadRequest('No se pudo enviar el correo!!!');
             }
         } catch (e) {
