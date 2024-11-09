@@ -17,6 +17,7 @@ const consentimientosService_1 = __importDefault(require("../../application/cons
 const token_1 = require("../../common/utils/token");
 const uuid_1 = require("uuid");
 const CustomError_1 = require("../../common/errors/CustomError");
+const path_1 = __importDefault(require("path"));
 class ConsentimientoRouter {
     constructor() {
         this.service = new consentimientosService_1.default();
@@ -111,8 +112,21 @@ class ConsentimientoRouter {
                 next(err);
             }
         }));
-        this.router.get('/consentimiento/:id', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+        this.router.get('/documento_firmado/:id', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
             try {
+                const { id } = req.params;
+                const filePath = path_1.default.join(__dirname, '../../../', 'consentimientos', `${id}`, `formulario_consentimiento.pdf`);
+                console.log(filePath);
+                // Establecer el nombre del archivo a mostrar cuando se descargue
+                const downloadName = 'documento.pdf';
+                // Configurar el encabezado para indicar que se va a hacer una descarga
+                res.setHeader('Content-Disposition', `attachment; filename="${downloadName}"`);
+                // Enviar el archivo
+                res.sendFile(filePath, (err) => {
+                    if (err) {
+                        next(err); // Pasar el error al siguiente manejador de errores
+                    }
+                });
             }
             catch (err) {
                 next(err);

@@ -19,6 +19,51 @@ declare global {
     }
 }
 
+// Creamos la función "configurable" que genera el middleware
+function logRequestToDatabase(options: { blacklist?: string[], ignoreMethods?: string[] } = {}) {
+    return async function (req: Request, res: Response, next: NextFunction) {
+        // Si se pasa la opción blacklist, verificar si la URL está en la lista negra
+        const urlIsBlacklisted = options.blacklist?.includes(req.originalUrl);
+        const methodIsBlacklisted = options.ignoreMethods?.includes(req.method);
+
+        // Si la URL o el método están en la lista negra, omitir el registro
+        if (urlIsBlacklisted || methodIsBlacklisted) {
+            return next();  // No registrar, solo pasa al siguiente middleware
+        }
+
+        // Si no está en la lista negra, registrar la solicitud en la base de datos
+        const requestId = uuidv4();
+        const startTime = Date.now();
+
+        req.requestId = requestId;
+        req.requestStartTime = startTime;
+
+        // Registrar en la base de datos
+        const db = await getDb();
+        await db.run('INSERT INTO requests (id, method, url, start_time, request_params) VALUES (?, ?, ?, ?, ?)', [
+            requestId,
+            req.method,
+            req.originalUrl,
+            new Date(startTime).toISOString(),
+            JSON.stringify(req.body)
+        ]);
+
+        // Cuando la respuesta finalice, actualizamos la duración y el estado de la respuesta
+        res.on('finish', async () => {
+            const duration = Date.now() - startTime;
+            const responseStatus = res.statusCode;
+
+            await db.run('UPDATE requests SET duration = ?, response_status = ? WHERE id = ?', [
+                duration,
+                responseStatus,
+                requestId
+            ]);
+        });
+
+        next();
+    };
+}
+
 class Server {
 
     private app: express.Express
@@ -31,6 +76,13 @@ class Server {
                 this.start();
             })
     }
+
+    // Lista negra de rutas o métodos
+    private blacklist: string[] = [
+        '/api/documento_firmado',  // Ejemplo de una ruta que no quieres registrar
+        '/api/error',              // Ejemplo de una ruta de error que no deseas guardar
+        'POST'                     // Ejemplo de un método HTTP que no deseas registrar
+    ];
 
     private async setupDatabase() {
         const db = await getDb();
@@ -69,40 +121,15 @@ class Server {
         this.app.use(express.json());
         this.app.use('/api-docs', swagger.swaggerUi.serve, swagger.swaggerUi.setup(swagger.swaggerDocs));
 
-        this.app.use(async (req: Request, res: Response, next: NextFunction) => {
-            const requestId = uuidv4();
-            const startTime = Date.now();
-
-            req.requestId = requestId;
-            req.requestStartTime = startTime;
-
-            const db = await getDb();
-            await db.run('INSERT INTO requests (id, method, url, start_time, request_params) VALUES (?, ?, ?, ?, ?)', [
-                requestId,
-                req.method,
-                req.originalUrl,
-                new Date(startTime).toISOString(),
-                JSON.stringify(req.body)
-            ]);
-
-            res.on('finish', async () => {
-                const duration = Date.now() - startTime;
-                const responseStatus = res.statusCode;
-
-                await db.run('UPDATE requests SET duration = ?, response_status = ? WHERE id = ?', [
-                    duration,
-                    responseStatus,
-                    requestId
-                ]);
-            });
-
-            next();
-        });
+        this.app.use(logRequestToDatabase({
+            blacklist: ['/api/error'],
+        }));
 
 
 
         this.app.use(morgan('dev'));
     }
+
 
     private routes() {
         this.app.use('/api', ConsentimientoRouter.router)

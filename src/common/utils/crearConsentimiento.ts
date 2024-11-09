@@ -6,6 +6,7 @@ import { drawUnderlinedText } from './pdfUtils';
 import { IStatement } from '../../domain/entities/IStatement';
 import { CustomError } from '../../common/errors/CustomError';
 import { StatementSend } from './token';
+import QRCode from 'qrcode';
 
 export async function obtenerTemplatePdf(
   consentimientoId: string,
@@ -59,7 +60,7 @@ export async function obtenerTemplatePdf(
     // Correo del titular (más grande)
     templatePage.drawText(correoTitular, {
       x: 50,
-      y: height - 257,
+      y: height - 258,
       size: fontSize,
       font: font,
       color: rgb(0, 0, 0),
@@ -68,7 +69,7 @@ export async function obtenerTemplatePdf(
     // Teléfono del titular (más grande)
     templatePage.drawText(telefonoTitular, {
       x: 50,
-      y: height - 270,
+      y: height - 271,
       size: fontSize,
       font: font,
       color: rgb(0, 0, 0),
@@ -94,7 +95,7 @@ export async function obtenerTemplatePdf(
 
     templatePage.drawText((createdDate).toISOString(), {
       x: 210,
-      y: height - 312,
+      y: height - 313,
       size: fontSize,
       font: font,
       color: rgb(0, 0, 0),
@@ -102,7 +103,7 @@ export async function obtenerTemplatePdf(
 
     templatePage.drawText((createdDate).toISOString(), {
       x: 210,
-      y: height - 326,
+      y: height - 327,
       size: fontSize,
       font: font,
       color: rgb(0, 0, 0),
@@ -121,6 +122,19 @@ export async function obtenerTemplatePdf(
       height: 60,  // Hacemos la firma mucho más grande
     });
 
+    const qrLink = `https://api.jecopainsurance.com/api/documento_firmado/${consentimientoId}`;
+
+    const qrCodeDataUrl = await QRCode.toDataURL(qrLink);
+
+    const qrImage = await templatePdf.embedPng(Buffer.from(qrCodeDataUrl.split(',')[1], 'base64')); // Decodificamos la cadena base64
+    const qrSize = 110; // Tamaño del QR
+    templatePage.drawImage(qrImage, {
+      x: 60,
+      y: height - 605,
+      width: qrSize,
+      height: qrSize,
+    });
+
     console.log(firma)
     console.log(consentimientoId)
 
@@ -130,7 +144,6 @@ export async function obtenerTemplatePdf(
     throw new Error("No se pudo cargar el template PDF");
   }
 }
-
 
 export async function generatePdf(base64Data: string, nombreTitular: string, telefonoTitular: string, correoTitular: string, fechaNacimiento: string,
   nombreAgente: string, numeroAgente: string, telefonoAgente: string, correoAgente: string, consentimientoId: string, createdDate: Date, consentimiento:any): Promise<[Uint8Array, string]> {

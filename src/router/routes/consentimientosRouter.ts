@@ -4,6 +4,7 @@ import { NextFunction, Request, Response } from "express";
 import { verifyToken } from "../../common/utils/token";
 import { v4 as uuidv4 } from 'uuid';
 import { CustomError } from "../../common/errors/CustomError";
+import path from 'path';
 
 class ConsentimientoRouter {
 
@@ -106,10 +107,25 @@ class ConsentimientoRouter {
             }
         })
 
-        this.router.get('/consentimiento/:id', async (req: Request, res: Response, next: NextFunction) =>{
-            try{
-                
-            }catch(err) {
+        this.router.get('/documento_firmado/:id', async (req: Request, res: Response, next: NextFunction) => {
+            try {
+                const { id } = req.params;
+
+                const filePath = path.join(__dirname, '../../../', 'consentimientos', `${id}`, `formulario_consentimiento.pdf`);
+                console.log(filePath)
+                // Establecer el nombre del archivo a mostrar cuando se descargue
+                const downloadName = 'documento.pdf';
+
+                // Configurar el encabezado para indicar que se va a hacer una descarga
+                res.setHeader('Content-Disposition', `attachment; filename="${downloadName}"`);
+
+                // Enviar el archivo
+                res.sendFile(filePath, (err) => {
+                    if (err) {
+                        next(err);  // Pasar el error al siguiente manejador de errores
+                    }
+                });
+            } catch (err) {
                 next(err)
             }
         })

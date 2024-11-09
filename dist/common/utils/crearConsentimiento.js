@@ -23,6 +23,7 @@ const path_1 = __importDefault(require("path"));
 const datesUtils_1 = require("./datesUtils");
 const pdfUtils_1 = require("./pdfUtils");
 const CustomError_1 = require("../../common/errors/CustomError");
+const qrcode_1 = __importDefault(require("qrcode"));
 function obtenerTemplatePdf(consentimientoId, nombreTitular, correoTitular, telefonoTitular, consentimiento, firma, createdDate) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -60,7 +61,7 @@ function obtenerTemplatePdf(consentimientoId, nombreTitular, correoTitular, tele
             // Correo del titular (más grande)
             templatePage.drawText(correoTitular, {
                 x: 50,
-                y: height - 257,
+                y: height - 258,
                 size: fontSize,
                 font: font,
                 color: (0, pdf_lib_1.rgb)(0, 0, 0),
@@ -68,7 +69,7 @@ function obtenerTemplatePdf(consentimientoId, nombreTitular, correoTitular, tele
             // Teléfono del titular (más grande)
             templatePage.drawText(telefonoTitular, {
                 x: 50,
-                y: height - 270,
+                y: height - 271,
                 size: fontSize,
                 font: font,
                 color: (0, pdf_lib_1.rgb)(0, 0, 0),
@@ -91,14 +92,14 @@ function obtenerTemplatePdf(consentimientoId, nombreTitular, correoTitular, tele
             });
             templatePage.drawText((createdDate).toISOString(), {
                 x: 210,
-                y: height - 312,
+                y: height - 313,
                 size: fontSize,
                 font: font,
                 color: (0, pdf_lib_1.rgb)(0, 0, 0),
             });
             templatePage.drawText((createdDate).toISOString(), {
                 x: 210,
-                y: height - 326,
+                y: height - 327,
                 size: fontSize,
                 font: font,
                 color: (0, pdf_lib_1.rgb)(0, 0, 0),
@@ -112,6 +113,16 @@ function obtenerTemplatePdf(consentimientoId, nombreTitular, correoTitular, tele
                 y: height - 315,
                 width: 60, // Hacemos la firma mucho más grande
                 height: 60, // Hacemos la firma mucho más grande
+            });
+            const qrLink = `https://api.jecopainsurance.com/api/documento_firmado/${consentimientoId}`;
+            const qrCodeDataUrl = yield qrcode_1.default.toDataURL(qrLink);
+            const qrImage = yield templatePdf.embedPng(Buffer.from(qrCodeDataUrl.split(',')[1], 'base64')); // Decodificamos la cadena base64
+            const qrSize = 110; // Tamaño del QR
+            templatePage.drawImage(qrImage, {
+                x: 60,
+                y: height - 605,
+                width: qrSize,
+                height: qrSize,
             });
             console.log(firma);
             console.log(consentimientoId);

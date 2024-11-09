@@ -22,8 +22,54 @@ const swagger_js_1 = __importDefault(require("./common/utils/swagger.js"));
 const uuid_1 = require("uuid");
 const sqlite_js_1 = require("./infraestructure/persistence/context/sqlite.js");
 const response_js_1 = require("./common/models/response.js");
+// Creamos la función "configurable" que genera el middleware
+function logRequestToDatabase(options = {}) {
+    return function (req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            var _a, _b;
+            // Si se pasa la opción blacklist, verificar si la URL está en la lista negra
+            const urlIsBlacklisted = (_a = options.blacklist) === null || _a === void 0 ? void 0 : _a.includes(req.originalUrl);
+            const methodIsBlacklisted = (_b = options.ignoreMethods) === null || _b === void 0 ? void 0 : _b.includes(req.method);
+            // Si la URL o el método están en la lista negra, omitir el registro
+            if (urlIsBlacklisted || methodIsBlacklisted) {
+                return next(); // No registrar, solo pasa al siguiente middleware
+            }
+            // Si no está en la lista negra, registrar la solicitud en la base de datos
+            const requestId = (0, uuid_1.v4)();
+            const startTime = Date.now();
+            req.requestId = requestId;
+            req.requestStartTime = startTime;
+            // Registrar en la base de datos
+            const db = yield (0, sqlite_js_1.getDb)();
+            yield db.run('INSERT INTO requests (id, method, url, start_time, request_params) VALUES (?, ?, ?, ?, ?)', [
+                requestId,
+                req.method,
+                req.originalUrl,
+                new Date(startTime).toISOString(),
+                JSON.stringify(req.body)
+            ]);
+            // Cuando la respuesta finalice, actualizamos la duración y el estado de la respuesta
+            res.on('finish', () => __awaiter(this, void 0, void 0, function* () {
+                const duration = Date.now() - startTime;
+                const responseStatus = res.statusCode;
+                yield db.run('UPDATE requests SET duration = ?, response_status = ? WHERE id = ?', [
+                    duration,
+                    responseStatus,
+                    requestId
+                ]);
+            }));
+            next();
+        });
+    };
+}
 class Server {
     constructor() {
+        // Lista negra de rutas o métodos
+        this.blacklist = [
+            '/api/documento_firmado', // Ejemplo de una ruta que no quieres registrar
+            '/api/error', // Ejemplo de una ruta de error que no deseas guardar
+            'POST' // Ejemplo de un método HTTP que no deseas registrar
+        ];
         this.errorHandler = (err, req, res, next) => __awaiter(this, void 0, void 0, function* () {
             const errorDetails = {
                 request_id: req.requestId,
@@ -80,29 +126,8 @@ class Server {
             //this.app.options('*', cors()); // Esto maneja las preflight requests CORS
             this.app.use(express_1.default.json());
             this.app.use('/api-docs', swagger_js_1.default.swaggerUi.serve, swagger_js_1.default.swaggerUi.setup(swagger_js_1.default.swaggerDocs));
-            this.app.use((req, res, next) => __awaiter(this, void 0, void 0, function* () {
-                const requestId = (0, uuid_1.v4)();
-                const startTime = Date.now();
-                req.requestId = requestId;
-                req.requestStartTime = startTime;
-                const db = yield (0, sqlite_js_1.getDb)();
-                yield db.run('INSERT INTO requests (id, method, url, start_time, request_params) VALUES (?, ?, ?, ?, ?)', [
-                    requestId,
-                    req.method,
-                    req.originalUrl,
-                    new Date(startTime).toISOString(),
-                    JSON.stringify(req.body)
-                ]);
-                res.on('finish', () => __awaiter(this, void 0, void 0, function* () {
-                    const duration = Date.now() - startTime;
-                    const responseStatus = res.statusCode;
-                    yield db.run('UPDATE requests SET duration = ?, response_status = ? WHERE id = ?', [
-                        duration,
-                        responseStatus,
-                        requestId
-                    ]);
-                }));
-                next();
+            this.app.use(logRequestToDatabase({
+                blacklist: ['/api/error'],
             }));
             this.app.use((0, morgan_1.default)('dev'));
         });
