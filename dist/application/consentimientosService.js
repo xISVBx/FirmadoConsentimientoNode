@@ -24,10 +24,9 @@ class ConsentimientosService {
                 var pdfResponse;
                 const createdDate = new Date();
                 var consentimiento = yield (0, consentimientosRepository_1.getConsentimientoById)(agente.consentimientoId);
-                /*
-                if(consentimiento.estado == 'created'){
-                    throw CustomError.BadRequest('El consentimiento ya fue firmado');
-                }*/
+                if (consentimiento.estado == 'created') {
+                    throw CustomError_1.CustomError.BadRequest('El consentimiento ya fue firmado');
+                }
                 if (idioma === Idioma_1.Idioma.Español) {
                     pdfResponse = yield (0, crearConsentimiento_1.generatePdf)(base64Image, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, agente.nombreAgente, agente.numeroProductor, agente.telefonoAgente, agente.correoAgente, agente.consentimientoId, createdDate, consentimiento);
                 }

@@ -20,10 +20,10 @@ export default class ConsentimientosService {
             const createdDate = new Date();
 
             var consentimiento = await getConsentimientoById(agente.consentimientoId)
-            /*
+            
             if(consentimiento.estado == 'created'){
                 throw CustomError.BadRequest('El consentimiento ya fue firmado');
-            }*/
+            }
 
             if (idioma === Idioma.Español) {
                 pdfResponse = await generatePdf(base64Image, nombreTitular, telefonoTitular, correoTitular,
