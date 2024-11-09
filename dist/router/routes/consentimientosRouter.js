@@ -38,8 +38,16 @@ class ConsentimientoRouter {
                 if (decodedToken == null) {
                     throw CustomError_1.CustomError.BadRequest('Token no valido!!!');
                 }
-                const ipCliente = req.socket.remoteAddress;
-                var response = yield this.service.GenerarConsentimiento(base64Image, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, decodedToken, idioma, '');
+                // Obtener las coordenadas desde los headers
+                const latitude = req.headers['x-latitude'];
+                const longitude = req.headers['x-longitude'];
+                // Obtener el valor de 'x-forwarded-for'
+                const xForwardedFor = req.headers['x-forwarded-for'];
+                // Verificar si 'x-forwarded-for' es una cadena o un array
+                const ipCliente = Array.isArray(xForwardedFor)
+                    ? xForwardedFor[0] // Si es un array, tomamos la primera IP
+                    : (xForwardedFor ? xForwardedFor.split(',')[0] : req.socket.remoteAddress);
+                var response = yield this.service.GenerarConsentimiento(base64Image, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, decodedToken, idioma, ipCliente !== null && ipCliente !== void 0 ? ipCliente : '');
                 if (response) {
                     res.status(200).send(response);
                     return;
@@ -81,10 +89,16 @@ class ConsentimientoRouter {
                 if (decodedToken == null) {
                     throw CustomError_1.CustomError.BadRequest('Token no valido!!!');
                 }
+                // Obtener el valor de 'x-forwarded-for'
+                const xForwardedFor = req.headers['x-forwarded-for'];
+                // Verificar si 'x-forwarded-for' es una cadena o un array
+                const ipCliente = Array.isArray(xForwardedFor)
+                    ? xForwardedFor[0] // Si es un array, tomamos la primera IP
+                    : (xForwardedFor ? xForwardedFor.split(',')[0] : req.socket.remoteAddress);
                 var response = yield this.service.GenerarStatements(base64Image, idioma, correoTitular, decodedToken, {
                     idConsentimiento: (0, uuid_1.v4)(),
                     nombreConsumidor
-                });
+                }, ipCliente !== null && ipCliente !== void 0 ? ipCliente : '');
                 if (response) {
                     res.status(200).send(response);
                     return;

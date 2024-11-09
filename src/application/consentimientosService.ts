@@ -28,12 +28,12 @@ export default class ConsentimientosService {
             if (idioma === Idioma.Español) {
                 pdfResponse = await generatePdf(base64Image, nombreTitular, telefonoTitular, correoTitular,
                     fechaNacimiento, agente.nombreAgente, agente.numeroProductor, agente.telefonoAgente, agente.correoAgente,
-                    agente.consentimientoId, createdDate, consentimiento);
+                    agente.consentimientoId, createdDate, consentimiento, ip);
 
             } else if (idioma === Idioma.Inglés) {
                 pdfResponse = await generateEnglishPdf(base64Image, nombreTitular, telefonoTitular, correoTitular,
                     fechaNacimiento, agente.nombreAgente, agente.numeroProductor, agente.telefonoAgente, agente.correoAgente,
-                    agente.consentimientoId, createdDate, consentimiento);
+                    agente.consentimientoId, createdDate, consentimiento, ip);
             }
             if (pdfResponse == undefined) {
                 throw CustomError.BadRequest('No se pudo general el Pdf correctamente, intente mas tarde');
@@ -62,7 +62,7 @@ export default class ConsentimientosService {
         return ResponseGeneric.Success(true, 'Pdf Almacenado!!!');
     }
 
-    async GenerarStatements(base64Image: string, idioma: Idioma, correoTitular: string, agente: StatementSend, statement: IStatement): Promise<ResponseGeneric<boolean>> {
+    async GenerarStatements(base64Image: string, idioma: Idioma, correoTitular: string, agente: StatementSend, statement: IStatement, ip:string): Promise<ResponseGeneric<boolean>> {
 
         try {
             var pdfResponse;
@@ -79,11 +79,11 @@ export default class ConsentimientosService {
 
             if (idioma === Idioma.Español) {
 
-                pdfResponse = await generateStatementsPdf(base64Image, agente, statement, correoTitular, createdDate, consentimiento);
+                pdfResponse = await generateStatementsPdf(base64Image, agente, statement, correoTitular, createdDate, consentimiento, ip);
 
             } else if (idioma === Idioma.Inglés) {
 
-                pdfResponse = await generateStatementsEnglishPdf(base64Image, agente, statement, correoTitular, createdDate, consentimiento);
+                pdfResponse = await generateStatementsEnglishPdf(base64Image, agente, statement, correoTitular, createdDate, consentimiento, ip);
             }
             if (pdfResponse == undefined) {
                 throw CustomError.BadRequest('No se pudo general el Pdf correctamente, intente mas tarde');

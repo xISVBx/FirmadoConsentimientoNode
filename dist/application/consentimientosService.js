@@ -28,10 +28,10 @@ class ConsentimientosService {
                     throw CustomError_1.CustomError.BadRequest('El consentimiento ya fue firmado');
                 }
                 if (idioma === Idioma_1.Idioma.Español) {
-                    pdfResponse = yield (0, crearConsentimiento_1.generatePdf)(base64Image, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, agente.nombreAgente, agente.numeroProductor, agente.telefonoAgente, agente.correoAgente, agente.consentimientoId, createdDate, consentimiento);
+                    pdfResponse = yield (0, crearConsentimiento_1.generatePdf)(base64Image, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, agente.nombreAgente, agente.numeroProductor, agente.telefonoAgente, agente.correoAgente, agente.consentimientoId, createdDate, consentimiento, ip);
                 }
                 else if (idioma === Idioma_1.Idioma.Inglés) {
-                    pdfResponse = yield (0, crearConsentimiento_1.generateEnglishPdf)(base64Image, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, agente.nombreAgente, agente.numeroProductor, agente.telefonoAgente, agente.correoAgente, agente.consentimientoId, createdDate, consentimiento);
+                    pdfResponse = yield (0, crearConsentimiento_1.generateEnglishPdf)(base64Image, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, agente.nombreAgente, agente.numeroProductor, agente.telefonoAgente, agente.correoAgente, agente.consentimientoId, createdDate, consentimiento, ip);
                 }
                 if (pdfResponse == undefined) {
                     throw CustomError_1.CustomError.BadRequest('No se pudo general el Pdf correctamente, intente mas tarde');
@@ -58,7 +58,7 @@ class ConsentimientosService {
             return response_1.ResponseGeneric.Success(true, 'Pdf Almacenado!!!');
         });
     }
-    GenerarStatements(base64Image, idioma, correoTitular, agente, statement) {
+    GenerarStatements(base64Image, idioma, correoTitular, agente, statement, ip) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 var pdfResponse;
@@ -69,10 +69,10 @@ class ConsentimientosService {
                 }
                 console.log(consentimiento);
                 if (idioma === Idioma_1.Idioma.Español) {
-                    pdfResponse = yield (0, crearConsentimiento_1.generateStatementsPdf)(base64Image, agente, statement, correoTitular, createdDate, consentimiento);
+                    pdfResponse = yield (0, crearConsentimiento_1.generateStatementsPdf)(base64Image, agente, statement, correoTitular, createdDate, consentimiento, ip);
                 }
                 else if (idioma === Idioma_1.Idioma.Inglés) {
-                    pdfResponse = yield (0, crearConsentimiento_1.generateStatementsEnglishPdf)(base64Image, agente, statement, correoTitular, createdDate, consentimiento);
+                    pdfResponse = yield (0, crearConsentimiento_1.generateStatementsEnglishPdf)(base64Image, agente, statement, correoTitular, createdDate, consentimiento, ip);
                 }
                 if (pdfResponse == undefined) {
                     throw CustomError_1.CustomError.BadRequest('No se pudo general el Pdf correctamente, intente mas tarde');

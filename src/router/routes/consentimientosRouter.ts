@@ -34,9 +34,19 @@ class ConsentimientoRouter {
                     throw CustomError.BadRequest('Token no valido!!!');
                 }
 
-                const ipCliente = req.socket.remoteAddress;
+                // Obtener las coordenadas desde los headers
+                const latitude = req.headers['x-latitude'];
+                const longitude = req.headers['x-longitude'];
 
-                var response = await this.service.GenerarConsentimiento(base64Image, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, decodedToken!, idioma, '');
+                // Obtener el valor de 'x-forwarded-for'
+                const xForwardedFor = req.headers['x-forwarded-for'];
+
+                // Verificar si 'x-forwarded-for' es una cadena o un array
+                const ipCliente = Array.isArray(xForwardedFor)
+                    ? xForwardedFor[0] // Si es un array, tomamos la primera IP
+                    : (xForwardedFor ? xForwardedFor.split(',')[0] : req.socket.remoteAddress);
+
+                var response = await this.service.GenerarConsentimiento(base64Image, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, decodedToken!, idioma, ipCliente ?? '');
                 if (response) {
                     res.status(200).send(response)
                     return
@@ -77,11 +87,18 @@ class ConsentimientoRouter {
                     throw CustomError.BadRequest('Token no valido!!!');
                 }
 
+                // Obtener el valor de 'x-forwarded-for'
+                const xForwardedFor = req.headers['x-forwarded-for'];
+
+                // Verificar si 'x-forwarded-for' es una cadena o un array
+                const ipCliente = Array.isArray(xForwardedFor)
+                    ? xForwardedFor[0] // Si es un array, tomamos la primera IP
+                    : (xForwardedFor ? xForwardedFor.split(',')[0] : req.socket.remoteAddress);
 
                 var response = await this.service.GenerarStatements(base64Image, idioma, correoTitular, decodedToken!, {
                     idConsentimiento: uuidv4(),
                     nombreConsumidor
-                });
+                }, ipCliente ?? '');
                 if (response) {
                     res.status(200).send(response)
                     return

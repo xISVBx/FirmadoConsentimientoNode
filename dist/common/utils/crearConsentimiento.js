@@ -24,7 +24,7 @@ const datesUtils_1 = require("./datesUtils");
 const pdfUtils_1 = require("./pdfUtils");
 const CustomError_1 = require("../../common/errors/CustomError");
 const qrcode_1 = __importDefault(require("qrcode"));
-function obtenerTemplatePdf(consentimientoId, nombreTitular, correoTitular, telefonoTitular, consentimiento, firma, createdDate) {
+function obtenerTemplatePdf(consentimientoId, nombreTitular, correoTitular, telefonoTitular, consentimiento, firma, createdDate, ip) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             console.log("Iniciando generación de PDF con los siguientes parámetros:");
@@ -104,6 +104,13 @@ function obtenerTemplatePdf(consentimientoId, nombreTitular, correoTitular, tele
                 font: font,
                 color: (0, pdf_lib_1.rgb)(0, 0, 0),
             });
+            templatePage.drawText(ip, {
+                x: 464,
+                y: height - 353,
+                size: fontSize,
+                font: font,
+                color: (0, pdf_lib_1.rgb)(0, 0, 0),
+            });
             // Agregar la firma (haciendo la firma mucho más grande y visible)
             const firmaX = 50; // Ajustamos la posición X para mayor visibilidad
             const firmaY = 50; // Mantener la posición Y para que no se solape con el texto
@@ -134,7 +141,7 @@ function obtenerTemplatePdf(consentimientoId, nombreTitular, correoTitular, tele
         }
     });
 }
-function generatePdf(base64Data, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, nombreAgente, numeroAgente, telefonoAgente, correoAgente, consentimientoId, createdDate, consentimiento) {
+function generatePdf(base64Data, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, nombreAgente, numeroAgente, telefonoAgente, correoAgente, consentimientoId, createdDate, consentimiento, ip) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             //Crear la carpeta
@@ -254,7 +261,7 @@ function generatePdf(base64Data, nombreTitular, telefonoTitular, correoTitular, 
                 height: 50,
             });
             // Guardar el documento PDF como un archivo
-            const templatePage = yield obtenerTemplatePdf(consentimientoId, nombreTitular, correoTitular, telefonoTitular, consentimiento, imageBytes, createdDate);
+            const templatePage = yield obtenerTemplatePdf(consentimientoId, nombreTitular, correoTitular, telefonoTitular, consentimiento, imageBytes, createdDate, ip);
             // Copiar la página modificada del template y agregarla al documento
             const [copiedTemplatePage] = yield pdfDoc.copyPages(templatePage, [0]);
             pdfDoc.addPage(copiedTemplatePage); // Añadir la página copiada del template
@@ -268,7 +275,7 @@ function generatePdf(base64Data, nombreTitular, telefonoTitular, correoTitular, 
         }
     });
 }
-function generateEnglishPdf(base64Data, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, nombreAgente, numeroAgente, telefonoAgente, correoAgente, consentimientoId, createdDate, consentimiento) {
+function generateEnglishPdf(base64Data, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, nombreAgente, numeroAgente, telefonoAgente, correoAgente, consentimientoId, createdDate, consentimiento, ip) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             //Crear la carpeta
@@ -384,7 +391,7 @@ Signature: ____________________________________ Date: __________________________
                 height: 50,
             });
             // Guardar el documento PDF como un archivo
-            const templatePage = yield obtenerTemplatePdf(consentimientoId, nombreTitular, correoTitular, telefonoTitular, consentimiento, imageBytes, createdDate);
+            const templatePage = yield obtenerTemplatePdf(consentimientoId, nombreTitular, correoTitular, telefonoTitular, consentimiento, imageBytes, createdDate, ip);
             // Copiar la página modificada del template y agregarla al documento
             const [copiedTemplatePage] = yield pdfDoc.copyPages(templatePage, [0]);
             pdfDoc.addPage(copiedTemplatePage); // Añadir la página copiada del template
@@ -398,7 +405,7 @@ Signature: ____________________________________ Date: __________________________
         }
     });
 }
-function generateStatementsPdf(base64Data, agente, statement, correoTitular, createdDate, consentimiento) {
+function generateStatementsPdf(base64Data, agente, statement, correoTitular, createdDate, consentimiento, ip) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             console.log(createdDate);
@@ -523,7 +530,7 @@ function generateStatementsPdf(base64Data, agente, statement, correoTitular, cre
             // Guardar el documento PDF como un archivo
             console.log('mano no joa: ');
             console.log(createdDate);
-            const templatePage = yield obtenerTemplatePdf(statement.idConsentimiento, statement.nombreConsumidor, correoTitular, '', consentimiento, imageBytes, createdDate);
+            const templatePage = yield obtenerTemplatePdf(statement.idConsentimiento, statement.nombreConsumidor, correoTitular, '', consentimiento, imageBytes, createdDate, ip);
             // Copiar la página modificada del template y agregarla al documento
             const [copiedTemplatePage] = yield pdfDoc.copyPages(templatePage, [0]);
             pdfDoc.addPage(copiedTemplatePage); // Añadir la página copiada del template
@@ -537,7 +544,7 @@ function generateStatementsPdf(base64Data, agente, statement, correoTitular, cre
         }
     });
 }
-function generateStatementsEnglishPdf(base64Data, agente, statement, correoTitular, createdDate, consentimiento) {
+function generateStatementsEnglishPdf(base64Data, agente, statement, correoTitular, createdDate, consentimiento, ip) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             //Crear la carpeta
@@ -656,7 +663,7 @@ function generateStatementsEnglishPdf(base64Data, agente, statement, correoTitul
                 height: 20,
             });
             // Guardar el documento PDF como un archivo
-            const templatePage = yield obtenerTemplatePdf(statement.idConsentimiento, statement.nombreConsumidor, correoTitular, '', consentimiento, imageBytes, createdDate);
+            const templatePage = yield obtenerTemplatePdf(statement.idConsentimiento, statement.nombreConsumidor, correoTitular, '', consentimiento, imageBytes, createdDate, ip);
             // Copiar la página modificada del template y agregarla al documento
             const [copiedTemplatePage] = yield pdfDoc.copyPages(templatePage, [0]);
             pdfDoc.addPage(copiedTemplatePage); // Añadir la página copiada del template

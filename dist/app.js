@@ -66,9 +66,7 @@ class Server {
     constructor() {
         // Lista negra de rutas o métodos
         this.blacklist = [
-            '/api/documento_firmado', // Ejemplo de una ruta que no quieres registrar
-            '/api/error', // Ejemplo de una ruta de error que no deseas guardar
-            'POST' // Ejemplo de un método HTTP que no deseas registrar
+            '/api/error',
         ];
         this.errorHandler = (err, req, res, next) => __awaiter(this, void 0, void 0, function* () {
             const errorDetails = {

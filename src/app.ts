@@ -79,9 +79,7 @@ class Server {
 
     // Lista negra de rutas o métodos
     private blacklist: string[] = [
-        '/api/documento_firmado',  // Ejemplo de una ruta que no quieres registrar
-        '/api/error',              // Ejemplo de una ruta de error que no deseas guardar
-        'POST'                     // Ejemplo de un método HTTP que no deseas registrar
+        '/api/error',
     ];
 
     private async setupDatabase() {

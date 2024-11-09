@@ -15,7 +15,8 @@ export async function obtenerTemplatePdf(
   telefonoTitular: string,
   consentimiento: any,
   firma: Buffer,
-  createdDate: Date
+  createdDate: Date,
+  ip:string
 ): Promise<PDFDocument> {  // Aquí retornamos void ya que no necesitamos retornar el PDF.
   try {
     console.log("Iniciando generación de PDF con los siguientes parámetros:");
@@ -109,6 +110,14 @@ export async function obtenerTemplatePdf(
       color: rgb(0, 0, 0),
     });
 
+    templatePage.drawText(ip, {
+      x: 464,
+      y: height - 353,
+      size: fontSize,
+      font: font,
+      color: rgb(0, 0, 0),
+    });
+
     // Agregar la firma (haciendo la firma mucho más grande y visible)
     const firmaX =  50;  // Ajustamos la posición X para mayor visibilidad
     const firmaY = 50;  // Mantener la posición Y para que no se solape con el texto
@@ -146,7 +155,7 @@ export async function obtenerTemplatePdf(
 }
 
 export async function generatePdf(base64Data: string, nombreTitular: string, telefonoTitular: string, correoTitular: string, fechaNacimiento: string,
-  nombreAgente: string, numeroAgente: string, telefonoAgente: string, correoAgente: string, consentimientoId: string, createdDate: Date, consentimiento:any): Promise<[Uint8Array, string]> {
+  nombreAgente: string, numeroAgente: string, telefonoAgente: string, correoAgente: string, consentimientoId: string, createdDate: Date, consentimiento:any, ip:string): Promise<[Uint8Array, string]> {
   try {
     //Crear la carpeta
     const folderPath = path.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/${consentimientoId}`);
@@ -275,7 +284,7 @@ export async function generatePdf(base64Data: string, nombreTitular: string, tel
     });
     // Guardar el documento PDF como un archivo
 
-    const templatePage = await obtenerTemplatePdf(consentimientoId, nombreTitular, correoTitular, telefonoTitular, consentimiento, imageBytes, createdDate);
+    const templatePage = await obtenerTemplatePdf(consentimientoId, nombreTitular, correoTitular, telefonoTitular, consentimiento, imageBytes, createdDate, ip);
 
     // Copiar la página modificada del template y agregarla al documento
     const [copiedTemplatePage] = await pdfDoc.copyPages(templatePage, [0]);
@@ -291,7 +300,7 @@ export async function generatePdf(base64Data: string, nombreTitular: string, tel
 }
 
 export async function generateEnglishPdf(base64Data: string, nombreTitular: string, telefonoTitular: string, correoTitular: string, fechaNacimiento: string,
-  nombreAgente: string, numeroAgente: string, telefonoAgente: string, correoAgente: string, consentimientoId: string, createdDate: Date, consentimiento:any): Promise<[Uint8Array, string]> {
+  nombreAgente: string, numeroAgente: string, telefonoAgente: string, correoAgente: string, consentimientoId: string, createdDate: Date, consentimiento:any, ip:string): Promise<[Uint8Array, string]> {
   try {
     //Crear la carpeta
     const folderPath = path.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/${consentimientoId}`);
@@ -417,7 +426,7 @@ Signature: ____________________________________ Date: __________________________
       height: 50,
     });
     // Guardar el documento PDF como un archivo
-    const templatePage = await obtenerTemplatePdf(consentimientoId, nombreTitular, correoTitular, telefonoTitular, consentimiento, imageBytes, createdDate);
+    const templatePage = await obtenerTemplatePdf(consentimientoId, nombreTitular, correoTitular, telefonoTitular, consentimiento, imageBytes, createdDate, ip);
 
     // Copiar la página modificada del template y agregarla al documento
     const [copiedTemplatePage] = await pdfDoc.copyPages(templatePage, [0]);
@@ -432,7 +441,7 @@ Signature: ____________________________________ Date: __________________________
   }
 }
 
-export async function generateStatementsPdf(base64Data: string, agente: StatementSend, statement: IStatement, correoTitular:string, createdDate:Date, consentimiento:any): Promise<[Uint8Array, string]> {
+export async function generateStatementsPdf(base64Data: string, agente: StatementSend, statement: IStatement, correoTitular:string, createdDate:Date, consentimiento:any, ip:string): Promise<[Uint8Array, string]> {
   try {
     console.log(createdDate)
     //Crear la carpeta
@@ -569,7 +578,7 @@ export async function generateStatementsPdf(base64Data: string, agente: Statemen
     // Guardar el documento PDF como un archivo
     console.log('mano no joa: ')
     console.log(createdDate)
-    const templatePage = await obtenerTemplatePdf(statement.idConsentimiento, statement.nombreConsumidor, correoTitular, '', consentimiento, imageBytes, createdDate);
+    const templatePage = await obtenerTemplatePdf(statement.idConsentimiento, statement.nombreConsumidor, correoTitular, '', consentimiento, imageBytes, createdDate, ip);
 
     // Copiar la página modificada del template y agregarla al documento
     const [copiedTemplatePage] = await pdfDoc.copyPages(templatePage, [0]);
@@ -584,7 +593,7 @@ export async function generateStatementsPdf(base64Data: string, agente: Statemen
   }
 }
 
-export async function generateStatementsEnglishPdf(base64Data: string, agente: StatementSend, statement: IStatement, correoTitular:string, createdDate:Date, consentimiento:any): Promise<[Uint8Array, string]> {
+export async function generateStatementsEnglishPdf(base64Data: string, agente: StatementSend, statement: IStatement, correoTitular:string, createdDate:Date, consentimiento:any, ip:string): Promise<[Uint8Array, string]> {
   try {
     //Crear la carpeta
     const folderPath = path.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/${agente.consentimientoId}`);
@@ -716,7 +725,7 @@ export async function generateStatementsEnglishPdf(base64Data: string, agente: S
       height: 20,
     });
     // Guardar el documento PDF como un archivo
-    const templatePage = await obtenerTemplatePdf(statement.idConsentimiento, statement.nombreConsumidor, correoTitular, '', consentimiento, imageBytes, createdDate);
+    const templatePage = await obtenerTemplatePdf(statement.idConsentimiento, statement.nombreConsumidor, correoTitular, '', consentimiento, imageBytes, createdDate, ip);
 
     // Copiar la página modificada del template y agregarla al documento
     const [copiedTemplatePage] = await pdfDoc.copyPages(templatePage, [0]);
