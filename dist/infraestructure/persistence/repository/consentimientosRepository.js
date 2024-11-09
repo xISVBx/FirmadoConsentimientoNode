@@ -82,12 +82,27 @@ const GuardarStatement = (base64Consentimiento, path, statement, agente) => __aw
     yield conn.beginTransaction();
     try {
         const bufferConsentimiento = Buffer.from(base64Consentimiento);
-        const resultConsentimiento = yield conn.execute(`INSERT INTO consentimientos
-            (id, path_consentimiento, consentimiento, created)
-            VALUES (?, ?, ?, ?);`, [statement.idConsentimiento, path, bufferConsentimiento, new Date()]);
+        const resultConsentimiento = yield conn.execute(`UPDATE consentimientos
+            SET 
+                path_consentimiento = ?, 
+                consentimiento = ?, 
+                created = ?, 
+                ip = ?, 
+                location = ?, 
+                estado = 'created', 
+                qr_code = ?
+            WHERE id = ?;`, [
+            path,
+            bufferConsentimiento,
+            new Date(),
+            '',
+            '',
+            '',
+            agente.consentimientoId
+        ]);
         const resultDatos = yield conn.execute(`INSERT INTO datos_afirmaciones
             (id_consentimiento, codigoPostal, ingresoAnual, compania, plan, nombreConsumidor)
-            VALUES (?, ?, ?, ?, ?, ?);`, [statement.idConsentimiento, agente.codigoPostal, agente.ingresoAnual, agente.compania, agente.plan, statement.nombreConsumidor]);
+            VALUES (?, ?, ?, ?, ?, ?);`, [agente.consentimientoId, agente.codigoPostal, agente.ingresoAnual, agente.compania, agente.plan, statement.nombreConsumidor]);
         yield conn.commit();
         return true;
     }

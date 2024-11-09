@@ -60,6 +60,7 @@ export const GuardarConsentimiento = async (base64Consentimiento: Uint8Array, no
         throw CustomError.InternalServerError(`${e}`)
     }
 }
+
 export const getConsentimientoById = async (idConsentimiento: string): Promise<any> => {
     const conn = await getConnection(); // Establecer conexión con la base de datos
     try {
@@ -84,27 +85,39 @@ export const getConsentimientoById = async (idConsentimiento: string): Promise<a
     }
 }
 
-
-
 export const GuardarStatement = async (base64Consentimiento: Uint8Array, path: string, statement: IStatement, agente: StatementSend): Promise<boolean> => {
     var conn = await getConnection();
     await conn.beginTransaction();
     try {
-
         const bufferConsentimiento = Buffer.from(base64Consentimiento);
 
         const resultConsentimiento = await conn.execute(
-            `INSERT INTO consentimientos
-            (id, path_consentimiento, consentimiento, created)
-            VALUES (?, ?, ?, ?);`,
-            [statement.idConsentimiento, path, bufferConsentimiento, new Date()]
-        );
+            `UPDATE consentimientos
+            SET 
+                path_consentimiento = ?, 
+                consentimiento = ?, 
+                created = ?, 
+                ip = ?, 
+                location = ?, 
+                estado = 'created', 
+                qr_code = ?
+            WHERE id = ?;`,
+            [
+                path, 
+                bufferConsentimiento, 
+                new Date(),
+                '',
+                '',
+                '',
+                agente.consentimientoId
 
+            ]
+        );
         const resultDatos = await conn.execute(
             `INSERT INTO datos_afirmaciones
             (id_consentimiento, codigoPostal, ingresoAnual, compania, plan, nombreConsumidor)
             VALUES (?, ?, ?, ?, ?, ?);`,
-            [statement.idConsentimiento, agente.codigoPostal, agente.ingresoAnual, agente.compania, agente.plan, statement.nombreConsumidor]
+            [agente.consentimientoId, agente.codigoPostal, agente.ingresoAnual, agente.compania, agente.plan, statement.nombreConsumidor]
         );
 
         await conn.commit();

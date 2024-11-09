@@ -69,7 +69,7 @@ export default class ConsentimientosService {
 
             } else if (idioma === Idioma.Inglés) {
 
-                pdfResponse = await generateStatementsEnglishPdf(base64Image, agente, statement, correoTitular, consentimiento, createdDate );
+                pdfResponse = await generateStatementsEnglishPdf(base64Image, agente, statement, correoTitular, createdDate, consentimiento);
             }
             if (pdfResponse == undefined) {
                 throw CustomError.BadRequest('No se pudo general el Pdf correctamente, intente mas tarde');

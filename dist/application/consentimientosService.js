@@ -59,7 +59,7 @@ class ConsentimientosService {
                     pdfResponse = yield (0, crearConsentimiento_1.generateStatementsPdf)(base64Image, agente, statement, correoTitular, createdDate, consentimiento);
                 }
                 else if (idioma === Idioma_1.Idioma.Inglés) {
-                    pdfResponse = yield (0, crearConsentimiento_1.generateStatementsEnglishPdf)(base64Image, agente, statement, correoTitular, consentimiento, createdDate);
+                    pdfResponse = yield (0, crearConsentimiento_1.generateStatementsEnglishPdf)(base64Image, agente, statement, correoTitular, createdDate, consentimiento);
                 }
                 if (pdfResponse == undefined) {
                     throw CustomError_1.CustomError.BadRequest('No se pudo general el Pdf correctamente, intente mas tarde');

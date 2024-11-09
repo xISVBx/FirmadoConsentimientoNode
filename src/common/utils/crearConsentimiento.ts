@@ -84,7 +84,7 @@ export async function obtenerTemplatePdf(
     });
 
     console.log(consentimiento)
-    templatePage.drawText((consentimiento.created as Date).toISOString(), {
+    templatePage.drawText((consentimiento.enviado as Date).toISOString(), {
       x: 210,
       y: height - 300,
       size: fontSize,

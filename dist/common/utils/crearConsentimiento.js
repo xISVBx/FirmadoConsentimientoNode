@@ -82,7 +82,7 @@ function obtenerTemplatePdf(consentimientoId, nombreTitular, correoTitular, tele
                 color: (0, pdf_lib_1.rgb)(0, 0, 0),
             });
             console.log(consentimiento);
-            templatePage.drawText(consentimiento.created.toISOString(), {
+            templatePage.drawText(consentimiento.enviado.toISOString(), {
                 x: 210,
                 y: height - 300,
                 size: fontSize,
