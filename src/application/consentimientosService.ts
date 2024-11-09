@@ -21,6 +21,10 @@ export default class ConsentimientosService {
 
             var consentimiento = await getConsentimientoById(agente.consentimientoId)
 
+            if(consentimiento.estado == 'created'){
+                throw CustomError.BadRequest('El consentimiento ya fue firmado');
+            }
+
             if (idioma === Idioma.Español) {
                 pdfResponse = await generatePdf(base64Image, nombreTitular, telefonoTitular, correoTitular,
                     fechaNacimiento, agente.nombreAgente, agente.numeroProductor, agente.telefonoAgente, agente.correoAgente,
@@ -47,7 +51,13 @@ export default class ConsentimientosService {
                 throw CustomError.InternalServerError("No se pudo almacenar la informacion correctamente");
             }
         } catch (e) {
-            throw CustomError.InternalServerError(`${e}`);
+            if (e instanceof CustomError) {
+                // Si el error es una instancia de CustomError, solo lanzamos el mensaje original
+                throw e;
+            } else {
+                // Si es un error inesperado, lo envolvemos en un error interno del servidor
+                throw CustomError.InternalServerError(`Error inesperado: ${e || e}`);
+            }
         }
         return ResponseGeneric.Success(true, 'Pdf Almacenado!!!');
     }
@@ -60,6 +70,10 @@ export default class ConsentimientosService {
             const createdDate = new Date();
 
             var consentimiento = await getConsentimientoById(agente.consentimientoId)
+
+            if(consentimiento.estado == 'created'){
+                throw CustomError.BadRequest('El consentimiento ya fue firmado');
+            }
 
             console.log(consentimiento)
 
@@ -87,7 +101,13 @@ export default class ConsentimientosService {
                 throw CustomError.InternalServerError("No se pudo almacenar la informacion correctamente");
             }
         } catch (e) {
-            throw CustomError.InternalServerError(`${e}`);
+            if (e instanceof CustomError) {
+                // Si el error es una instancia de CustomError, solo lanzamos el mensaje original
+                throw e;
+            } else {
+                // Si es un error inesperado, lo envolvemos en un error interno del servidor
+                throw CustomError.InternalServerError(`Error inesperado: ${e || e}`);
+            }
         }
         return ResponseGeneric.Success(true, 'Pdf Almacenado!!!');
     }
@@ -144,5 +164,9 @@ export default class ConsentimientosService {
 
         }
         return ResponseGeneric.Success(true, 'Correo enviado correctamente!!!');
+    }
+
+    async GetConsentimientoById(id:string){
+
     }
 }

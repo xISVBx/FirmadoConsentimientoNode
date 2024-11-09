@@ -24,6 +24,9 @@ class ConsentimientosService {
                 var pdfResponse;
                 const createdDate = new Date();
                 var consentimiento = yield (0, consentimientosRepository_1.getConsentimientoById)(agente.consentimientoId);
+                if (consentimiento.estado == 'created') {
+                    throw CustomError_1.CustomError.BadRequest('El consentimiento ya fue firmado');
+                }
                 if (idioma === Idioma_1.Idioma.Español) {
                     pdfResponse = yield (0, crearConsentimiento_1.generatePdf)(base64Image, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, agente.nombreAgente, agente.numeroProductor, agente.telefonoAgente, agente.correoAgente, agente.consentimientoId, createdDate, consentimiento);
                 }
@@ -43,7 +46,14 @@ class ConsentimientosService {
                 }
             }
             catch (e) {
-                throw CustomError_1.CustomError.InternalServerError(`${e}`);
+                if (e instanceof CustomError_1.CustomError) {
+                    // Si el error es una instancia de CustomError, solo lanzamos el mensaje original
+                    throw e;
+                }
+                else {
+                    // Si es un error inesperado, lo envolvemos en un error interno del servidor
+                    throw CustomError_1.CustomError.InternalServerError(`Error inesperado: ${e || e}`);
+                }
             }
             return response_1.ResponseGeneric.Success(true, 'Pdf Almacenado!!!');
         });
@@ -54,6 +64,9 @@ class ConsentimientosService {
                 var pdfResponse;
                 const createdDate = new Date();
                 var consentimiento = yield (0, consentimientosRepository_1.getConsentimientoById)(agente.consentimientoId);
+                if (consentimiento.estado == 'created') {
+                    throw CustomError_1.CustomError.BadRequest('El consentimiento ya fue firmado');
+                }
                 console.log(consentimiento);
                 if (idioma === Idioma_1.Idioma.Español) {
                     pdfResponse = yield (0, crearConsentimiento_1.generateStatementsPdf)(base64Image, agente, statement, correoTitular, createdDate, consentimiento);
@@ -74,7 +87,14 @@ class ConsentimientosService {
                 }
             }
             catch (e) {
-                throw CustomError_1.CustomError.InternalServerError(`${e}`);
+                if (e instanceof CustomError_1.CustomError) {
+                    // Si el error es una instancia de CustomError, solo lanzamos el mensaje original
+                    throw e;
+                }
+                else {
+                    // Si es un error inesperado, lo envolvemos en un error interno del servidor
+                    throw CustomError_1.CustomError.InternalServerError(`Error inesperado: ${e || e}`);
+                }
             }
             return response_1.ResponseGeneric.Success(true, 'Pdf Almacenado!!!');
         });
@@ -126,6 +146,10 @@ class ConsentimientosService {
                 throw CustomError_1.CustomError.InternalServerError(`${e}`);
             }
             return response_1.ResponseGeneric.Success(true, 'Correo enviado correctamente!!!');
+        });
+    }
+    GetConsentimientoById(id) {
+        return __awaiter(this, void 0, void 0, function* () {
         });
     }
 }

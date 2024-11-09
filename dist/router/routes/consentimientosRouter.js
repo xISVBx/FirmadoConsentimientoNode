@@ -111,6 +111,13 @@ class ConsentimientoRouter {
                 next(err);
             }
         }));
+        this.router.get('/consentimiento/:id', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            try {
+            }
+            catch (err) {
+                next(err);
+            }
+        }));
     }
 }
 exports.default = new ConsentimientoRouter();

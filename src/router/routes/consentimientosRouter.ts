@@ -106,6 +106,13 @@ class ConsentimientoRouter {
             }
         })
 
+        this.router.get('/consentimiento/:id', async (req: Request, res: Response, next: NextFunction) =>{
+            try{
+                
+            }catch(err) {
+                next(err)
+            }
+        })
     }
 }
 
