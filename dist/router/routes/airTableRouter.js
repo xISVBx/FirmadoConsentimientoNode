@@ -22,53 +22,60 @@ class AirTableRouter {
     }
     config() {
         /**
-             * @openapi
-             * /api/airtable:
-             *   get:
-             *     summary: Obtiene registros de Airtable con filtros opcionales.
-             *     description: Este endpoint permite obtener registros filtrados por estado, aseguradora y agente.
-             *     parameters:
-             *       - in: query
-             *         name: estado
-             *         description: El estado para filtrar los registros (opcional).
-             *         required: false
-             *         schema:
-             *           type: string
-             *       - in: query
-             *         name: aseguradora
-             *         description: La aseguradora para filtrar los registros (opcional).
-             *         required: false
-             *         schema:
-             *           type: string
-             *       - in: query
-             *         name: agente
-             *         description: El nombre del agente para filtrar los registros (opcional).
-             *         required: false
-             *         schema:
-             *           type: string
-             *     responses:
-             *       200:
-             *         description: Registros obtenidos exitosamente.
-             *         content:
-             *           application/json:
-             *             schema:
-             *               type: array
-             *               items:
-             *                 type: object
-             *                 properties:
-             *                   id:
-             *                     type: string
-             *                   nombre:
-             *                     type: string
-             *                   estado:
-             *                     type: string
-             *                   aseguradora:
-             *                     type: string
-             *                   agente:
-             *                     type: string
-             *       400:
-             *         description: Error en los parámetros.
-             */
+     * @openapi
+     * /api/airtable:
+     *   get:
+     *     summary: Obtiene registros de Airtable con filtros opcionales.
+     *     description: Este endpoint permite obtener registros de Airtable basados en los parámetros de estado, aseguradora y agente.
+     *     parameters:
+     *       - in: query
+     *         name: estado
+     *         description: Filtro para buscar registros según el estado (opcional).
+     *         required: false
+     *         schema:
+     *           type: string
+     *       - in: query
+     *         name: aseguradora
+     *         description: Filtro para buscar registros según la aseguradora (opcional).
+     *         required: false
+     *         schema:
+     *           type: string
+     *       - in: query
+     *         name: agente
+     *         description: Filtro para buscar registros según el nombre del agente (opcional).
+     *         required: false
+     *         schema:
+     *           type: string
+     *     responses:
+     *       200:
+     *         description: Registros obtenidos exitosamente.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: array
+     *               items:
+     *                 type: object
+     *                 properties:
+     *                   id:
+     *                     type: string
+     *                     description: Identificador único del registro.
+     *                   nombre:
+     *                     type: string
+     *                     description: Nombre del titular o asegurado.
+     *                   estado:
+     *                     type: string
+     *                     description: Estado del registro.
+     *                   aseguradora:
+     *                     type: string
+     *                     description: Nombre de la aseguradora.
+     *                   agente:
+     *                     type: string
+     *                     description: Nombre del agente asociado al registro.
+     *       400:
+     *         description: Error en los parámetros de la solicitud.
+     *       500:
+     *         description: Error interno del servidor.
+     */
         this.router.get('/airtable', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
             try {
                 const estado = req.query.estado || null;
