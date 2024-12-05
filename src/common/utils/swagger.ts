@@ -11,7 +11,7 @@ const swaggerOptions = {
         },
         servers: [
             {
-                url: 'http://localhost:3000', // Cambia esto según tu entorno
+                url: 'https://www.jecopainsurance.com', // Cambia esto según tu entorno
             },
         ],
     },
