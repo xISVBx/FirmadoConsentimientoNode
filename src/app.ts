@@ -1,10 +1,11 @@
 import express, { Request, Response, NextFunction } from 'express';
 import morgan from 'morgan';
 import cors from 'cors';
+import AirTableRouter from './router/routes/airTableRouter.js'
 import ConsentimientoRouter from './router/routes/consentimientosRouter.js'
 import ErrorRouter from './router/routes/errorRouter.js'
 import dotenv from 'dotenv';
-import swagger from './common/utils/swagger.js';
+import { swaggerDocs, swaggerUi } from './common/utils/swagger.js';
 import { v4 as uuidv4 } from 'uuid';
 import { getDb } from './infraestructure/persistence/context/sqlite.js';
 import { ResponseGeneric } from './common/models/response.js';
@@ -117,7 +118,12 @@ class Server {
 
 
         this.app.use(express.json());
-        this.app.use('/api-docs', swagger.swaggerUi.serve, swagger.swaggerUi.setup(swagger.swaggerDocs));
+        this.app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+        this.app.get('/docs.json', (req, res) => {
+            res.setHeader('Content-Type', 'application/json');
+            res.send(swaggerDocs);
+          });
+        
 
         this.app.use(logRequestToDatabase({
             blacklist: ['/api/error'],
@@ -132,6 +138,7 @@ class Server {
     private routes() {
         this.app.use('/api', ConsentimientoRouter.router)
         this.app.use('/api', ErrorRouter.router)
+        this.app.use('/api',AirTableRouter.router)
         this.app.get('/api', (req, res) => {
             res.status(200).send({ message: 'API is running' });
         });

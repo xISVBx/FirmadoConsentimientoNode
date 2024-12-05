@@ -15,10 +15,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const morgan_1 = __importDefault(require("morgan"));
 const cors_1 = __importDefault(require("cors"));
+const airTableRouter_js_1 = __importDefault(require("./router/routes/airTableRouter.js"));
 const consentimientosRouter_js_1 = __importDefault(require("./router/routes/consentimientosRouter.js"));
 const errorRouter_js_1 = __importDefault(require("./router/routes/errorRouter.js"));
 const dotenv_1 = __importDefault(require("dotenv"));
-const swagger_js_1 = __importDefault(require("./common/utils/swagger.js"));
+const swagger_js_1 = require("./common/utils/swagger.js");
 const uuid_1 = require("uuid");
 const sqlite_js_1 = require("./infraestructure/persistence/context/sqlite.js");
 const response_js_1 = require("./common/models/response.js");
@@ -123,7 +124,11 @@ class Server {
             }));
             //this.app.options('*', cors()); // Esto maneja las preflight requests CORS
             this.app.use(express_1.default.json());
-            this.app.use('/api-docs', swagger_js_1.default.swaggerUi.serve, swagger_js_1.default.swaggerUi.setup(swagger_js_1.default.swaggerDocs));
+            this.app.use('/api-docs', swagger_js_1.swaggerUi.serve, swagger_js_1.swaggerUi.setup(swagger_js_1.swaggerDocs));
+            this.app.get('/docs.json', (req, res) => {
+                res.setHeader('Content-Type', 'application/json');
+                res.send(swagger_js_1.swaggerDocs);
+            });
             this.app.use(logRequestToDatabase({
                 blacklist: ['/api/error'],
             }));
@@ -133,6 +138,7 @@ class Server {
     routes() {
         this.app.use('/api', consentimientosRouter_js_1.default.router);
         this.app.use('/api', errorRouter_js_1.default.router);
+        this.app.use('/api', airTableRouter_js_1.default.router);
         this.app.get('/api', (req, res) => {
             res.status(200).send({ message: 'API is running' });
         });

@@ -15,9 +15,9 @@ const swaggerOptions = {
             },
         ],
     },
-    apis: ['./src/routes/*.ts'], // Ruta donde se encuentran tus archivos de rutas
+    apis: ['./src/router/routes/*.ts'], // Ruta donde se encuentran tus archivos de rutas
 };
 
 const swaggerDocs = swaggerJSDoc(swaggerOptions);
 
-export default { swaggerUi, swaggerDocs };
+export { swaggerUi, swaggerDocs };
