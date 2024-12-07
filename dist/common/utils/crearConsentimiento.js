@@ -27,15 +27,6 @@ const qrcode_1 = __importDefault(require("qrcode"));
 function obtenerTemplatePdf(consentimientoId, nombreTitular, correoTitular, telefonoTitular, consentimiento, firma, createdDate, ip) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            console.log("Iniciando generación de PDF con los siguientes parámetros:");
-            console.log(`consentimientoId: ${consentimientoId}`);
-            console.log(`nombreTitular: ${nombreTitular}`);
-            console.log(`correoTitular: ${correoTitular}`);
-            console.log(`telefonoTitular: ${telefonoTitular}`);
-            console.log(`Consentimiento ID: ${consentimiento.id}`);
-            console.log(`Estado: ${consentimiento.estado}`);
-            console.log(`Fecha de Creación: ${consentimiento.created}`);
-            console.log(`createdDate: ${createdDate}`);
             // Ruta del template PD
             const templatePdfPath = path_1.default.resolve(__dirname, '../../..', 'templates', 'Certificado.pdf');
             // Cargar el archivo PDF del template en memoria
@@ -82,7 +73,6 @@ function obtenerTemplatePdf(consentimientoId, nombreTitular, correoTitular, tele
                 font: font,
                 color: (0, pdf_lib_1.rgb)(0, 0, 0),
             });
-            console.log(consentimiento);
             templatePage.drawText(consentimiento.enviado.toISOString(), {
                 x: 210,
                 y: height - 300,
@@ -131,8 +121,6 @@ function obtenerTemplatePdf(consentimientoId, nombreTitular, correoTitular, tele
                 width: qrSize,
                 height: qrSize,
             });
-            console.log(firma);
-            console.log(consentimientoId);
             return templatePdf;
         }
         catch (err) {
@@ -408,7 +396,6 @@ Signature: ____________________________________ Date: __________________________
 function generateStatementsPdf(base64Data, agente, statement, correoTitular, createdDate, consentimiento, ip) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            console.log(createdDate);
             //Crear la carpeta
             const folderPath = path_1.default.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/${statement.idConsentimiento}`);
             //const folderPath = path.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/archivo`);
@@ -528,8 +515,6 @@ function generateStatementsPdf(base64Data, agente, statement, correoTitular, cre
                 height: 20,
             });
             // Guardar el documento PDF como un archivo
-            console.log('mano no joa: ');
-            console.log(createdDate);
             const templatePage = yield obtenerTemplatePdf(statement.idConsentimiento, statement.nombreConsumidor, correoTitular, '', consentimiento, imageBytes, createdDate, ip);
             // Copiar la página modificada del template y agregarla al documento
             const [copiedTemplatePage] = yield pdfDoc.copyPages(templatePage, [0]);

@@ -19,15 +19,7 @@ export async function obtenerTemplatePdf(
   ip:string
 ): Promise<PDFDocument> {  // Aquí retornamos void ya que no necesitamos retornar el PDF.
   try {
-    console.log("Iniciando generación de PDF con los siguientes parámetros:");
-    console.log(`consentimientoId: ${consentimientoId}`);
-    console.log(`nombreTitular: ${nombreTitular}`);
-    console.log(`correoTitular: ${correoTitular}`);
-    console.log(`telefonoTitular: ${telefonoTitular}`);
-    console.log(`Consentimiento ID: ${consentimiento.id}`);
-    console.log(`Estado: ${consentimiento.estado}`);
-    console.log(`Fecha de Creación: ${consentimiento.created}`);
-    console.log(`createdDate: ${createdDate}`);
+
     // Ruta del template PD
     const templatePdfPath = path.resolve(__dirname, '../../..', 'templates', 'Certificado.pdf');
 
@@ -85,7 +77,6 @@ export async function obtenerTemplatePdf(
       color: rgb(0, 0, 0),
     });
 
-    console.log(consentimiento)
     templatePage.drawText((consentimiento.enviado as Date).toISOString(), {
       x: 210,
       y: height - 300,
@@ -143,9 +134,6 @@ export async function obtenerTemplatePdf(
       width: qrSize,
       height: qrSize,
     });
-
-    console.log(firma)
-    console.log(consentimientoId)
 
     return templatePdf;
   } catch (err) {
@@ -443,7 +431,6 @@ Signature: ____________________________________ Date: __________________________
 
 export async function generateStatementsPdf(base64Data: string, agente: StatementSend, statement: IStatement, correoTitular:string, createdDate:Date, consentimiento:any, ip:string): Promise<[Uint8Array, string]> {
   try {
-    console.log(createdDate)
     //Crear la carpeta
     const folderPath = path.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/${statement.idConsentimiento}`);
     //const folderPath = path.resolve(__dirname, `${process.env.CONSENTIMIENTO_PATH}/archivo`);
@@ -576,8 +563,6 @@ export async function generateStatementsPdf(base64Data: string, agente: Statemen
       height: 20,
     });
     // Guardar el documento PDF como un archivo
-    console.log('mano no joa: ')
-    console.log(createdDate)
     const templatePage = await obtenerTemplatePdf(statement.idConsentimiento, statement.nombreConsumidor, correoTitular, '', consentimiento, imageBytes, createdDate, ip);
 
     // Copiar la página modificada del template y agregarla al documento

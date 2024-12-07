@@ -75,8 +75,6 @@ export default class ConsentimientosService {
                 throw CustomError.BadRequest('El consentimiento ya fue firmado');
             }
 
-            console.log(consentimiento)
-
             if (idioma === Idioma.Español) {
 
                 pdfResponse = await generateStatementsPdf(base64Image, agente, statement, correoTitular, createdDate, consentimiento, ip);

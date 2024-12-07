@@ -130,7 +130,6 @@ class ConsentimientoRouter {
             try {
                 const { id } = req.params;
                 const filePath = path_1.default.join(__dirname, '../../../', 'consentimientos', `${id}`, `formulario_consentimiento.pdf`);
-                console.log(filePath);
                 // Establecer el nombre del archivo a mostrar cuando se descargue
                 const downloadName = 'documento.pdf';
                 // Configurar el encabezado para indicar que se va a hacer una descarga

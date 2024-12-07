@@ -12,10 +12,43 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const response_js_1 = require("../common/models/response.js");
 const airtable_js_1 = require("../infraestructure/infraestructure/airtable.js");
 class AirTableService {
-    Prueba(estado, aseguradora, agente) {
+    GetReportes(estado, aseguradora, agente) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                var response = yield (0, airtable_js_1.getFilteredData)(estado, aseguradora, agente);
+                var response = yield (0, airtable_js_1.GetReportes)(estado, aseguradora, agente);
+            }
+            catch (err) {
+                return response_js_1.ResponseGeneric.Error(`${err}`);
+            }
+            return response_js_1.ResponseGeneric.Success(response, 'Prueba completada!!!');
+        });
+    }
+    GetUsuarios() {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                var response = yield (0, airtable_js_1.GetUsuarios)();
+            }
+            catch (err) {
+                return response_js_1.ResponseGeneric.Error(`${err}`);
+            }
+            return response_js_1.ResponseGeneric.Success(response, 'Prueba completada!!!');
+        });
+    }
+    GetTitulares() {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                var response = yield (0, airtable_js_1.GetTitulares)();
+            }
+            catch (err) {
+                return response_js_1.ResponseGeneric.Error(`${err}`);
+            }
+            return response_js_1.ResponseGeneric.Success(response, 'Prueba completada!!!');
+        });
+    }
+    GetSeguros() {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                var response = yield (0, airtable_js_1.GetSeguros)();
             }
             catch (err) {
                 return response_js_1.ResponseGeneric.Error(`${err}`);

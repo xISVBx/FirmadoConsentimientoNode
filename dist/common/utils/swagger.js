@@ -7,6 +7,8 @@ exports.swaggerDocs = exports.swaggerUi = void 0;
 const swagger_jsdoc_1 = __importDefault(require("swagger-jsdoc"));
 const swagger_ui_express_1 = __importDefault(require("swagger-ui-express"));
 exports.swaggerUi = swagger_ui_express_1.default;
+const prod = 'https://api.jecopainsurance.com';
+const prueba = 'http://localhost:3000';
 const swaggerOptions = {
     swaggerDefinition: {
         openapi: '3.0.0',
@@ -17,11 +19,11 @@ const swaggerOptions = {
         },
         servers: [
             {
-                url: 'https://api.jecopainsurance.com', // Cambia esto si tu servidor está en otra dirección
+                url: prod,
             },
         ],
     },
-    apis: ['./src/router/routes/*.ts'], // Ruta donde se encuentran tus archivos de rutas
+    apis: ['./src/router/routes/*.ts'],
 };
 const swaggerDocs = (0, swagger_jsdoc_1.default)(swaggerOptions);
 exports.swaggerDocs = swaggerDocs;

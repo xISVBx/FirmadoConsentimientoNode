@@ -67,7 +67,6 @@ class ConsentimientosService {
                 if (consentimiento.estado == 'created') {
                     throw CustomError_1.CustomError.BadRequest('El consentimiento ya fue firmado');
                 }
-                console.log(consentimiento);
                 if (idioma === Idioma_1.Idioma.Español) {
                     pdfResponse = yield (0, crearConsentimiento_1.generateStatementsPdf)(base64Image, agente, statement, correoTitular, createdDate, consentimiento, ip);
                 }
