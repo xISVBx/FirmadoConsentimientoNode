@@ -17,6 +17,9 @@ const base = new Airtable({ apiKey: API_KEY }).base(BASE_ID);
 const GetReportes = (estado, aseguradora, agente) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         let filterFormula = '';
+        console.log(estado);
+        console.log(aseguradora);
+        console.log(agente);
         if (estado) {
             filterFormula += `{Estado} = "${estado}"`;
         }
@@ -45,28 +48,6 @@ const GetReportes = (estado, aseguradora, agente) => __awaiter(void 0, void 0, v
     }
 });
 exports.GetReportes = GetReportes;
-/**
- * @openapi
- * /api/airtable/usuarios:
- *   get:
- *     summary: Obtiene la lista de usuarios registrados en Airtable.
- *     description: Este endpoint recupera los registros de la tabla "Lista de Usuarios Registrados" en Airtable.
- *     responses:
- *       200:
- *         description: Lista de usuarios obtenida exitosamente.
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   Nombre Completo:
- *                     type: string
- *                     description: Nombre completo del usuario registrado.
- *       500:
- *         description: Error interno del servidor.
- */
 const GetUsuarios = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const records = yield base('Lista de Usuarios Registrados')
@@ -76,6 +57,7 @@ const GetUsuarios = () => __awaiter(void 0, void 0, void 0, function* () {
             .all();
         // Mapeamos para extraer solo los nombres completos
         const nombres = records.map((record) => record.fields['Nombre Completo']);
+        nombres.sort((a, b) => a.localeCompare(b));
         return nombres;
     }
     catch (err) {
@@ -92,6 +74,7 @@ const GetTitulares = () => __awaiter(void 0, void 0, void 0, function* () {
         }).all();
         // Mapeamos para extraer solo los nombres completos
         const nombres = records.map((record) => record.fields['Nombre y Apellido']);
+        nombres.sort((a, b) => a.localeCompare(b));
         return nombres;
     }
     catch (err) {
@@ -109,6 +92,7 @@ const GetSeguros = () => __awaiter(void 0, void 0, void 0, function* () {
             .all();
         // Mapeamos para extraer solo los nombres completos
         const nombres = records.map((record) => record.fields['Nombre']);
+        nombres.sort((a, b) => a.localeCompare(b));
         return nombres;
     }
     catch (err) {

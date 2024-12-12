@@ -42,22 +42,18 @@ function logRequestToDatabase(options = {}) {
             req.requestStartTime = startTime;
             // Registrar en la base de datos
             const db = yield (0, sqlite_js_1.getDb)();
-            yield db.run('INSERT INTO requests (id, method, url, start_time, request_params) VALUES (?, ?, ?, ?, ?)', [
+            yield db.run("INSERT INTO requests (id, method, url, start_time, request_params) VALUES (?, ?, ?, ?, ?)", [
                 requestId,
                 req.method,
                 req.originalUrl,
                 new Date(startTime).toISOString(),
-                JSON.stringify(req.body)
+                JSON.stringify(req.body),
             ]);
             // Cuando la respuesta finalice, actualizamos la duración y el estado de la respuesta
-            res.on('finish', () => __awaiter(this, void 0, void 0, function* () {
+            res.on("finish", () => __awaiter(this, void 0, void 0, function* () {
                 const duration = Date.now() - startTime;
                 const responseStatus = res.statusCode;
-                yield db.run('UPDATE requests SET duration = ?, response_status = ? WHERE id = ?', [
-                    duration,
-                    responseStatus,
-                    requestId
-                ]);
+                yield db.run("UPDATE requests SET duration = ?, response_status = ? WHERE id = ?", [duration, responseStatus, requestId]);
             }));
             next();
         });
@@ -66,27 +62,22 @@ function logRequestToDatabase(options = {}) {
 class Server {
     constructor() {
         // Lista negra de rutas o métodos
-        this.blacklist = [
-            '/api/error',
-        ];
+        this.blacklist = ["/api/error"];
         this.errorHandler = (err, req, res, next) => __awaiter(this, void 0, void 0, function* () {
             const errorDetails = {
                 request_id: req.requestId,
                 message: err.message,
-                stack: err.stack
+                stack: err.stack,
             };
-            yield (0, sqlite_js_1.getDb)().then(db => {
-                db.run('INSERT INTO errors (request_id, message, stack) VALUES (?, ?, ?)', [
-                    req.requestId,
-                    errorDetails.message,
-                    errorDetails.stack
-                ]);
+            yield (0, sqlite_js_1.getDb)().then((db) => {
+                db.run("INSERT INTO errors (request_id, message, stack) VALUES (?, ?, ?)", [req.requestId, errorDetails.message, errorDetails.stack]);
             });
-            res.status(err.status || 500).send(response_js_1.ResponseGeneric.Error(err.message || 'Algo salió mal!'));
+            res
+                .status(err.status || 500)
+                .send(response_js_1.ResponseGeneric.Error(err.message || "Algo salió mal!"));
         });
         this.app = (0, express_1.default)();
-        this.config()
-            .then(() => {
+        this.config().then(() => {
             this.routes();
             this.start();
         });
@@ -117,30 +108,31 @@ class Server {
             dotenv_1.default.config();
             yield this.setupDatabase();
             //'https://www.jecopainsurance.com'
-            this.app.use((0, cors_1.default)({
-                origin: 'https://www.jecopainsurance.com', // Permitir solo este dominio
-                methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-                credentials: true, // Si necesitas enviar cookies o encabezados de autorización
-            }));
-            //this.app.options('*', cors()); // Esto maneja las preflight requests CORS
+            /*
+                this.app.use(cors({
+                    origin: 'https://www.jecopainsurance.com',
+                    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+                    credentials: true,
+                }));*/
+            this.app.use((0, cors_1.default)()); // Esto maneja las preflight requests CORS
             this.app.use(express_1.default.json());
-            this.app.use('/api-docs', swagger_js_1.swaggerUi.serve, swagger_js_1.swaggerUi.setup(swagger_js_1.swaggerDocs));
-            this.app.get('/docs.json', (req, res) => {
-                res.setHeader('Content-Type', 'application/json');
+            this.app.use("/api-docs", swagger_js_1.swaggerUi.serve, swagger_js_1.swaggerUi.setup(swagger_js_1.swaggerDocs));
+            this.app.get("/docs.json", (req, res) => {
+                res.setHeader("Content-Type", "application/json");
                 res.send(swagger_js_1.swaggerDocs);
             });
             this.app.use(logRequestToDatabase({
-                blacklist: ['/api/error'],
+                blacklist: ["/api/error"],
             }));
-            this.app.use((0, morgan_1.default)('dev'));
+            this.app.use((0, morgan_1.default)("dev"));
         });
     }
     routes() {
-        this.app.use('/api', consentimientosRouter_js_1.default.router);
-        this.app.use('/api', errorRouter_js_1.default.router);
-        this.app.use('/api', airTableRouter_js_1.default.router);
-        this.app.get('/api', (req, res) => {
-            res.status(200).send({ message: 'API is running' });
+        this.app.use("/api", consentimientosRouter_js_1.default.router);
+        this.app.use("/api", errorRouter_js_1.default.router);
+        this.app.use("/api", airTableRouter_js_1.default.router);
+        this.app.get("/api", (req, res) => {
+            res.status(200).send({ message: "API is running" });
         });
     }
     start() {

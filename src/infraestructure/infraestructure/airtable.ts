@@ -9,6 +9,10 @@ export const GetReportes = async (estado: string | null, aseguradora: string | n
   try {
     let filterFormula = '';
 
+    console.log(estado)
+    console.log(aseguradora)
+    console.log(agente)
+
     if (estado) {
       filterFormula += `{Estado} = "${estado}"`;
     }
@@ -41,28 +45,7 @@ export const GetReportes = async (estado: string | null, aseguradora: string | n
   }
 };
 
-/**
- * @openapi
- * /api/airtable/usuarios:
- *   get:
- *     summary: Obtiene la lista de usuarios registrados en Airtable.
- *     description: Este endpoint recupera los registros de la tabla "Lista de Usuarios Registrados" en Airtable.
- *     responses:
- *       200:
- *         description: Lista de usuarios obtenida exitosamente.
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   Nombre Completo:
- *                     type: string
- *                     description: Nombre completo del usuario registrado.
- *       500:
- *         description: Error interno del servidor.
- */
+
 export const GetUsuarios = async (): Promise<string[]> => {
   try {
     const records = await base('Lista de Usuarios Registrados')
@@ -73,6 +56,9 @@ export const GetUsuarios = async (): Promise<string[]> => {
 
     // Mapeamos para extraer solo los nombres completos
     const nombres = records.map((record:any) => record.fields['Nombre Completo']);
+
+    nombres.sort((a: string, b: string) => a.localeCompare(b));
+    
     return nombres;
 
   } catch (err) {
@@ -90,6 +76,9 @@ export const GetTitulares = async (): Promise<string[]> => {
       }).all();
     // Mapeamos para extraer solo los nombres completos
     const nombres = records.map((record:any) => record.fields['Nombre y Apellido']);
+
+    nombres.sort((a: string, b: string) => a.localeCompare(b));
+
     return nombres;
 
   } catch (err) {
@@ -108,6 +97,9 @@ export const GetSeguros = async (): Promise<string[]> => {
 
     // Mapeamos para extraer solo los nombres completos
     const nombres = records.map((record:any) => record.fields['Nombre']);
+
+    nombres.sort((a: string, b: string) => a.localeCompare(b));
+
     return nombres;
 
   } catch (err) {
