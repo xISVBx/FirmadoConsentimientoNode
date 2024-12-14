@@ -109,12 +109,19 @@ class Server {
     await this.setupDatabase();
 
     //'https://www.jecopainsurance.com'
-    
-        this.app.use(cors({
-            origin: ['https://www.jecopainsurance.com', 'https://app.jecopainsurance.com'],
-            methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-            credentials: true,
-        }));
+
+    this.app.use(
+      cors({
+        origin: [
+          "https://www.jecopainsurance.com",
+          "https://app.jecopainsurance.com",
+          "https://api.jecopainsurance.com", 
+        ],
+        allowedHeaders: "Origin, X-Requested-With, Content-Type, Accept, Authorization",
+        methods: "GET, POST, PUT, DELETE, PATCH, OPTIONS",
+        credentials: true,
+      })
+    );
     //this.app.use(cors()); // Esto maneja las preflight requests CORS
 
     this.app.use(express.json());
