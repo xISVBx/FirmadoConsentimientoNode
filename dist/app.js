@@ -109,7 +109,7 @@ class Server {
             yield this.setupDatabase();
             //'https://www.jecopainsurance.com'
             this.app.use((0, cors_1.default)({
-                origin: ['https://www.jecopainsurance.com', 'https://app.jecopainsurance.com/'],
+                origin: ['https://www.jecopainsurance.com', 'https://app.jecopainsurance.com'],
                 methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
                 credentials: true,
             }));

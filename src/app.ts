@@ -111,7 +111,7 @@ class Server {
     //'https://www.jecopainsurance.com'
     
         this.app.use(cors({
-            origin: ['https://www.jecopainsurance.com', 'https://app.jecopainsurance.com/'],
+            origin: ['https://www.jecopainsurance.com', 'https://app.jecopainsurance.com'],
             methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
             credentials: true,
         }));
