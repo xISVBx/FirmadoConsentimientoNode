@@ -109,13 +109,13 @@ class Server {
     await this.setupDatabase();
 
     //'https://www.jecopainsurance.com'
-    /*
+    
         this.app.use(cors({
             origin: 'https://www.jecopainsurance.com',
             methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
             credentials: true,
-        }));*/
-    this.app.use(cors()); // Esto maneja las preflight requests CORS
+        }));
+    //this.app.use(cors()); // Esto maneja las preflight requests CORS
 
     this.app.use(express.json());
     this.app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));

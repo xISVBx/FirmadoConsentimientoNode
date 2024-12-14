@@ -14,7 +14,7 @@ const swaggerOptions = {
         },
         servers: [
             {
-                url: prueba, 
+                url: prod, 
             },
         ],
     },
