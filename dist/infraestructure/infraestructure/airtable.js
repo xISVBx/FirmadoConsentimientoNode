@@ -14,25 +14,22 @@ const Airtable = require("airtable");
 const API_KEY = "patGuLU79HDlj9kEj.d2a7ded3b0c432a29082f6190d5e87904090d07771cb79a8a30df45f9567a1f5";
 const BASE_ID = "app4F1V8lFD3ud9Aw";
 const base = new Airtable({ apiKey: API_KEY }).base(BASE_ID);
-const GetReportes = (estado, aseguradora, agente) => __awaiter(void 0, void 0, void 0, function* () {
+const GetReportes = (estado, producerName, suscriberName) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         let filterFormula = "";
-        console.log(estado);
-        console.log(aseguradora);
-        console.log(agente);
         // Vamos a agregar los filtros dentro de un OR para que cualquiera sea válido
         let conditions = [];
         if (estado) {
             // Filtro para el campo {Estado}
             conditions.push(`ARRAYJOIN({Estado}, "") = "${estado}"`);
         }
-        if (agente) {
-            // Filtro para el campo {Producer_Name}
-            conditions.push(`ARRAYJOIN({Producer_Name}, "") = "${agente}"`);
+        if (suscriberName) {
+            // Filtro para el campo {Suscriber_Name}
+            conditions.push(`ARRAYJOIN({Suscriber_Name}, "") = "${suscriberName}"`);
         }
-        if (aseguradora) {
+        if (producerName) {
             // Filtro para el campo {Member ID}
-            conditions.push(`{Member ID} = "${aseguradora}"`);
+            conditions.push(`{Producer_Name} = "${producerName}"`);
         }
         // Si no se ha añadido ningún filtro, devolvemos todos los registros
         if (conditions.length === 0) {

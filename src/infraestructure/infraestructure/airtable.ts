@@ -8,15 +8,12 @@ const base = new Airtable({ apiKey: API_KEY }).base(BASE_ID);
 
 export const GetReportes = async (
   estado: string | null,
-  aseguradora: string | null,
-  agente: string | null
+  producerName: string | null,
+  suscriberName: string | null
 ): Promise<any> => {
   try {
     let filterFormula = "";
 
-    console.log(estado);
-    console.log(aseguradora);
-    console.log(agente);
 
     // Vamos a agregar los filtros dentro de un OR para que cualquiera sea válido
     let conditions = [];
@@ -26,14 +23,14 @@ export const GetReportes = async (
       conditions.push(`ARRAYJOIN({Estado}, "") = "${estado}"`);
     }
 
-    if (agente) {
-      // Filtro para el campo {Producer_Name}
-      conditions.push(`ARRAYJOIN({Producer_Name}, "") = "${agente}"`);
+    if (suscriberName) {
+      // Filtro para el campo {Suscriber_Name}
+      conditions.push(`ARRAYJOIN({Suscriber_Name}, "") = "${suscriberName}"`);
     }
 
-    if (aseguradora) {
+    if (producerName) {
       // Filtro para el campo {Member ID}
-      conditions.push(`{Member ID} = "${aseguradora}"`);
+      conditions.push(`{Producer_Name} = "${producerName}"`);
     }
 
     // Si no se ha añadido ningún filtro, devolvemos todos los registros

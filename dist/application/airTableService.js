@@ -12,15 +12,24 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const response_js_1 = require("../common/models/response.js");
 const airtable_js_1 = require("../infraestructure/infraestructure/airtable.js");
 class AirTableService {
-    GetReportes(estado, aseguradora, agente) {
+    GetReportes(estado, producerName, suscriberName) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                var response = yield (0, airtable_js_1.GetReportes)(estado, aseguradora, agente);
+                if (estado) {
+                    estado = estado.trim();
+                }
+                if (producerName) {
+                    producerName = producerName.trim();
+                }
+                if (suscriberName) {
+                    suscriberName = suscriberName.trim();
+                }
+                var response = yield (0, airtable_js_1.GetReportes)(estado, producerName, suscriberName);
             }
             catch (err) {
                 return response_js_1.ResponseGeneric.Error(`${err}`);
             }
-            return response_js_1.ResponseGeneric.Success(response, 'Prueba completada!!!');
+            return response_js_1.ResponseGeneric.Success(response, "Prueba completada!!!");
         });
     }
     GetUsuarios() {
@@ -31,7 +40,7 @@ class AirTableService {
             catch (err) {
                 return response_js_1.ResponseGeneric.Error(`${err}`);
             }
-            return response_js_1.ResponseGeneric.Success(response, 'Prueba completada!!!');
+            return response_js_1.ResponseGeneric.Success(response, "Prueba completada!!!");
         });
     }
     GetTitulares() {
@@ -42,7 +51,7 @@ class AirTableService {
             catch (err) {
                 return response_js_1.ResponseGeneric.Error(`${err}`);
             }
-            return response_js_1.ResponseGeneric.Success(response, 'Prueba completada!!!');
+            return response_js_1.ResponseGeneric.Success(response, "Prueba completada!!!");
         });
     }
     GetSeguros() {
@@ -53,7 +62,7 @@ class AirTableService {
             catch (err) {
                 return response_js_1.ResponseGeneric.Error(`${err}`);
             }
-            return response_js_1.ResponseGeneric.Success(response, 'Prueba completada!!!');
+            return response_js_1.ResponseGeneric.Success(response, "Prueba completada!!!");
         });
     }
 }

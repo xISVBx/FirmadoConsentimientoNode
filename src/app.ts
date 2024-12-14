@@ -115,9 +115,10 @@ class Server {
         origin: [
           "https://www.jecopainsurance.com",
           "https://app.jecopainsurance.com",
-          "https://api.jecopainsurance.com", 
+          "https://api.jecopainsurance.com",
         ],
-        allowedHeaders: "Origin, X-Requested-With, Content-Type, Accept, Authorization",
+        allowedHeaders:
+          "Origin, X-Requested-With, Content-Type, Accept, Authorization",
         methods: "GET, POST, PUT, DELETE, PATCH, OPTIONS",
         credentials: true,
       })
