@@ -76,11 +76,13 @@ class AirTableRouter {
           const estado = (req.query.estado as string) || null;
           const producerName = (req.query.producerName as string) || null;
           const suscriberName = (req.query.suscriberName as string) || null;
+          const compania = (req.query.compania as string) || null;
 
           var response = await this.service.GetReportes(
             estado,
             producerName,
-            suscriberName
+            suscriberName,
+            compania
           );
 
           res.send(response);

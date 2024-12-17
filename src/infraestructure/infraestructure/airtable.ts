@@ -9,7 +9,8 @@ const base = new Airtable({ apiKey: API_KEY }).base(BASE_ID);
 export const GetReportes = async (
   estado: string | null,
   producerName: string | null,
-  suscriberName: string | null
+  suscriberName: string | null,
+  compania: string | null
 ): Promise<any> => {
   try {
     let filterFormula = "";
@@ -31,6 +32,9 @@ export const GetReportes = async (
     if (producerName) {
       // Filtro para el campo {Member ID}
       conditions.push(`{Producer_Name} = "${producerName}"`);
+    }
+    if(compania){
+      conditions.push(`{Compañía} = "${compania}"`)
     }
 
     // Si no se ha añadido ningún filtro, devolvemos todos los registros

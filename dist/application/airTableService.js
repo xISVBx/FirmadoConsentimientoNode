@@ -12,7 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const response_js_1 = require("../common/models/response.js");
 const airtable_js_1 = require("../infraestructure/infraestructure/airtable.js");
 class AirTableService {
-    GetReportes(estado, producerName, suscriberName) {
+    GetReportes(estado, producerName, suscriberName, compania) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 if (estado) {
@@ -24,7 +24,10 @@ class AirTableService {
                 if (suscriberName) {
                     suscriberName = suscriberName.trim();
                 }
-                var response = yield (0, airtable_js_1.GetReportes)(estado, producerName, suscriberName);
+                if (compania) {
+                    compania = compania.trim();
+                }
+                var response = yield (0, airtable_js_1.GetReportes)(estado, producerName, suscriberName, compania);
             }
             catch (err) {
                 return response_js_1.ResponseGeneric.Error(`${err}`);

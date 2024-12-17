@@ -10,7 +10,8 @@ export default class AirTableService {
   async GetReportes(
     estado: string | null,
     producerName: string | null,
-    suscriberName: string | null
+    suscriberName: string | null,
+    compania: string | null
   ): Promise<ResponseGeneric<any>> {
     try {
       if (estado) {
@@ -22,7 +23,10 @@ export default class AirTableService {
       if (suscriberName) {
         suscriberName = suscriberName.trim();
       }
-      var response = await GetReportes(estado, producerName, suscriberName);
+      if(compania){
+        compania = compania.trim();
+      }
+      var response = await GetReportes(estado, producerName, suscriberName, compania);
     } catch (err) {
       return ResponseGeneric.Error(`${err}`);
     }

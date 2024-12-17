@@ -109,7 +109,7 @@ class Server {
     await this.setupDatabase();
 
     //'https://www.jecopainsurance.com'
-
+    
     this.app.use(
       cors({
         origin: [
