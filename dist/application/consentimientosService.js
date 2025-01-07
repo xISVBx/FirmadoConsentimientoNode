@@ -110,7 +110,10 @@ class ConsentimientosService {
                     consentimientoId: consentimientoId
                 };
                 var token = (0, token_1.generateToken)(payload);
-                var responseCreate = (0, consentimientosRepository_1.createConsentimiento)(consentimientoId);
+                var responseCreate = yield (0, consentimientosRepository_1.createConsentimiento)(consentimientoId);
+                if (responseCreate) {
+                    throw CustomError_1.CustomError.BadRequest('No se pudo crear el consentimiento!!!');
+                }
                 var response = yield (0, email_1.enviarFormularioCorreo)(destinatario, "Formulario de consentimiento", token);
                 if (!response) {
                     throw CustomError_1.CustomError.BadRequest('No se pudo enviar el correo!!!');
@@ -135,7 +138,10 @@ class ConsentimientosService {
                     consentimientoId: consentimientoId
                 };
                 var token = (0, token_1.generateToken)(payload);
-                var responseCreate = (0, consentimientosRepository_1.createConsentimiento)(consentimientoId);
+                var responseCreate = yield (0, consentimientosRepository_1.createConsentimiento)(consentimientoId);
+                if (responseCreate) {
+                    throw CustomError_1.CustomError.BadRequest('No se pudo crear el consentimiento!!!');
+                }
                 var response = yield (0, email_1.enviarFormularioAfirmacionesCorreo)(destinatario, "Formulario de Atestamiento", token);
                 if (!response) {
                     throw CustomError_1.CustomError.BadRequest('No se pudo enviar el correo!!!');
