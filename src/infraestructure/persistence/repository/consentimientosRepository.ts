@@ -132,6 +132,7 @@ export const createConsentimiento = async (idConsentimiento: string): Promise<bo
     const conn = await getConnection();  // Establecer la conexión con la base de datos
     await conn.beginTransaction();  // Comienza la transacción
 
+    console.log(idConsentimiento)
     try {
         // Insertamos solo los datos necesarios: id, estado 'sended', y la fecha 'enviado'
         await conn.execute(

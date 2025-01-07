@@ -116,6 +116,7 @@ exports.GuardarStatement = GuardarStatement;
 const createConsentimiento = (idConsentimiento) => __awaiter(void 0, void 0, void 0, function* () {
     const conn = yield (0, database_1.getConnection)(); // Establecer la conexión con la base de datos
     yield conn.beginTransaction(); // Comienza la transacción
+    console.log(idConsentimiento);
     try {
         // Insertamos solo los datos necesarios: id, estado 'sended', y la fecha 'enviado'
         yield conn.execute(`INSERT INTO consentimientos
