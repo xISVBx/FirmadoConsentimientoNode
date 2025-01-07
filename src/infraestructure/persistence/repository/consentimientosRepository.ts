@@ -152,6 +152,7 @@ export const createConsentimiento = async (idConsentimiento: string): Promise<bo
     } catch (e) {
         // Si hay un error, deshacemos los cambios realizados
         await conn.rollback();
+        console.log(e)
         throw CustomError.InternalServerError(`Error al crear el consentimiento: ${e}`);
     }
 };

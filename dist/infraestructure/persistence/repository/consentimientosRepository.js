@@ -133,6 +133,7 @@ const createConsentimiento = (idConsentimiento) => __awaiter(void 0, void 0, voi
     catch (e) {
         // Si hay un error, deshacemos los cambios realizados
         yield conn.rollback();
+        console.log(e);
         throw CustomError_1.CustomError.InternalServerError(`Error al crear el consentimiento: ${e}`);
     }
 });
