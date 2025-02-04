@@ -12,55 +12,120 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.getAccessToken = getAccessToken;
 exports.enviarCorreo = enviarCorreo;
 exports.enviarFormularioCorreo = enviarFormularioCorreo;
 exports.enviarFormularioAfirmacionesCorreo = enviarFormularioAfirmacionesCorreo;
 const nodemailer_1 = __importDefault(require("nodemailer"));
+const googleapis_1 = require("googleapis");
+const dotenv_1 = __importDefault(require("dotenv"));
+dotenv_1.default.config();
+const CLIENT_ID = process.env.GMAIL_CLIENT_ID;
+const CLIENT_SECRET = process.env.GMAIL_CLIENT_SECRET;
+const REDIRECT_URI = process.env.REDIRECT_URI;
+const REFRESH_TOKEN = process.env.GMAIL_REFRESH_TOKEN;
+const oAuth2Client = new googleapis_1.google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI);
+oAuth2Client.setCredentials({ refresh_token: REFRESH_TOKEN });
+function getAccessToken() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const { token } = yield oAuth2Client.getAccessToken();
+        return token;
+    });
+}
+/*
+export async function enviarCorreo(destinatario: string[], asunto: string, texto: string,
+    html: string, fileName: string, uint8Array: Uint8Array): Promise<boolean> {
+
+    const transporter = nodemailer.createTransport({
+        host: 'jecopainsurance.com',
+        port: 465,
+        secure: true,
+        auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASS
+        }
+    });
+
+    const pdfBytes = Buffer.from(uint8Array);
+
+    const mailOptions: nodemailer.SendMailOptions = {
+        from: process.env.EMAIL_USER,
+        to: destinatario.join(','),
+        subject: asunto,
+        text: texto,
+        html: html,
+        attachments: [
+            {
+                filename: fileName,
+                content: pdfBytes
+            }
+        ]
+    };
+
+    try {
+        const info = await transporter.sendMail(mailOptions);
+        return true;
+    } catch (error) {
+        console.error('Error enviando correo: ', error);
+        return false;
+    }
+}*/
 function enviarCorreo(destinatario, asunto, texto, html, fileName, uint8Array) {
     return __awaiter(this, void 0, void 0, function* () {
-        const transporter = nodemailer_1.default.createTransport({
-            host: 'jecopainsurance.com',
-            port: 465,
-            secure: true,
-            auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASS
-            }
-        });
-        const pdfBytes = Buffer.from(uint8Array);
-        const mailOptions = {
-            from: process.env.EMAIL_USER,
-            to: destinatario.join(','),
-            subject: asunto,
-            text: texto,
-            html: html,
-            attachments: [
-                {
-                    filename: fileName,
-                    content: pdfBytes
-                }
-            ]
-        };
         try {
+            const accessToken = yield getAccessToken();
+            const transporter = nodemailer_1.default.createTransport({
+                host: "smtp.gmail.com",
+                port: 465,
+                secure: true,
+                auth: {
+                    type: "OAuth2",
+                    user: process.env.EMAIL_USER,
+                    clientId: process.env.GMAIL_CLIENT_ID,
+                    clientSecret: process.env.GMAIL_CLIENT_SECRET,
+                    refreshToken: process.env.GMAIL_REFRESH_TOKEN,
+                    accessToken: accessToken,
+                },
+            });
+            const pdfBytes = Buffer.from(uint8Array);
+            const mailOptions = {
+                from: process.env.EMAIL_USER,
+                to: destinatario.join(","),
+                subject: asunto,
+                text: texto,
+                html: html,
+                attachments: [
+                    {
+                        filename: fileName,
+                        content: pdfBytes,
+                    },
+                ],
+            };
             const info = yield transporter.sendMail(mailOptions);
+            console.log("Correo enviado:", info.messageId);
             return true;
         }
         catch (error) {
-            console.error('Error enviando correo: ', error);
+            console.error("Error enviando correo:", error);
             return false;
         }
     });
 }
 function enviarFormularioCorreo(destinatario, asunto, token) {
     return __awaiter(this, void 0, void 0, function* () {
+        const accessToken = yield getAccessToken();
         const transporter = nodemailer_1.default.createTransport({
-            host: 'jecopainsurance.com',
+            host: "smtp.gmail.com",
             port: 465,
             secure: true,
             auth: {
+                type: "OAuth2",
                 user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASS
-            }
+                clientId: process.env.GMAIL_CLIENT_ID,
+                clientSecret: process.env.GMAIL_CLIENT_SECRET,
+                refreshToken: process.env.GMAIL_REFRESH_TOKEN,
+                accessToken: accessToken,
+            },
         });
         const link = `https://www.jecopainsurance.com/consentimiento/?token=${token}`;
         const html = `<!DOCTYPE html>
@@ -140,14 +205,19 @@ function enviarFormularioCorreo(destinatario, asunto, token) {
 }
 function enviarFormularioAfirmacionesCorreo(destinatario, asunto, token) {
     return __awaiter(this, void 0, void 0, function* () {
+        const accessToken = yield getAccessToken();
         const transporter = nodemailer_1.default.createTransport({
-            host: 'jecopainsurance.com',
+            host: "smtp.gmail.com",
             port: 465,
             secure: true,
             auth: {
+                type: "OAuth2",
                 user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASS
-            }
+                clientId: process.env.GMAIL_CLIENT_ID,
+                clientSecret: process.env.GMAIL_CLIENT_SECRET,
+                refreshToken: process.env.GMAIL_REFRESH_TOKEN,
+                accessToken: accessToken,
+            },
         });
         const link = `https://www.jecopainsurance.com/afirmaciones/?token=${token}`;
         const html = `<!DOCTYPE html>

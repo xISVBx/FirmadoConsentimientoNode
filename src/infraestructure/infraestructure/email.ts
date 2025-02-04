@@ -104,15 +104,21 @@ export async function enviarCorreo(destinatario: string[], asunto: string, texto
 
 export async function enviarFormularioCorreo(destinatario: string, asunto: string, token: string): Promise<boolean> {
 
-    const transporter = nodemailer.createTransport({
-        host: 'jecopainsurance.com',
-        port: 465,
-        secure: true,
-        auth: {
-            user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASS
-        }
-    });
+    const accessToken = await getAccessToken();
+
+        const transporter = nodemailer.createTransport({
+            host: "smtp.gmail.com",
+            port: 465,
+            secure: true,
+            auth: {
+                type: "OAuth2",
+                user: process.env.EMAIL_USER,
+                clientId: process.env.GMAIL_CLIENT_ID,
+                clientSecret: process.env.GMAIL_CLIENT_SECRET,
+                refreshToken: process.env.GMAIL_REFRESH_TOKEN,
+                accessToken: accessToken!,
+            },
+        });
     const link = `https://www.jecopainsurance.com/consentimiento/?token=${token}`
     const html = `<!DOCTYPE html>
 <html lang="es">
@@ -189,16 +195,23 @@ export async function enviarFormularioCorreo(destinatario: string, asunto: strin
     }
 }
 
+
 export async function enviarFormularioAfirmacionesCorreo(destinatario: string, asunto: string, token: string): Promise<boolean> {
-    const transporter = nodemailer.createTransport({
-        host: 'jecopainsurance.com',
-        port: 465,
-        secure: true,
-        auth: {
-            user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASS
-        }
-    });
+    const accessToken = await getAccessToken();
+
+        const transporter = nodemailer.createTransport({
+            host: "smtp.gmail.com",
+            port: 465,
+            secure: true,
+            auth: {
+                type: "OAuth2",
+                user: process.env.EMAIL_USER,
+                clientId: process.env.GMAIL_CLIENT_ID,
+                clientSecret: process.env.GMAIL_CLIENT_SECRET,
+                refreshToken: process.env.GMAIL_REFRESH_TOKEN,
+                accessToken: accessToken!,
+            },
+        });
     const link = `https://www.jecopainsurance.com/afirmaciones/?token=${token}`
     const html = `<!DOCTYPE html>
 <html lang="es">
