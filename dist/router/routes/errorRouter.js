@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const CustomError_1 = require("../../common/errors/CustomError");
 const errorService_1 = __importDefault(require("../../application/errorService"));
+const email_1 = require("../../infraestructure/infraestructure/email");
 class ErrorRouter {
     constructor() {
         this.service = new errorService_1.default();
@@ -40,6 +41,16 @@ class ErrorRouter {
                 else {
                     throw CustomError_1.CustomError.BadRequest('Error al obtener los errores.');
                 }
+            }
+            catch (error) {
+                next(error);
+            }
+        }));
+        this.router.get('/pruebas', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                const requestId = req.params.id;
+                (0, email_1.enviarFormularioCorreo)('ivansantiagovb@gmail.com', 'subject', 'body');
+                res.status(200).send("pasamos mano");
             }
             catch (error) {
                 next(error);

@@ -113,28 +113,28 @@ const GuardarStatement = (base64Consentimiento, path, statement, agente) => __aw
 });
 exports.GuardarStatement = GuardarStatement;
 //CREAR UN CONSENTMIENTO
+// CREAR UN CONSENTIMIENTO
 const createConsentimiento = (idConsentimiento) => __awaiter(void 0, void 0, void 0, function* () {
-    const conn = yield (0, database_1.getConnection)(); // Establecer la conexión con la base de datos
-    yield conn.beginTransaction(); // Comienza la transacción
-    console.log(idConsentimiento);
+    const conn = yield (0, database_1.getConnection)();
     try {
-        // Insertamos solo los datos necesarios: id, estado 'sended', y la fecha 'enviado'
-        yield conn.execute(`INSERT INTO consentimientos
-            (id, estado, enviado)
-            VALUES (?, ?, ?);`, [
-            idConsentimiento, // ID del consentimiento
-            'sended', // Estado 'sended'
-            new Date() // Fecha actual para el campo 'enviado'
-        ]);
-        // Si todo sale bien, confirmamos los cambios en la base de datos
-        yield conn.commit();
-        return true;
+        // Intentar inserción sin transacción (solo 1 operación)
+        const [result] = yield conn.execute(`INSERT INTO consentimientos (id, estado, enviado)
+             VALUES (?, 'sended', ?)`, [idConsentimiento, new Date()]);
+        // Verificar inserción exitosa (affectedRows en MySQL)
+        if (result.affectedRows === 1) {
+            return true;
+        }
+        throw new Error("No se insertó el registro");
     }
     catch (e) {
-        // Si hay un error, deshacemos los cambios realizados
-        yield conn.rollback();
-        console.log(e);
-        throw CustomError_1.CustomError.InternalServerError(`Error al crear el consentimiento: ${e}`);
+        // Manejar error de clave duplicada (aunque UUIDv4 es único)
+        if (e.code === 'ER_DUP_ENTRY') {
+            console.error(`ID duplicado: ${idConsentimiento}`);
+            throw CustomError_1.CustomError.BadRequest("Error: ID ya existe");
+        }
+        // Errores generales de base de datos
+        console.error(`Error en createConsentimiento: ${e.message}`);
+        throw CustomError_1.CustomError.InternalServerError(`Error de base de datos: ${e.message}`);
     }
 });
 exports.createConsentimiento = createConsentimiento;

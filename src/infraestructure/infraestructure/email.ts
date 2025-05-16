@@ -5,16 +5,20 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const CLIENT_ID = process.env.GMAIL_CLIENT_ID;
-const CLIENT_SECRET = process.env.GMAIL_CLIENT_SECRET;
-const REDIRECT_URI = process.env.REDIRECT_URI;
-const REFRESH_TOKEN = process.env.GMAIL_REFRESH_TOKEN;
-
-const oAuth2Client = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI);
-oAuth2Client.setCredentials({ refresh_token: REFRESH_TOKEN });
 
 export async function getAccessToken() {
+    const CLIENT_ID = process.env.GMAIL_CLIENT_ID;
+    const CLIENT_SECRET = process.env.GMAIL_CLIENT_SECRET;
+    const REDIRECT_URI = process.env.REDIRECT_URI;
+    const REFRESH_TOKEN = process.env.GMAIL_REFRESH_TOKEN;
+    console.log("PRUEBAAAAAAAAAAAAA")
+    console.log(CLIENT_ID)
+
+    const oAuth2Client = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI);
+    oAuth2Client.setCredentials({ refresh_token: REFRESH_TOKEN });
     const { token } = await oAuth2Client.getAccessToken();
+    console.log("TOKENNNNNNNNNNNNNNNNNN")
+    //console.log(token)
     return token;
 }
 
@@ -106,19 +110,19 @@ export async function enviarFormularioCorreo(destinatario: string, asunto: strin
 
     const accessToken = await getAccessToken();
 
-        const transporter = nodemailer.createTransport({
-            host: "smtp.gmail.com",
-            port: 465,
-            secure: true,
-            auth: {
-                type: "OAuth2",
-                user: process.env.EMAIL_USER,
-                clientId: process.env.GMAIL_CLIENT_ID,
-                clientSecret: process.env.GMAIL_CLIENT_SECRET,
-                refreshToken: process.env.GMAIL_REFRESH_TOKEN,
-                accessToken: accessToken!,
-            },
-        });
+    const transporter = nodemailer.createTransport({
+        host: "smtp.gmail.com",
+        port: 465,
+        secure: true,
+        auth: {
+            type: "OAuth2",
+            user: process.env.EMAIL_USER,
+            clientId: process.env.GMAIL_CLIENT_ID,
+            clientSecret: process.env.GMAIL_CLIENT_SECRET,
+            refreshToken: process.env.GMAIL_REFRESH_TOKEN,
+            accessToken: accessToken!,
+        },
+    });
     const link = `https://www.jecopainsurance.com/consentimiento/?token=${token}`
     const html = `<!DOCTYPE html>
 <html lang="es">
@@ -199,19 +203,19 @@ export async function enviarFormularioCorreo(destinatario: string, asunto: strin
 export async function enviarFormularioAfirmacionesCorreo(destinatario: string, asunto: string, token: string): Promise<boolean> {
     const accessToken = await getAccessToken();
 
-        const transporter = nodemailer.createTransport({
-            host: "smtp.gmail.com",
-            port: 465,
-            secure: true,
-            auth: {
-                type: "OAuth2",
-                user: process.env.EMAIL_USER,
-                clientId: process.env.GMAIL_CLIENT_ID,
-                clientSecret: process.env.GMAIL_CLIENT_SECRET,
-                refreshToken: process.env.GMAIL_REFRESH_TOKEN,
-                accessToken: accessToken!,
-            },
-        });
+    const transporter = nodemailer.createTransport({
+        host: "smtp.gmail.com",
+        port: 465,
+        secure: true,
+        auth: {
+            type: "OAuth2",
+            user: process.env.EMAIL_USER,
+            clientId: process.env.GMAIL_CLIENT_ID,
+            clientSecret: process.env.GMAIL_CLIENT_SECRET,
+            refreshToken: process.env.GMAIL_REFRESH_TOKEN,
+            accessToken: accessToken!,
+        },
+    });
     const link = `https://www.jecopainsurance.com/afirmaciones/?token=${token}`
     const html = `<!DOCTYPE html>
 <html lang="es">

@@ -41,10 +41,10 @@ export const GuardarConsentimiento = async (base64Consentimiento: Uint8Array, no
         if (fechaNacimiento) {
             fechaNacimientoDate = new Date(fechaNacimiento);
             if (isNaN(fechaNacimientoDate.getTime())) {
-                fechaNacimientoDate = null; 
+                fechaNacimientoDate = null;
             }
         } else {
-            fechaNacimientoDate = null; 
+            fechaNacimientoDate = null;
         }
 
         const resultDatos = await conn.execute(
@@ -68,7 +68,7 @@ export const getConsentimientoById = async (idConsentimiento: string): Promise<a
         const [rows]: [any[], FieldPacket[]] = await conn.execute(
             `SELECT id, path_consentimiento, consentimiento, created, viewed, enviado, ip, location, estado, qr_code 
             FROM consentimientos
-            WHERE id = ?`, 
+            WHERE id = ?`,
             [idConsentimiento]
         );
 
@@ -78,7 +78,7 @@ export const getConsentimientoById = async (idConsentimiento: string): Promise<a
         }
 
         // Retornar el primer resultado de la consulta
-        return rows[0]; 
+        return rows[0];
     } catch (error) {
         console.error("Error al obtener el consentimiento:", error);
         throw CustomError.InternalServerError(`Error al obtener el consentimiento: ${error}`);
@@ -103,8 +103,8 @@ export const GuardarStatement = async (base64Consentimiento: Uint8Array, path: s
                 qr_code = ?
             WHERE id = ?;`,
             [
-                path, 
-                bufferConsentimiento, 
+                path,
+                bufferConsentimiento,
                 new Date(),
                 '',
                 '',
@@ -128,31 +128,33 @@ export const GuardarStatement = async (base64Consentimiento: Uint8Array, path: s
     }
 }
 //CREAR UN CONSENTMIENTO
+// CREAR UN CONSENTIMIENTO
 export const createConsentimiento = async (idConsentimiento: string): Promise<boolean> => {
-    const conn = await getConnection();  // Establecer la conexión con la base de datos
-    await conn.beginTransaction();  // Comienza la transacción
+    const conn = await getConnection();
 
-    console.log(idConsentimiento)
     try {
-        // Insertamos solo los datos necesarios: id, estado 'sended', y la fecha 'enviado'
-        await conn.execute(
-            `INSERT INTO consentimientos
-            (id, estado, enviado)
-            VALUES (?, ?, ?);`,
-            [
-                idConsentimiento,       // ID del consentimiento
-                'sended',               // Estado 'sended'
-                new Date()              // Fecha actual para el campo 'enviado'
-            ]
+        // Intentar inserción sin transacción (solo 1 operación)
+        const [result]: [any, any] = await conn.execute(
+            `INSERT INTO consentimientos (id, estado, enviado)
+             VALUES (?, 'sended', ?)`,
+            [idConsentimiento, new Date()]
         );
 
-        // Si todo sale bien, confirmamos los cambios en la base de datos
-        await conn.commit();
-        return true;
-    } catch (e) {
-        // Si hay un error, deshacemos los cambios realizados
-        await conn.rollback();
-        console.log(e)
-        throw CustomError.InternalServerError(`Error al crear el consentimiento: ${e}`);
+        // Verificar inserción exitosa (affectedRows en MySQL)
+        if (result.affectedRows === 1) {
+            return true;
+        }
+        throw new Error("No se insertó el registro");
+
+    } catch (e: any) {
+        // Manejar error de clave duplicada (aunque UUIDv4 es único)
+        if (e.code === 'ER_DUP_ENTRY') {
+            console.error(`ID duplicado: ${idConsentimiento}`);
+            throw CustomError.BadRequest("Error: ID ya existe");
+        }
+
+        // Errores generales de base de datos
+        console.error(`Error en createConsentimiento: ${e.message}`);
+        throw CustomError.InternalServerError(`Error de base de datos: ${e.message}`);
     }
 };

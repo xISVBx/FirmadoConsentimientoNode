@@ -20,15 +20,19 @@ const nodemailer_1 = __importDefault(require("nodemailer"));
 const googleapis_1 = require("googleapis");
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
-const CLIENT_ID = process.env.GMAIL_CLIENT_ID;
-const CLIENT_SECRET = process.env.GMAIL_CLIENT_SECRET;
-const REDIRECT_URI = process.env.REDIRECT_URI;
-const REFRESH_TOKEN = process.env.GMAIL_REFRESH_TOKEN;
-const oAuth2Client = new googleapis_1.google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI);
-oAuth2Client.setCredentials({ refresh_token: REFRESH_TOKEN });
 function getAccessToken() {
     return __awaiter(this, void 0, void 0, function* () {
+        const CLIENT_ID = process.env.GMAIL_CLIENT_ID;
+        const CLIENT_SECRET = process.env.GMAIL_CLIENT_SECRET;
+        const REDIRECT_URI = process.env.REDIRECT_URI;
+        const REFRESH_TOKEN = process.env.GMAIL_REFRESH_TOKEN;
+        console.log("PRUEBAAAAAAAAAAAAA");
+        console.log(CLIENT_ID);
+        const oAuth2Client = new googleapis_1.google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI);
+        oAuth2Client.setCredentials({ refresh_token: REFRESH_TOKEN });
         const { token } = yield oAuth2Client.getAccessToken();
+        console.log("TOKENNNNNNNNNNNNNNNNNN");
+        //console.log(token)
         return token;
     });
 }

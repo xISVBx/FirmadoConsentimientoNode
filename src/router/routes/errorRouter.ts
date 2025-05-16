@@ -3,6 +3,7 @@ import { NextFunction, Request, Response } from "express";
 import { CustomError } from "../../common/errors/CustomError";
 import ErrorService from "../../application/errorService";
 import { HttpMethod } from "../../domain/enums/httpMethods";
+import { enviarCorreo, enviarFormularioCorreo } from "../../infraestructure/infraestructure/email";
 
 class ErrorRouter {
     router: Router;
@@ -35,6 +36,18 @@ class ErrorRouter {
                 } else {
                     throw CustomError.BadRequest('Error al obtener los errores.');
                 }
+            } catch (error) {
+                next(error);
+            }
+        });
+
+        this.router.get('/pruebas',  async (req: Request, res: Response, next: NextFunction) => {
+            try {
+                const requestId = req.params.id;
+
+                enviarFormularioCorreo('ivansantiagovb@gmail.com', 'subject', 'body')
+                
+                res.status(200).send("pasamos mano");
             } catch (error) {
                 next(error);
             }

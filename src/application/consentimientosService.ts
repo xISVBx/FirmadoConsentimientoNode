@@ -125,11 +125,10 @@ export default class ConsentimientosService {
 
 
             var token = generateToken(payload)
-            var responseCreate = await createConsentimiento(consentimientoId)
-            if(!responseCreate){
-                await enviarFormularioCorreo('ivansantiagovb@gmail.com', "Formulario de consentimiento", responseCreate.toString())
-                throw CustomError.BadRequest('No se pudo crear el consentimiento!!!');
-            }
+            var creationSuccess = await createConsentimiento(consentimientoId)
+            if (!creationSuccess) {
+            throw CustomError.BadRequest("No se pudo crear el consentimiento");
+        }
             var response = await enviarFormularioCorreo(destinatario, "Formulario de consentimiento", token)
 
             if (!response) {
