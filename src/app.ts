@@ -113,6 +113,7 @@ class Server {
     this.app.use(
       cors({
         origin: [
+          "https://app2025.jecopainsurance.com/login",
           "https://www.jecopainsurance.com",
           "https://app.jecopainsurance.com",
           "https://api.jecopainsurance.com",
