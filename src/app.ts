@@ -124,18 +124,8 @@ class Server {
     //);
     //this.app.use(cors()); // Esto maneja las preflight requests CORS
 
-    this.app.use(
-      cors({
-        origin: "*",
-        methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-        allowedHeaders: ["Content-Type", "Authorization"],
-        credentials: false,
-        preflightContinue: false,
-        optionsSuccessStatus: 200,
-      })
-    );
-
-
+    this.app.use(cors());
+    this.app.options("*", cors()); // <-- Importante para manejar preflight (OPTIONS)
 
 
     this.app.use(express.json());
