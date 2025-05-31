@@ -108,6 +108,16 @@ class Server {
     dotenv.config();
     await this.setupDatabase();
 
+    this.app.use(
+      cors({
+        origin: ["http://localhost:5173", "https://app2025.jecopainsurance.com", "https://www.jecopainsurance.com"],
+        methods: "GET,POST,PUT,DELETE,PATCH,OPTIONS",
+        allowedHeaders: ["Content-Type", "Authorization"],
+        credentials: true,
+      })
+    );
+    this.app.options("*", cors());
+
     //'https://www.jecopainsurance.com'
 
     //this.app.use(
@@ -124,16 +134,7 @@ class Server {
     //);
     //this.app.use(cors()); // Esto maneja las preflight requests CORS
 
-    this.app.use(
-      cors({
-        origin: "*", // Acepta cualquier origen
-        methods: "GET,POST,PUT,DELETE,PATCH,OPTIONS",
-        allowedHeaders: ["Content-Type", "Authorization"],
-      })
-    );
 
-    // Asegura que las preflight requests (OPTIONS) también lo usen
-    this.app.options("*", cors());
 
 
     this.app.use(express.json());
