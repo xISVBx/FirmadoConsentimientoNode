@@ -126,11 +126,14 @@ class Server {
 
     this.app.use(
       cors({
-        origin: "*",
-        methods: "GET, POST, PUT, DELETE, PATCH, OPTIONS",
-        credentials: false, // ✅ obligatorio si origin es "*"
+        origin: "*", // permite todos los orígenes
+        methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+        allowedHeaders: ["Content-Type", "Authorization"],
+        credentials: false, // debe ser false si origin es '*'
+        optionsSuccessStatus: 200, // evita 204 que causa errores
       })
-    )
+    );
+
 
 
     this.app.use(express.json());
