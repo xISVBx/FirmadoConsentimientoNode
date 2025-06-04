@@ -110,16 +110,17 @@ class ConsentimientosService {
                     consentimientoId: consentimientoId
                 };
                 var token = (0, token_1.generateToken)(payload);
-                var creationSuccess = yield (0, consentimientosRepository_1.createConsentimiento)(consentimientoId);
-                if (!creationSuccess) {
-                    throw CustomError_1.CustomError.BadRequest("No se pudo crear el consentimiento");
-                }
+                //var creationSuccess = await createConsentimiento(consentimientoId)
+                //if (!creationSuccess) {
+                //    throw CustomError.BadRequest("No se pudo crear el consentimiento");
+                //}
                 var response = yield (0, email_1.enviarFormularioCorreo)(destinatario, "Formulario de consentimiento", token);
                 if (!response) {
                     throw CustomError_1.CustomError.BadRequest('No se pudo enviar el correo!!!');
                 }
             }
             catch (e) {
+                console.log(e);
                 throw CustomError_1.CustomError.InternalServerError(`${e}`);
             }
             return response_1.ResponseGeneric.Success(true, 'Correo enviado correctamente!!!');
@@ -138,10 +139,10 @@ class ConsentimientosService {
                     consentimientoId: consentimientoId
                 };
                 var token = (0, token_1.generateToken)(payload);
-                var responseCreate = yield (0, consentimientosRepository_1.createConsentimiento)(consentimientoId);
-                if (!responseCreate) {
-                    throw CustomError_1.CustomError.BadRequest('No se pudo crear el consentimiento!!!');
-                }
+                //var responseCreate = await createConsentimiento(consentimientoId);
+                //if (!responseCreate) {
+                //    throw CustomError.BadRequest('No se pudo crear el consentimiento!!!');
+                //}
                 var response = yield (0, email_1.enviarFormularioAfirmacionesCorreo)(destinatario, "Formulario de Atestamiento", token);
                 if (!response) {
                     throw CustomError_1.CustomError.BadRequest('No se pudo enviar el correo!!!');

@@ -60,6 +60,7 @@ class ConsentimientoRouter {
 
         this.router.post('/consentimiento/correo', async (req: Request, res: Response, next: NextFunction) => {
             try {
+                console.log('Entro')
                 const { nombreAgente, numeroProductor, telefonoAgente, correoAgente, destinatario } = req.body
                 var response = await this.service.EnviarFormularioConsentimiento(nombreAgente, numeroProductor, telefonoAgente, correoAgente, destinatario);
                 if (response) {

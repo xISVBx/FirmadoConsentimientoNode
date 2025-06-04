@@ -20,8 +20,8 @@ export default class ConsentimientosService {
             const createdDate = new Date();
 
             var consentimiento = await getConsentimientoById(agente.consentimientoId)
-            
-            if(consentimiento.estado == 'created'){
+
+            if (consentimiento.estado == 'created') {
                 throw CustomError.BadRequest('El consentimiento ya fue firmado');
             }
 
@@ -62,7 +62,7 @@ export default class ConsentimientosService {
         return ResponseGeneric.Success(true, 'Pdf Almacenado!!!');
     }
 
-    async GenerarStatements(base64Image: string, idioma: Idioma, correoTitular: string, agente: StatementSend, statement: IStatement, ip:string): Promise<ResponseGeneric<boolean>> {
+    async GenerarStatements(base64Image: string, idioma: Idioma, correoTitular: string, agente: StatementSend, statement: IStatement, ip: string): Promise<ResponseGeneric<boolean>> {
 
         try {
             var pdfResponse;
@@ -71,7 +71,7 @@ export default class ConsentimientosService {
 
             var consentimiento = await getConsentimientoById(agente.consentimientoId)
 
-            if(consentimiento.estado == 'created'){
+            if (consentimiento.estado == 'created') {
                 throw CustomError.BadRequest('El consentimiento ya fue firmado');
             }
 
@@ -125,16 +125,17 @@ export default class ConsentimientosService {
 
 
             var token = generateToken(payload)
-            var creationSuccess = await createConsentimiento(consentimientoId)
-            if (!creationSuccess) {
-            throw CustomError.BadRequest("No se pudo crear el consentimiento");
-        }
+            //var creationSuccess = await createConsentimiento(consentimientoId)
+            //if (!creationSuccess) {
+            //    throw CustomError.BadRequest("No se pudo crear el consentimiento");
+            //}
             var response = await enviarFormularioCorreo(destinatario, "Formulario de consentimiento", token)
 
             if (!response) {
                 throw CustomError.BadRequest('No se pudo enviar el correo!!!');
             }
         } catch (e) {
+            console.log(e)
             throw CustomError.InternalServerError(`${e}`);
         }
         return ResponseGeneric.Success(true, 'Correo enviado correctamente!!!');
@@ -154,10 +155,10 @@ export default class ConsentimientosService {
                 consentimientoId: consentimientoId
             }
             var token = generateToken(payload);
-            var responseCreate = await createConsentimiento(consentimientoId);
-            if(!responseCreate){
-                throw CustomError.BadRequest('No se pudo crear el consentimiento!!!');
-            }
+            //var responseCreate = await createConsentimiento(consentimientoId);
+            //if (!responseCreate) {
+            //    throw CustomError.BadRequest('No se pudo crear el consentimiento!!!');
+            //}
             var response = await enviarFormularioAfirmacionesCorreo(destinatario, "Formulario de Atestamiento", token)
 
             if (!response) {
@@ -170,7 +171,7 @@ export default class ConsentimientosService {
         return ResponseGeneric.Success(true, 'Correo enviado correctamente!!!');
     }
 
-    async GetDocumentooById(id:string){
+    async GetDocumentooById(id: string) {
 
     }
 }

@@ -107,16 +107,26 @@ class Server {
         return __awaiter(this, void 0, void 0, function* () {
             dotenv_1.default.config();
             yield this.setupDatabase();
-            //'https://www.jecopainsurance.com'
             this.app.use((0, cors_1.default)({
-                origin: [
-                    "https://www.jecopainsurance.com",
-                    "https://app.jecopainsurance.com",
-                    "https://api.jecopainsurance.com",
-                ],
-                methods: "GET, POST, PUT, DELETE, PATCH, OPTIONS",
+                origin: ["http://localhost:5173", "https://app2025.jecopainsurance.com", "https://www.jecopainsurance.com"],
+                methods: "GET,POST,PUT,DELETE,PATCH,OPTIONS",
+                allowedHeaders: ["Content-Type", "Authorization"],
                 credentials: true,
             }));
+            this.app.options("*", (0, cors_1.default)());
+            //'https://www.jecopainsurance.com'
+            //this.app.use(
+            //  cors({
+            //    origin: [
+            //      "https://app2025.jecopainsurance.com",
+            //      "https://www.jecopainsurance.com",
+            //      "https://app.jecopainsurance.com",
+            //      "https://api.jecopainsurance.com",
+            //    ],
+            //    methods: "GET, POST, PUT, DELETE, PATCH, OPTIONS",
+            //    credentials: true,
+            //  })
+            //);
             //this.app.use(cors()); // Esto maneja las preflight requests CORS
             this.app.use(express_1.default.json());
             this.app.use("/api-docs", swagger_js_1.swaggerUi.serve, swagger_js_1.swaggerUi.setup(swagger_js_1.swaggerDocs));

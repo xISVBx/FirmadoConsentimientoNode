@@ -110,7 +110,7 @@ class Server {
 
     this.app.use(
       cors({
-        origin: ["http://localhost:5173", "https://app2025.jecopainsurance.com", "https://www.jecopainsurance.com"],
+        origin: [ "https://app2025.jecopainsurance.com", "https://www.jecopainsurance.com"],
         methods: "GET,POST,PUT,DELETE,PATCH,OPTIONS",
         allowedHeaders: ["Content-Type", "Authorization"],
         credentials: true,
