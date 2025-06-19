@@ -112,7 +112,7 @@ class Server {
       cors({
         origin: ["https://app2025.jecopainsurance.com", "https://www.jecopainsurance.com"],
         methods: "GET,POST,PUT,DELETE,PATCH,OPTIONS",
-        allowedHeaders: ["Content-Type", "Authorization", "X-Latitude"],
+        allowedHeaders: ["Content-Type", "Authorization", "X-Latitude", "X-Longitude"],
         credentials: true,
       })
     );
