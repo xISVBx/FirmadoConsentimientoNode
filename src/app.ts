@@ -110,9 +110,9 @@ class Server {
 
     this.app.use(
       cors({
-        origin: [ "https://app2025.jecopainsurance.com", "https://www.jecopainsurance.com"],
+        origin: ["https://app2025.jecopainsurance.com", "https://www.jecopainsurance.com"],
         methods: "GET,POST,PUT,DELETE,PATCH,OPTIONS",
-        allowedHeaders: ["Content-Type", "Authorization"],
+        allowedHeaders: ["Content-Type", "Authorization", "X-Latitude"],
         credentials: true,
       })
     );
