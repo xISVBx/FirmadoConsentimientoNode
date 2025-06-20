@@ -143,7 +143,6 @@ const getConsentimientosCompletos = () => __awaiter(void 0, void 0, void 0, func
         const [rows] = yield conn.execute(`SELECT 
           c.id AS consentimiento_id,
           c.path_consentimiento,
-          c.consentimiento,
           c.created,
           c.viewed,
           c.enviado,
@@ -165,6 +164,7 @@ const getConsentimientosCompletos = () => __awaiter(void 0, void 0, void 0, func
        FROM consentimientos c
        LEFT JOIN datos_consentimientos dc ON c.id = dc.id_consentimiento
        LEFT JOIN datos_afirmaciones da ON c.id = da.id_consentimiento
+        WHERE c.path_consentimiento IS NOT NULL
        ORDER BY c.created DESC`);
         // Convertimos el campo consentimiento a base64 si existe
         const consentimientosConBase64 = rows.map(row => (Object.assign(Object.assign({}, row), { consentimiento_base64: row.consentimiento
