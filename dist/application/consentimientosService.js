@@ -158,5 +158,17 @@ class ConsentimientosService {
         return __awaiter(this, void 0, void 0, function* () {
         });
     }
+    ObtenerTodosLosConsentimientos() {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const consentimientos = yield (0, consentimientosRepository_1.getConsentimientosCompletos)();
+                return response_1.ResponseGeneric.Success(consentimientos, "Consentimientos obtenidos correctamente.");
+            }
+            catch (error) {
+                console.error("Error en el servicio de consentimientos:", error);
+                throw error;
+            }
+        });
+    }
 }
 exports.default = ConsentimientosService;

@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createConsentimiento = exports.GuardarStatement = exports.getConsentimientoById = exports.GuardarConsentimiento = void 0;
+exports.getConsentimientosCompletos = exports.createConsentimiento = exports.GuardarStatement = exports.getConsentimientoById = exports.GuardarConsentimiento = void 0;
 const database_1 = require("../context/database");
 const CustomError_1 = require("../../../common/errors/CustomError");
 const GuardarConsentimiento = (base64Consentimiento, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, idConsentimiento, pathConsentimiento, ip, location, qrCode) => __awaiter(void 0, void 0, void 0, function* () {
@@ -112,7 +112,6 @@ const GuardarStatement = (base64Consentimiento, path, statement, agente) => __aw
     }
 });
 exports.GuardarStatement = GuardarStatement;
-//CREAR UN CONSENTMIENTO
 // CREAR UN CONSENTIMIENTO
 const createConsentimiento = (idConsentimiento) => __awaiter(void 0, void 0, void 0, function* () {
     const conn = yield (0, database_1.getConnection)();
@@ -138,3 +137,44 @@ const createConsentimiento = (idConsentimiento) => __awaiter(void 0, void 0, voi
     }
 });
 exports.createConsentimiento = createConsentimiento;
+const getConsentimientosCompletos = () => __awaiter(void 0, void 0, void 0, function* () {
+    const conn = yield (0, database_1.getConnection)();
+    try {
+        const [rows] = yield conn.execute(`SELECT 
+          c.id AS consentimiento_id,
+          c.path_consentimiento,
+          c.consentimiento,
+          c.created,
+          c.viewed,
+          c.enviado,
+          c.ip,
+          c.location,
+          c.estado,
+          c.qr_code,
+          
+          dc.nombre AS nombre_titular,
+          dc.telefono,
+          dc.correo,
+          dc.fecha_nacimiento,
+          
+          da.codigoPostal,
+          da.ingresoAnual,
+          da.compania,
+          da.plan,
+          da.nombreConsumidor
+       FROM consentimientos c
+       LEFT JOIN datos_consentimientos dc ON c.id = dc.id_consentimiento
+       LEFT JOIN datos_afirmaciones da ON c.id = da.id_consentimiento
+       ORDER BY c.created DESC`);
+        // Convertimos el campo consentimiento a base64 si existe
+        const consentimientosConBase64 = rows.map(row => (Object.assign(Object.assign({}, row), { consentimiento_base64: row.consentimiento
+                ? Buffer.from(row.consentimiento).toString("base64")
+                : null })));
+        return consentimientosConBase64;
+    }
+    catch (error) {
+        console.error("Error al obtener consentimientos completos:", error);
+        throw CustomError_1.CustomError.InternalServerError(`Error en base de datos: ${error}`);
+    }
+});
+exports.getConsentimientosCompletos = getConsentimientosCompletos;

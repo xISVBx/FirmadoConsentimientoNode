@@ -146,6 +146,32 @@ class ConsentimientoRouter {
                 next(err);
             }
         }));
+        this.router.get('/consentimientos', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                const response = yield this.service.ObtenerTodosLosConsentimientos();
+                res.status(200).send(response);
+            }
+            catch (error) {
+                next(error);
+            }
+        }));
+        this.router.get('/imagen', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { path: imagePath } = req.query;
+                if (!imagePath || typeof imagePath !== 'string') {
+                    throw CustomError_1.CustomError.BadRequest("Se debe proporcionar el parámetro 'path'");
+                }
+                const resolvedPath = path_1.default.resolve(imagePath); // Asegura seguridad de la ruta
+                res.sendFile(resolvedPath, (err) => {
+                    if (err) {
+                        next(CustomError_1.CustomError.NotFound("No se pudo cargar la imagen"));
+                    }
+                });
+            }
+            catch (err) {
+                next(err);
+            }
+        }));
     }
 }
 exports.default = new ConsentimientoRouter();
