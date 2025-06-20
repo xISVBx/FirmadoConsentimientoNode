@@ -127,7 +127,6 @@ export const GuardarStatement = async (base64Consentimiento: Uint8Array, path: s
         throw CustomError.InternalServerError(`${e}`)
     }
 }
-//CREAR UN CONSENTMIENTO
 // CREAR UN CONSENTIMIENTO
 export const createConsentimiento = async (idConsentimiento: string): Promise<boolean> => {
     const conn = await getConnection();
@@ -156,5 +155,53 @@ export const createConsentimiento = async (idConsentimiento: string): Promise<bo
         // Errores generales de base de datos
         console.error(`Error en createConsentimiento: ${e.message}`);
         throw CustomError.InternalServerError(`Error de base de datos: ${e.message}`);
+    }
+};
+
+export const getConsentimientosCompletos = async (): Promise<any[]> => {
+    const conn = await getConnection();
+
+    try {
+        const [rows]: [any[], FieldPacket[]] = await conn.execute(
+            `SELECT 
+          c.id AS consentimiento_id,
+          c.path_consentimiento,
+          c.consentimiento,
+          c.created,
+          c.viewed,
+          c.enviado,
+          c.ip,
+          c.location,
+          c.estado,
+          c.qr_code,
+          
+          dc.nombre AS nombre_titular,
+          dc.telefono,
+          dc.correo,
+          dc.fecha_nacimiento,
+          
+          da.codigoPostal,
+          da.ingresoAnual,
+          da.compania,
+          da.plan,
+          da.nombreConsumidor
+       FROM consentimientos c
+       LEFT JOIN datos_consentimientos dc ON c.id = dc.id_consentimiento
+       LEFT JOIN datos_afirmaciones da ON c.id = da.id_consentimiento
+       ORDER BY c.created DESC`
+        );
+
+        // Convertimos el campo consentimiento a base64 si existe
+        const consentimientosConBase64 = rows.map(row => ({
+            ...row,
+            consentimiento_base64: row.consentimiento
+                ? Buffer.from(row.consentimiento).toString("base64")
+                : null,
+        }));
+
+        return consentimientosConBase64;
+    } catch (error) {
+        console.error("Error al obtener consentimientos completos:", error);
+        throw CustomError.InternalServerError(`Error en base de datos: ${error}`);
     }
 };

@@ -1,7 +1,7 @@
 import { generateToken, ConsentimientoSend, StatementSend } from "../common/utils/token";
 import { ResponseGeneric } from "../common/models/response";
 import { enviarCorreo, enviarFormularioAfirmacionesCorreo, enviarFormularioCorreo } from "../infraestructure/infraestructure/email";
-import { createConsentimiento, getConsentimientoById, GuardarConsentimiento, GuardarStatement } from "../infraestructure/persistence/repository/consentimientosRepository";
+import { createConsentimiento, getConsentimientoById, getConsentimientosCompletos, GuardarConsentimiento, GuardarStatement } from "../infraestructure/persistence/repository/consentimientosRepository";
 import { generateEnglishPdf, generatePdf, generateStatementsEnglishPdf, generateStatementsPdf } from "../common/utils/crearConsentimiento";
 import { v4 as uuidv4 } from 'uuid';
 import { Idioma } from '../domain/enums/Idioma';
@@ -161,7 +161,7 @@ export default class ConsentimientosService {
             if (!responseCreate) {
                 throw CustomError.BadRequest('No se pudo crear el consentimiento!!!');
             }
-            
+
             var response = await enviarFormularioAfirmacionesCorreo(destinatario, "Formulario de Atestamiento", token)
 
             if (!response) {
@@ -176,5 +176,15 @@ export default class ConsentimientosService {
 
     async GetDocumentooById(id: string) {
 
+    }
+
+    async ObtenerTodosLosConsentimientos(): Promise<ResponseGeneric<any[]>> {
+        try {
+            const consentimientos = await getConsentimientosCompletos();
+            return ResponseGeneric.Success(consentimientos, "Consentimientos obtenidos correctamente.");
+        } catch (error) {
+            console.error("Error en el servicio de consentimientos:", error);
+            throw error;
+        }
     }
 }
