@@ -125,10 +125,11 @@ export default class ConsentimientosService {
 
 
             var token = generateToken(payload)
-            //var creationSuccess = await createConsentimiento(consentimientoId)
-            //if (!creationSuccess) {
-            //    throw CustomError.BadRequest("No se pudo crear el consentimiento");
-            //}
+
+            var creationSuccess = await createConsentimiento(consentimientoId)
+            if (!creationSuccess) {
+                throw CustomError.BadRequest("No se pudo crear el consentimiento");
+            }
             var response = await enviarFormularioCorreo(destinatario, "Formulario de consentimiento", token)
 
             if (!response) {
@@ -155,10 +156,12 @@ export default class ConsentimientosService {
                 consentimientoId: consentimientoId
             }
             var token = generateToken(payload);
-            //var responseCreate = await createConsentimiento(consentimientoId);
-            //if (!responseCreate) {
-            //    throw CustomError.BadRequest('No se pudo crear el consentimiento!!!');
-            //}
+
+            var responseCreate = await createConsentimiento(consentimientoId);
+            if (!responseCreate) {
+                throw CustomError.BadRequest('No se pudo crear el consentimiento!!!');
+            }
+            
             var response = await enviarFormularioAfirmacionesCorreo(destinatario, "Formulario de Atestamiento", token)
 
             if (!response) {
