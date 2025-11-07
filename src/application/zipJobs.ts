@@ -2,111 +2,101 @@ import fs from "fs";
 import fsp from "fs/promises";
 import path from "path";
 import archiver from "archiver";
-import { v4 as uuidv4 } from "uuid";
+import { Readable } from "stream";
+import ConsentimientosService from "../application/consentimientosService";
 
-const UPLOADS_DIR = process.env.UPLOADS_FOLDER ?? path.resolve("./uploads");
-const ZIP_DIR = path.join(UPLOADS_DIR, "zip");
-
-export type ZipJobStatus = "queued" | "running" | "done" | "error";
-
-export interface ZipJob {
-  status: ZipJobStatus;
-  error?: string;
-  zipPath?: string;
-  createdAt: string;
-  files: string[];
+function slugify(s: string) {
+  return (s || "")
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9._-]+/g, "_")
+    .replace(/^_+|_+$/g, "")
+    .substring(0, 100);
 }
 
-const jobs = new Map<string, ZipJob>(); // jobId -> job info
+function yyyymmdd(date?: Date | string | null) {
+  const d = date ? new Date(date) : new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}${m}${day}`;
+}
 
-async function ensureDirs(): Promise<void> {
+/**
+ * Genera un ZIP de TODOS los consentimientos/atestamientos
+ * y lo deja en:   <UPLOADS_FOLDER || ./uploads>/zip/boot_<yyyyMMdd>_<hhmmss>.zip
+ * No bloquea el arranque: usa setImmediate y logs.
+ */
+export async function runZipOnBoot(): Promise<void> {
+  const UPLOADS_DIR = process.env.UPLOADS_FOLDER ?? path.resolve("./uploads");
+  const ZIP_DIR = path.join(UPLOADS_DIR, "zip");
+
   await fsp.mkdir(UPLOADS_DIR, { recursive: true });
   await fsp.mkdir(ZIP_DIR, { recursive: true });
-}
 
-function safeJoin(base: string, p: string): string {
-  const resolved = path.resolve(base, p);
-  if (!resolved.startsWith(path.resolve(base)))
-    throw new Error("Ruta inválida fuera de uploads/");
-  return resolved;
-}
+  // nombre con fecha/hora de arranque
+  const now = new Date();
+  const hh = String(now.getHours()).padStart(2, "0");
+  const mm = String(now.getMinutes()).padStart(2, "0");
+  const ss = String(now.getSeconds()).padStart(2, "0");
+  const zipName = `boot_${yyyymmdd(now)}_${hh}${mm}${ss}.zip`;
+  const zipPath = path.join(ZIP_DIR, zipName);
 
-function listImages(dir: string): string[] {
-  const exts = new Set([".jpg", ".jpeg", ".png", ".gif", ".bmp"]);
-  return fs.readdirSync(dir).filter((f) => exts.has(path.extname(f).toLowerCase()));
-}
+  const service = new ConsentimientosService();
 
-async function generateZip(jobId: string, files: string[]): Promise<void> {
-  const job = jobs.get(jobId);
-  if (!job) return;
+  setImmediate(async () => {
+    console.log(`[ZIP-BOOT] Iniciando generación: ${zipPath}`);
+    const out = fs.createWriteStream(zipPath);
+    const archive = archiver("zip", { zlib: { level: 9 } });
 
-  job.status = "running";
+    const done = new Promise<void>((resolve, reject) => {
+      out.on("close", resolve);
+      out.on("error", reject);
+      archive.on("error", reject);
+    });
 
-  const zipPath = path.join(ZIP_DIR, `${jobId}.zip`);
-  job.zipPath = zipPath;
+    archive.on("warning", (e) => console.warn("[ZIP-BOOT warn]", e?.message || e));
+    archive.pipe(out);
 
-  const out = fs.createWriteStream(zipPath);
-  const archive = archiver("zip", { zlib: { level: 9 } });
+    let appended = 0;
 
-  const done = new Promise<void>((resolve, reject) => {
-    out.on("close", resolve);
-    out.on("error", reject);
-    archive.on("error", reject);
-  });
-
-  archive.pipe(out);
-
-  for (const rel of files) {
-    const abs = safeJoin(UPLOADS_DIR, rel);
-    archive.file(abs, { name: rel });
-  }
-
-  archive.finalize();
-
-  try {
-    await done;
-    job.status = "done";
-  } catch (err: any) {
-    job.status = "error";
-    job.error = err?.message ?? String(err);
     try {
-      await fsp.rm(zipPath, { force: true });
-    } catch {}
-  }
-}
+      const resp: any = await service.ObtenerTodosLosConsentimientos();
+      const data: any[] = resp?.data ?? resp ?? [];
 
-export async function startZipJob(files?: string[]): Promise<{ jobId: string; status: ZipJobStatus }> {
-  await ensureDirs();
+      for (const row of data) {
+        const id = row.consentimiento_id || row.id || "sinid";
+        const nombre = row.nombre_titular || row.nombreConsumidor || "sin_nombre";
+        const email = row.correo || "sinemail";
+        const idi = (row.idioma || "").toString().toUpperCase() || "ES";
+        const fecha = yyyymmdd(row.created || new Date());
+        const filename = `${slugify(nombre)}_${fecha}_${idi}_${slugify(email)}_${id}.pdf`;
 
-  const fileList =
-    files && files.length > 0 ? files : listImages(UPLOADS_DIR);
+        const filePath = row.path_consentimiento as string | undefined;
+        if (filePath && fs.existsSync(filePath)) {
+          archive.file(filePath, { name: filename });
+          appended++;
+        } else if (row.consentimiento) {
+          const buf: Buffer = Buffer.isBuffer(row.consentimiento)
+            ? row.consentimiento
+            : Buffer.from(row.consentimiento);
+          archive.append(Readable.from(buf), { name: filename });
+          appended++;
+        }
+      }
 
-  const jobId = uuidv4();
-  const job: ZipJob = {
-    status: "queued",
-    createdAt: new Date().toISOString(),
-    files: fileList,
-  };
-  jobs.set(jobId, job);
+      if (appended === 0) {
+        archive.destroy();
+        try { await fsp.rm(zipPath, { force: true }); } catch {}
+        console.warn("[ZIP-BOOT] No había PDFs para empaquetar (ZIP no generado).");
+        return;
+      }
 
-  setImmediate(() => generateZip(jobId, fileList).catch(() => {}));
-
-  return { jobId, status: job.status };
-}
-
-export function getJob(jobId: string): ZipJob | null {
-  const job = jobs.get(jobId);
-  if (!job) return null;
-
-  if ((job.status === "queued" || job.status === "running") && job.zipPath && fs.existsSync(job.zipPath)) {
-    job.status = "done";
-  }
-
-  return job;
-}
-
-export function getZipPath(jobId: string): string | null {
-  const job = jobs.get(jobId);
-  if (!job || job.status !== "done" || !job.zipPath) return null;
-  return job.zipPath;
+      archive.finalize();
+      await done;
+      console.log(`[ZIP-BOOT] ZIP listo (${appended} archivos): ${zipPath}`);
+    } catch (err: any) {
+      console.error("[ZIP-BOOT] Error generando ZIP:", err?.message || err);
+      try { await fsp.rm(zipPath, { force: true }); } catch {}
+    }
+  });
 }
