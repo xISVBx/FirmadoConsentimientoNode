@@ -39,6 +39,37 @@ class ConsentimientoRouter {
 
     private config() {
 
+        /**
+ * @openapi
+ * /consentimiento:
+ *   post:
+ *     summary: Genera y almacena un consentimiento firmado (PDF)
+ *     tags: [Consentimientos]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [base64Image, token, idioma, nombreTitular, telefonoTitular, correoTitular]
+ *             properties:
+ *               base64Image: { type: string, description: "Firma en base64 (PNG/JPG en base64)" }
+ *               nombreTitular: { type: string }
+ *               telefonoTitular: { type: string }
+ *               correoTitular: { type: string, format: email }
+ *               fechaNacimiento: { type: string, format: date, nullable: true }
+ *               token: { type: string, description: "Token JWT generado con datos del agente (ConsentimientoSend)" }
+ *               idioma: { $ref: "#/components/schemas/Idioma" }
+ *     responses:
+ *       200:
+ *         description: PDF almacenado y correo enviado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/ResponseGeneric"
+ *       400: { description: Error de validación o token inválido }
+ *       500: { description: Error interno }
+ */
         this.router.post('/consentimiento', async (req: Request, res: Response, next: NextFunction) => {
             try {
                 const { base64Image, nombreTitular, telefonoTitular, correoTitular, fechaNacimiento, token, idioma } = req.body
@@ -78,6 +109,36 @@ class ConsentimientoRouter {
             }
         });
 
+        /**
+ * @openapi
+ * /consentimiento/correo:
+ *   post:
+ *     summary: Envía el formulario de consentimiento por correo al destinatario
+ *     tags: [Consentimientos]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [nombreAgente, numeroProductor, telefonoAgente, correoAgente, destinatario]
+ *             properties:
+ *               nombreAgente: { type: string }
+ *               numeroProductor: { type: string }
+ *               telefonoAgente: { type: string }
+ *               correoAgente: { type: string, format: email }
+ *               destinatario: { type: string, format: email }
+ *     responses:
+ *       200:
+ *         description: Correo enviado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/ResponseGeneric"
+ *       400: { description: No se pudo crear o enviar }
+ *       500: { description: Error interno }
+ */
+
         this.router.post('/consentimiento/correo', async (req: Request, res: Response, next: NextFunction) => {
             try {
                 console.log('Entro')
@@ -93,6 +154,36 @@ class ConsentimientoRouter {
                 next(err);
             }
         })
+
+        /**
+ * @openapi
+ * /statements:
+ *   post:
+ *     summary: Genera y almacena un atestamiento (Statements) firmado (PDF)
+ *     tags: [Atestamientos]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [base64Image, token, idioma, correoTitular, nombreConsumidor]
+ *             properties:
+ *               base64Image: { type: string, description: "Firma en base64" }
+ *               correoTitular: { type: string, format: email }
+ *               nombreConsumidor: { type: string }
+ *               token: { type: string, description: "Token JWT generado con StatementSend del agente" }
+ *               idioma: { $ref: "#/components/schemas/Idioma" }
+ *     responses:
+ *       200:
+ *         description: PDF almacenado y correo enviado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/ResponseGeneric"
+ *       400: { description: Error de validación o token inválido }
+ *       500: { description: Error interno }
+ */
 
         this.router.post('/statements', async (req: Request, res: Response, next: NextFunction) => {
             try {
@@ -131,6 +222,37 @@ class ConsentimientoRouter {
             }
         });
 
+        /**
+ * @openapi
+ * /statements/correo:
+ *   post:
+ *     summary: Envía el formulario de atestamiento por correo al destinatario
+ *     tags: [Atestamientos]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [nombreAgente, codigoPostal, ingresoAnual, compania, destinatario, plan]
+ *             properties:
+ *               nombreAgente: { type: string }
+ *               codigoPostal: { type: string }
+ *               ingresoAnual: { type: string }
+ *               compania: { type: string }
+ *               destinatario: { type: string, format: email }
+ *               plan: { type: string }
+ *     responses:
+ *       200:
+ *         description: Correo enviado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/ResponseGeneric"
+ *       400: { description: No se pudo crear o enviar }
+ *       500: { description: Error interno }
+ */
+
         this.router.post('/statements/correo', async (req: Request, res: Response, next: NextFunction) => {
             try {
                 const { nombreAgente, codigoPostal, ingresoAnual, compania, destinatario, plan } = req.body
@@ -144,6 +266,30 @@ class ConsentimientoRouter {
                 next(err)
             }
         })
+
+        /**
+ * @openapi
+ * /documento_firmado/{id}:
+ *   get:
+ *     summary: Descarga un consentimiento puntual por ID (archivo PDF)
+ *     tags: [Descargas]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *         description: ID del consentimiento
+ *     responses:
+ *       200:
+ *         description: PDF
+ *         content:
+ *           application/pdf:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *       404: { description: No encontrado }
+ *       500: { description: Error interno }
+ */
 
         this.router.get('/documento_firmado/:id', async (req: Request, res: Response, next: NextFunction) => {
             try {
@@ -167,6 +313,29 @@ class ConsentimientoRouter {
             }
         })
 
+        /**
+ * @openapi
+ * /consentimientos:
+ *   get:
+ *     summary: Lista consentimientos y atestamientos (incluye metadatos y, opcionalmente, base64)
+ *     tags: [Consentimientos]
+ *     responses:
+ *       200:
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/ResponseGeneric"
+ *             examples:
+ *               ejemplo:
+ *                 value:
+ *                   success: true
+ *                   message: "Consentimientos obtenidos correctamente."
+ *                   data:
+ *                     - $ref: "#/components/schemas/ConsentimientoItem"
+ *       500: { description: Error interno }
+ */
+
         this.router.get('/consentimientos', async (req: Request, res: Response, next: NextFunction) => {
             try {
                 const response = await this.service.ObtenerTodosLosConsentimientos();
@@ -176,6 +345,30 @@ class ConsentimientoRouter {
             }
         });
 
+        /**
+ * @openapi
+ * /imagen:
+ *   get:
+ *     summary: Sirve una imagen local por ruta absoluta validada
+ *     tags: [Utilidades]
+ *     parameters:
+ *       - in: query
+ *         name: path
+ *         required: true
+ *         schema: { type: string }
+ *         description: Ruta absoluta segura al archivo
+ *     responses:
+ *       200:
+ *         description: Imagen
+ *         content:
+ *           image/*:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *       400: { description: Parámetro inválido }
+ *       404: { description: No se pudo cargar la imagen }
+ *       500: { description: Error interno }
+ */
         this.router.get('/imagen', async (req: Request, res: Response, next: NextFunction) => {
             try {
                 const { path: imagePath } = req.query;
@@ -196,6 +389,29 @@ class ConsentimientoRouter {
             }
         });
 
+
+        /**
+ * @openapi
+ * /consentimientos/descargar-todos:
+ *   get:
+ *     summary: Descarga todos los PDFs (consentimientos y atestamientos) en un ZIP
+ *     description: |
+ *       Si el archivo existe en disco, se usa path_consentimiento.
+ *       Si no existe, pero hay BLOB en BD, se usa BLOB.
+ *       El nombre de cada PDF en el ZIP sigue el patrón:
+ *       `<nombre>_<YYYYMMDD>_<idioma>_<email>_<id>.pdf`.
+ *     tags: [Descargas]
+ *     responses:
+ *       200:
+ *         description: ZIP generado
+ *         content:
+ *           application/zip:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *       204: { description: Sin contenido }
+ *       500: { description: Error interno }
+ */
 
         this.router.get('/consentimientos/descargar-todos', async (req, res, next) => {
             try {
