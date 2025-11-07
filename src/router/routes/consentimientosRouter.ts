@@ -41,7 +41,7 @@ class ConsentimientoRouter {
 
         /**
  * @openapi
- * /consentimiento:
+ * /api/consentimiento:
  *   post:
  *     summary: Genera y almacena un consentimiento firmado (PDF)
  *     tags: [Consentimientos]
@@ -111,7 +111,7 @@ class ConsentimientoRouter {
 
         /**
  * @openapi
- * /consentimiento/correo:
+ * /api/consentimiento/correo:
  *   post:
  *     summary: Envía el formulario de consentimiento por correo al destinatario
  *     tags: [Consentimientos]
@@ -157,7 +157,7 @@ class ConsentimientoRouter {
 
         /**
  * @openapi
- * /statements:
+ * /api/statements:
  *   post:
  *     summary: Genera y almacena un atestamiento (Statements) firmado (PDF)
  *     tags: [Atestamientos]
@@ -224,7 +224,7 @@ class ConsentimientoRouter {
 
         /**
  * @openapi
- * /statements/correo:
+ * /api/statements/correo:
  *   post:
  *     summary: Envía el formulario de atestamiento por correo al destinatario
  *     tags: [Atestamientos]
@@ -269,7 +269,7 @@ class ConsentimientoRouter {
 
         /**
  * @openapi
- * /documento_firmado/{id}:
+ * /api/documento_firmado/{id}:
  *   get:
  *     summary: Descarga un consentimiento puntual por ID (archivo PDF)
  *     tags: [Descargas]
@@ -315,7 +315,7 @@ class ConsentimientoRouter {
 
         /**
  * @openapi
- * /consentimientos:
+ * /api/consentimientos:
  *   get:
  *     summary: Lista consentimientos y atestamientos (incluye metadatos y, opcionalmente, base64)
  *     tags: [Consentimientos]
@@ -347,7 +347,7 @@ class ConsentimientoRouter {
 
         /**
  * @openapi
- * /imagen:
+ * /api/imagen:
  *   get:
  *     summary: Sirve una imagen local por ruta absoluta validada
  *     tags: [Utilidades]
@@ -392,7 +392,7 @@ class ConsentimientoRouter {
 
         /**
  * @openapi
- * /consentimientos/descargar-todos:
+ * /api/consentimientos/descargar-todos:
  *   get:
  *     summary: Descarga todos los PDFs (consentimientos y atestamientos) en un ZIP
  *     description: |
@@ -412,7 +412,6 @@ class ConsentimientoRouter {
  *       204: { description: Sin contenido }
  *       500: { description: Error interno }
  */
-
         this.router.get('/consentimientos/descargar-todos', async (req, res, next) => {
             try {
                 const items = await this.service.ObtenerTodosLosConsentimientos(); // ResponseGeneric<any[]>
