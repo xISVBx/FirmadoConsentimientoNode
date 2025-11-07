@@ -11,19 +11,19 @@ import fs from 'fs';
 import archiver from 'archiver';
 
 function slugify(s: string) {
-  return (s || '')
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')   // quita acentos
-    .replace(/[^a-zA-Z0-9._-]+/g, '_')                 // separadores seguros
-    .replace(/^_+|_+$/g, '')
-    .substring(0, 100);
+    return (s || '')
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')   // quita acentos
+        .replace(/[^a-zA-Z0-9._-]+/g, '_')                 // separadores seguros
+        .replace(/^_+|_+$/g, '')
+        .substring(0, 100);
 }
 
 function yyyymmdd(date?: Date | string | null) {
-  const d = date ? new Date(date) : new Date();
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}${m}${day}`;
+    const d = date ? new Date(date) : new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}${m}${day}`;
 }
 
 class ConsentimientoRouter {
@@ -391,7 +391,7 @@ class ConsentimientoRouter {
 
         /**
  * @openapi
- * /api/consentimientos/descargar-todos:
+ * /api/consentimientos/zips:
  *   get:
  *     summary: Descarga todos los PDFs (consentimientos y atestamientos) en un ZIP
  *     description: |

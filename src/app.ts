@@ -160,6 +160,56 @@ class Server {
     this.app.get("/api", (req, res) => {
       res.status(200).send({ message: "API is running" });
     });
+    /**
+ * @openapi
+ * /_routes:
+ *   get:
+ *     summary: Lista todas las rutas registradas en Express (debug)
+ *     description: |
+ *       Devuelve un listado en **texto plano** con todos los métodos y paths
+ *       que el proceso de Express tiene cargados en runtime. Útil para diagnóstico
+ *       de despliegue/ruteo en producción.
+ *     tags:
+ *       - Debug
+ *     responses:
+ *       200:
+ *         description: Listado de rutas
+ *         content:
+ *           text/plain:
+ *             schema:
+ *               type: string
+ *             example: |
+ *               GET /api
+ *               GET /api/consentimientos
+ *               GET /api/consentimientos/descargar-todos
+ *               POST /api/consentimiento
+ *               POST /api/consentimiento/correo
+ *               POST /api/statements
+ *               POST /api/statements/correo
+ *               GET /api/documento_firmado/:id
+ *               GET /api/_routes
+ */
+
+    this.app.get("/api/_routes", (req, res) => {
+      const out: string[] = [];
+      const walk = (stack: any[], prefix = "") => {
+        stack?.forEach((l: any) => {
+          if (l.route) {
+            const methods = Object.keys(l.route.methods).join(",").toUpperCase();
+            out.push(`${methods} ${prefix}${l.route.path}`);
+          } else if (l.name === "router" && l.handle?.stack) {
+            // intenta inferir prefijo del subrouter
+            const reg = (l.regexp?.source || "")
+              .replace(/^\^\\/, "/")
+              .replace(/\\\/\?\(\?=\\\/\|\$\)\$$/, "");
+            walk(l.handle.stack, reg);
+          }
+        });
+      };
+      walk((this as any).app._router?.stack || []);
+      res.type("text/plain").send(out.sort().join("\n"));
+    });
+
   }
 
   private errorHandler = async (

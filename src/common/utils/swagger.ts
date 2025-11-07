@@ -91,6 +91,8 @@ const swaggerOptions = {
   apis: [
     path.join(process.cwd(), "src/router/routes/*.ts"),  // dev
     path.join(process.cwd(), "dist/router/routes/*.js"), // prod compilado
+    path.join(process.cwd(), "src/server.ts"),           // 👈 agrega esto (ajusta nombre si difiere)
+    path.join(process.cwd(), "dist/server.js"),          // 👈 para producción compilada
   ],
 };
 
