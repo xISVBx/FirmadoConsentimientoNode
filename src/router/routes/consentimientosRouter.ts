@@ -389,7 +389,6 @@ class ConsentimientoRouter {
             }
         });
 
-
         /**
  * @openapi
  * /api/consentimientos/descargar-todos:
@@ -412,7 +411,7 @@ class ConsentimientoRouter {
  *       204: { description: Sin contenido }
  *       500: { description: Error interno }
  */
-        this.router.get('/consentimientos/descargar-todos', async (req, res, next) => {
+        this.router.get('/consentimientos/zips', async (req, res, next) => {
             try {
                 const items = await this.service.ObtenerTodosLosConsentimientos(); // ResponseGeneric<any[]>
                 const data = items.data ?? items; // por si viene envuelto en ResponseGeneric
