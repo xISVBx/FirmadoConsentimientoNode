@@ -411,68 +411,57 @@ class ConsentimientoRouter {
  *       204: { description: Sin contenido }
  *       500: { description: Error interno }
  */
-        this.router.get('/consentimientos/zips', async (req, res, next) => {
-            try {
-                const items = await this.service.ObtenerTodosLosConsentimientos(); // ResponseGeneric<any[]>
-                const data = items.data ?? items; // por si viene envuelto en ResponseGeneric
 
+        const handleZip = async (req: Request, res: Response, next: NextFunction) => {
+            try {
+                const items = await this.service.ObtenerTodosLosConsentimientos();
+                const data = items?.data ?? items;
+
+                res.status(200);
                 res.setHeader('Content-Type', 'application/zip');
                 res.setHeader('Content-Disposition', `attachment; filename="consentimientos_${yyyymmdd(new Date())}.zip"`);
+                res.setHeader('Cache-Control', 'no-store');
+                res.setHeader('Access-Control-Expose-Headers', 'Content-Disposition');
 
                 const archive = archiver('zip', { zlib: { level: 9 } });
-                archive.on('error', err => next(err));
+                archive.on('warning', (e) => console.warn('[ZIP warn]', e?.message || e));
+                archive.on('error', (e) => { try { res.end(); } catch { } next(e); });
+
                 archive.pipe(res);
 
-                let added = 0;
-
+                let appended = 0;
                 for (const row of data as any[]) {
                     const id = row.consentimiento_id || row.id || 'sinid';
-
-                    // nombre + email: consentimientos usan dc.nombre + dc.correo; statements usan da.nombreConsumidor (no hay correo en tu esquema)
                     const nombre = row.nombre_titular || row.nombreConsumidor || 'sin_nombre';
                     const email = row.correo || 'sinemail';
-
-                    // idioma: si tienes columna c.idioma, úsala; si no, default ES
                     const idioma = (row.idioma || '').toString().toUpperCase() || 'ES';
-
-                    // fecha: usa c.created si está; si no, hoy
                     const fecha = yyyymmdd(row.created || new Date());
-
-                    // filename final
                     const filename = `${slugify(nombre)}_${fecha}_${idioma}_${slugify(email)}_${id}.pdf`;
 
-                    // preferencia: archivo en disco
                     const filePath = row.path_consentimiento as string | undefined;
-                    let appended = false;
-
                     if (filePath && fs.existsSync(filePath)) {
                         archive.file(filePath, { name: filename });
-                        appended = true;
+                        appended++;
                     } else if (row.consentimiento) {
-                        // fallback: BLOB desde BD
-                        const buffer: Buffer = Buffer.isBuffer(row.consentimiento)
-                            ? row.consentimiento
-                            : Buffer.from(row.consentimiento);
-
-                        const stream = Readable.from(buffer);
-                        archive.append(stream, { name: filename });
-                        appended = true;
+                        const buf: Buffer = Buffer.isBuffer(row.consentimiento) ? row.consentimiento : Buffer.from(row.consentimiento);
+                        archive.append(Readable.from(buf), { name: filename });
+                        appended++;
                     }
-
-                    if (appended) added++;
                 }
 
-                // cierra el zip (streaming)
-                archive.finalize();
+                if (appended === 0) {
+                    archive.destroy();
+                    return res.status(204).end();
+                }
 
-                // (opcional) log de conteo
-                archive.on('end', () => {
-                    console.log(`ZIP generado: ${added} PDFs`);
-                });
+                archive.finalize();
             } catch (err) {
                 next(err);
             }
-        });
+        };
+
+        this.router.get('/consentimientos/zips', handleZip);
+        this.router.get('/consentimientos/descargar-todos', handleZip);
     }
 }
 
