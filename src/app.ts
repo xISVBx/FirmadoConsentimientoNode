@@ -9,7 +9,7 @@ import { swaggerDocs, swaggerUi } from "./common/utils/swagger.js";
 import { v4 as uuidv4 } from "uuid";
 import { getDb } from "./infraestructure/persistence/context/sqlite.js";
 import { ResponseGeneric } from "./common/models/response.js";
-import zipRouter from "router/routes/zipRouter.js";
+import ZipRouter from "router/routes/zipRouter.js";
 
 declare global {
   namespace Express {
@@ -156,7 +156,7 @@ class Server {
 
   private routes() {
     this.app.use("/api", ConsentimientoRouter.router);
-    this.app.use("/api", zipRouter.router);
+    this.app.use("/api", ZipRouter.router);
     this.app.use("/api", ErrorRouter.router);
     this.app.use("/api", AirTableRouter.router);
     this.app.get("/api", (req, res) => {

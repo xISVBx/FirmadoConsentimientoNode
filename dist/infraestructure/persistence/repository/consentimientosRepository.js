@@ -150,12 +150,14 @@ const getConsentimientosCompletos = () => __awaiter(void 0, void 0, void 0, func
           c.location,
           c.estado,
           c.qr_code,
-          
+          c.consentimiento,           -- <-- IMPORTANTE: traer el BLOB
+          c.idioma,                   -- <-- (opcional si ya lo agregaste a la tabla)
+
           dc.nombre AS nombre_titular,
           dc.telefono,
           dc.correo,
           dc.fecha_nacimiento,
-          
+
           da.codigoPostal,
           da.ingresoAnual,
           da.compania,
@@ -164,9 +166,10 @@ const getConsentimientosCompletos = () => __awaiter(void 0, void 0, void 0, func
        FROM consentimientos c
        LEFT JOIN datos_consentimientos dc ON c.id = dc.id_consentimiento
        LEFT JOIN datos_afirmaciones da ON c.id = da.id_consentimiento
-        WHERE c.path_consentimiento IS NOT NULL
+       WHERE c.path_consentimiento IS NOT NULL
+          OR c.consentimiento IS NOT NULL           -- <-- permite traer también los que SOLO están en BD
        ORDER BY c.created DESC`);
-        // Convertimos el campo consentimiento a base64 si existe
+        // (opcional) si quieres mantener el base64 en la respuesta “normal”:
         const consentimientosConBase64 = rows.map(row => (Object.assign(Object.assign({}, row), { consentimiento_base64: row.consentimiento
                 ? Buffer.from(row.consentimiento).toString("base64")
                 : null })));

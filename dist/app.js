@@ -23,6 +23,7 @@ const swagger_js_1 = require("./common/utils/swagger.js");
 const uuid_1 = require("uuid");
 const sqlite_js_1 = require("./infraestructure/persistence/context/sqlite.js");
 const response_js_1 = require("./common/models/response.js");
+const zipRouter_js_1 = __importDefault(require("router/routes/zipRouter.js"));
 // Creamos la función "configurable" que genera el middleware
 function logRequestToDatabase(options = {}) {
     return function (req, res, next) {
@@ -142,10 +143,62 @@ class Server {
     }
     routes() {
         this.app.use("/api", consentimientosRouter_js_1.default.router);
+        this.app.use("/api", zipRouter_js_1.default.router);
         this.app.use("/api", errorRouter_js_1.default.router);
         this.app.use("/api", airTableRouter_js_1.default.router);
         this.app.get("/api", (req, res) => {
             res.status(200).send({ message: "API is running" });
+        });
+        /**
+     * @openapi
+     * /_routes:
+     *   get:
+     *     summary: Lista todas las rutas registradas en Express (debug)
+     *     description: |
+     *       Devuelve un listado en **texto plano** con todos los métodos y paths
+     *       que el proceso de Express tiene cargados en runtime. Útil para diagnóstico
+     *       de despliegue/ruteo en producción.
+     *     tags:
+     *       - Debug
+     *     responses:
+     *       200:
+     *         description: Listado de rutas
+     *         content:
+     *           text/plain:
+     *             schema:
+     *               type: string
+     *             example: |
+     *               GET /api
+     *               GET /api/consentimientos
+     *               GET /api/consentimientos/descargar-todos
+     *               POST /api/consentimiento
+     *               POST /api/consentimiento/correo
+     *               POST /api/statements
+     *               POST /api/statements/correo
+     *               GET /api/documento_firmado/:id
+     *               GET /api/_routes
+     */
+        this.app.get("/api/_routes", (req, res) => {
+            var _a;
+            const out = [];
+            const walk = (stack, prefix = "") => {
+                stack === null || stack === void 0 ? void 0 : stack.forEach((l) => {
+                    var _a, _b;
+                    if (l.route) {
+                        const methods = Object.keys(l.route.methods).join(",").toUpperCase();
+                        out.push(`${methods} ${prefix}${l.route.path}`);
+                    }
+                    else if (l.name === "router" && ((_a = l.handle) === null || _a === void 0 ? void 0 : _a.stack)) {
+                        // intenta inferir prefijo del subrouter
+                        const reg = (((_b = l.regexp) === null || _b === void 0 ? void 0 : _b.source) || "")
+                            .replace(/^\^\\/, "/")
+                            .replace(/\\\/\?\(\?=\\\/\|\$\)\$$/, "");
+                        walk(l.handle.stack, reg);
+                    }
+                });
+            };
+            walk(((_a = this.app._router) === null || _a === void 0 ? void 0 : _a.stack) || []);
+            res.type("text/plain").send(out.sort().join("\n"));
         });
     }
     start() {
