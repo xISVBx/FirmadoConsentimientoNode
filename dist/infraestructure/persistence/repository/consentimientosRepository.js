@@ -151,7 +151,6 @@ const getConsentimientosCompletos = () => __awaiter(void 0, void 0, void 0, func
           c.estado,
           c.qr_code,
           c.consentimiento,           -- <-- IMPORTANTE: traer el BLOB
-          c.idioma,                   -- <-- (opcional si ya lo agregaste a la tabla)
 
           dc.nombre AS nombre_titular,
           dc.telefono,

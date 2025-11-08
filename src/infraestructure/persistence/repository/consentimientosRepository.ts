@@ -174,7 +174,6 @@ export const getConsentimientosCompletos = async (): Promise<any[]> => {
           c.estado,
           c.qr_code,
           c.consentimiento,           -- <-- IMPORTANTE: traer el BLOB
-          c.idioma,                   -- <-- (opcional si ya lo agregaste a la tabla)
 
           dc.nombre AS nombre_titular,
           dc.telefono,
