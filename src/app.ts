@@ -11,6 +11,12 @@ import { getDb } from "./infraestructure/persistence/context/sqlite.js";
 import { ResponseGeneric } from "./common/models/response.js";
 import ZipRouter from "./router/routes/zipRouter.js";
 import { runZipOnBoot } from "./application/zipJobs.js";
+import { attachFileLogger } from "./application/logger.js";
+import path from "path";
+
+
+attachFileLogger(path.join(process.cwd(), "nodeapp_uploads", "logs")); // <-- NUEVO
+
 
 declare global {
   namespace Express {

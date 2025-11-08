@@ -25,6 +25,9 @@ const sqlite_js_1 = require("./infraestructure/persistence/context/sqlite.js");
 const response_js_1 = require("./common/models/response.js");
 const zipRouter_js_1 = __importDefault(require("./router/routes/zipRouter.js"));
 const zipJobs_js_1 = require("./application/zipJobs.js");
+const logger_js_1 = require("./application/logger.js");
+const path_1 = __importDefault(require("path"));
+(0, logger_js_1.attachFileLogger)(path_1.default.join(process.cwd(), "nodeapp_uploads", "logs")); // <-- NUEVO
 // Creamos la función "configurable" que genera el middleware
 function logRequestToDatabase(options = {}) {
     return function (req, res, next) {

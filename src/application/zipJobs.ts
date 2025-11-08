@@ -5,19 +5,32 @@ import archiver from "archiver";
 import { Readable } from "stream";
 import ConsentimientosService from "../application/consentimientosService.js";
 
-// ---- helpers fecha/slug
-function yyyymmdd(date = new Date()) {
+// ===== Tipos mínimos que usamos del SELECT =====
+type ConsentRow = {
+  id?: string;
+  consentimiento_id?: string;
+  path_consentimiento?: string | null;
+  created?: string | Date | null;
+  correo?: string | null;
+  nombre_titular?: string | null;
+  nombreConsumidor?: string | null;
+  idioma?: string | null;
+  consentimiento?: Buffer | Uint8Array | string | null;       // BLOB
+  consentimiento_base64?: string | null;                      // base64
+};
+
+function yyyymmdd(date: Date = new Date()): string {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, "0");
   const d = String(date.getDate()).padStart(2, "0");
   return `${y}${m}${d}`;
 }
-function hhmm(date = new Date()) {
+function hhmm(date: Date = new Date()): string {
   const h = String(date.getHours()).padStart(2, "0");
   const m = String(date.getMinutes()).padStart(2, "0");
   return `${h}-${m}`;
 }
-function slugify(s: string) {
+function slugify(s: string): string {
   return (s || "")
     .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-zA-Z0-9._-]+/g, "_")
@@ -25,18 +38,25 @@ function slugify(s: string) {
     .substring(0, 100);
 }
 
-// ---- asegura carpeta de salida (ajústalo si ya tienes este helper en otro archivo)
-export async function ensureUploadFolders() {
-  const ROOT = process.env.UPLOADS_ROOT?.trim() || path.join(process.cwd(), "uploads");
+/**
+ * Carpeta escribible en cPanel:
+ * - Si defines UPLOADS_ROOT → se usa esa
+ * - Si no, cae a ~/nodeapp_uploads/zips
+ */
+export async function ensureUploadFolders(): Promise<{ ZIP_DIR: string }> {
+  const HOME = process.env.HOME || `/home/${process.env.SSH_USER || process.env.USER || "cpanel"}`;
+  const ROOT = (process.env.UPLOADS_ROOT?.trim()) || path.join(HOME, "nodeapp_uploads");
   const ZIP_DIR = path.join(ROOT, "zips");
   await fsp.mkdir(ZIP_DIR, { recursive: true });
+  console.log("[ZIP-BOOT] UPLOADS_ROOT:", ROOT);
+  console.log("[ZIP-BOOT] ZIP_DIR:", ZIP_DIR);
   return { ZIP_DIR };
 }
 
 // ---- extrae Buffer a partir de la fila (ruta → blob → base64)
-async function extractPdfBuffer(row: any): Promise<Buffer | null> {
+async function extractPdfBuffer(row: ConsentRow): Promise<Buffer | null> {
   // 1) archivo en disco
-  const filePath: string | undefined = row.path_consentimiento;
+  const filePath = row.path_consentimiento ?? undefined;
   if (filePath) {
     try {
       const stat = await fsp.stat(filePath);
@@ -47,16 +67,14 @@ async function extractPdfBuffer(row: any): Promise<Buffer | null> {
   }
   // 2) blob
   if (row.consentimiento) {
-    const buf = Buffer.isBuffer(row.consentimiento)
-      ? (row.consentimiento as Buffer)
-      : Buffer.from(row.consentimiento);
+    const val = row.consentimiento as unknown;
+    const buf = Buffer.isBuffer(val) ? val as Buffer : Buffer.from(val as Uint8Array);
     if (buf.length > 0) return buf;
   }
   // 3) base64 precalculado
   if (row.consentimiento_base64) {
     try {
-      const b64 = String(row.consentimiento_base64);
-      const buf = Buffer.from(b64, "base64");
+      const buf = Buffer.from(String(row.consentimiento_base64), "base64");
       if (buf.length > 0) return buf;
     } catch { /* continuar */ }
   }
@@ -64,11 +82,10 @@ async function extractPdfBuffer(row: any): Promise<Buffer | null> {
 }
 
 // ---- decide tipo (consentimiento/atestamiento)
-function detectTipo(row: any): "consentimiento" | "atestamiento" {
+function detectTipo(row: ConsentRow): "consentimiento" | "atestamiento" {
   if (row?.nombre_titular) return "consentimiento";
   if (row?.nombreConsumidor) return "atestamiento";
-  // fallback
-  return "consentimiento";
+  return "consentimiento"; // fallback
 }
 
 // ---- genera un nombre de archivo individual y evita colisiones
@@ -78,21 +95,19 @@ async function nextAvailablePath(dir: string, baseNameNoExt: string): Promise<st
   while (true) {
     try {
       await fsp.access(candidate, fs.constants.F_OK);
-      // existe → intenta con sufijo
       candidate = path.join(dir, `${baseNameNoExt}_(${i}).pdf`);
       i++;
     } catch {
-      // no existe → ok
       return candidate;
     }
   }
 }
 
 // ---- escribe un PDF suelto en ZIP_DIR
-async function writeSinglePdf(ZIP_DIR: string, row: any): Promise<string | null> {
+async function writeSinglePdf(ZIP_DIR: string, row: ConsentRow): Promise<string | null> {
   const tipo = detectTipo(row);
   const nombre = row.nombre_titular || row.nombreConsumidor || "sin_nombre";
-  const baseName = `${slugify(nombre)}_${tipo}`; // p.ej. "Juan_Perez_consentimiento"
+  const baseName = `${slugify(String(nombre))}_${tipo}`; // p.ej. "Juan_Perez_consentimiento"
   const targetPath = await nextAvailablePath(ZIP_DIR, baseName);
 
   const buf = await extractPdfBuffer(row);
@@ -102,9 +117,19 @@ async function writeSinglePdf(ZIP_DIR: string, row: any): Promise<string | null>
   return targetPath;
 }
 
-// ---- ZIP principal + guardado por item
 export async function runZipOnBoot(): Promise<void> {
   const { ZIP_DIR } = await ensureUploadFolders();
+
+  // Evita doble ejecución simultánea
+  const lockPath = path.join(ZIP_DIR, ".zip.lock");
+  const releaseLock = async () => { try { await fsp.rm(lockPath, { force: true }); } catch {} };
+
+  try {
+    await fsp.writeFile(lockPath, String(Date.now()), { flag: "wx" }); // falla si ya existe
+  } catch {
+    console.warn("[ZIP-BOOT] Ya hay un proceso en curso. Abortando.");
+    return;
+  }
 
   const now = new Date();
   const niceDate = yyyymmdd(now);
@@ -119,104 +144,103 @@ export async function runZipOnBoot(): Promise<void> {
 
   const service = new ConsentimientosService();
 
-  setImmediate(async () => {
-    console.log(`[ZIP-BOOT] Creando ZIP: ${zipPath}`);
-    const out = fs.createWriteStream(zipPath);
-    const archive = archiver("zip", { zlib: { level: 9 } });
+  console.log(`[ZIP-BOOT] Creando ZIP: ${zipPath}`);
+  const out = fs.createWriteStream(zipPath);
+  const archive = archiver("zip", { zlib: { level: 9 } });
 
-    const done = new Promise<void>((resolve, reject) => {
-      out.on("close", resolve);
-      out.on("error", reject);
-      archive.on("error", reject);
-    });
+  const done = new Promise<void>((resolve, reject) => {
+    out.on("close", () => resolve());
+    out.on("error", (e) => reject(e));
+    archive.on("error", (e) => reject(e));
+  });
 
-    archive.on("warning", (e) => console.warn("[ZIP-BOOT warn]", e?.message || e));
-    archive.pipe(out);
+  archive.on("warning", (e) => console.warn("[ZIP-BOOT warn]", (e as Error)?.message || e));
+  archive.pipe(out);
 
-    let appended = 0;
-    let savedSingles = 0;
-    let perItemErrors = 0;
+  let appended = 0;
+  let savedSingles = 0;
+  let perItemErrors = 0;
 
-    try {
-      const resp: any = await service.ObtenerTodosLosConsentimientos();
-      const data: any[] = resp?.data ?? resp ?? [];
+  try {
+    const resp = await service.ObtenerTodosLosConsentimientos() as { data?: ConsentRow[] } | ConsentRow[];
+    const data: ConsentRow[] = Array.isArray(resp) ? resp : (resp?.data ?? []);
 
-      console.log(`[ZIP-BOOT] Registros: ${data.length}`);
+    console.log(`[ZIP-BOOT] Registros: ${data.length}`);
 
-      const MAX_VERBOSE = 30;
-      let idx = 0;
+    let idx = 0;
+    const MAX_VERBOSE = 30;
 
-      for (const row of data) {
-        idx++;
+    for (const row of data) {
+      idx++;
 
-        const id = row.consentimiento_id || row.id || "sinid";
-        const nombre = row.nombre_titular || row.nombreConsumidor || "sin_nombre";
-        const email = row.correo || "sinemail";
-        const idioma = (row.idioma || "").toString().toUpperCase() || "ES";
-        const created = row.created ? new Date(row.created) : now;
-        const fecha = yyyymmdd(created);
-        const filenameInZip = `${slugify(nombre)}_${fecha}_${idioma}_${slugify(email)}_${id}.pdf`;
+      const id = row.consentimiento_id || row.id || "sinid";
+      const nombre = row.nombre_titular || row.nombreConsumidor || "sin_nombre";
+      const email = row.correo || "sinemail";
+      const idioma = (row.idioma || "").toString().toUpperCase() || "ES";
+      const created = row.created ? new Date(row.created as string) : now;
+      const fecha = yyyymmdd(created);
+      const filenameInZip = `${slugify(String(nombre))}_${fecha}_${idioma}_${slugify(String(email))}_${id}.pdf`;
 
-        try {
-          // 1) escribir el PDF suelto
-          const singlePath = await writeSinglePdf(ZIP_DIR, row);
-          if (singlePath) {
-            savedSingles++;
-            if (idx <= MAX_VERBOSE) console.log(`[ZIP-BOOT][${idx}] Individual: ${singlePath}`);
-          } else {
-            if (idx <= MAX_VERBOSE) console.warn(`[ZIP-BOOT][${idx}] Sin fuente (no se creó individual).`);
-          }
+      try {
+        // 1) PDF individual
+        const singlePath = await writeSinglePdf(ZIP_DIR, row);
+        if (singlePath) {
+          savedSingles++;
+          if (idx <= MAX_VERBOSE) console.log(`[ZIP-BOOT][${idx}] Individual: ${singlePath}`);
+        } else if (idx <= MAX_VERBOSE) {
+          console.warn(`[ZIP-BOOT][${idx}] Sin fuente (no se creó individual).`);
+        }
 
-          // 2) adjuntar al ZIP (reusa buffer del archivo suelto si se creó)
-          if (singlePath) {
-            const stat = await fsp.stat(singlePath);
-            if (stat.isFile() && stat.size > 0) {
-              archive.file(singlePath, { name: filenameInZip });
-              appended++;
-              continue; // ya listo
-            }
-          }
-
-          // Si no hubo individual, aún intenta adjuntar por las fuentes disponibles
-          const fallbackBuf = await extractPdfBuffer(row);
-          if (fallbackBuf && fallbackBuf.length > 0) {
-            archive.append(Readable.from(fallbackBuf), { name: filenameInZip });
+        // 2) ZIP: si se creó el individual, úsalo; si no, usa fallback buf
+        if (singlePath) {
+          const stat = await fsp.stat(singlePath);
+          if (stat.isFile() && stat.size > 0) {
+            archive.file(singlePath, { name: filenameInZip });
             appended++;
-          } else if (idx <= MAX_VERBOSE) {
-            console.warn(`[ZIP-BOOT][${idx}] Sin fuente para ZIP (omitido).`);
-          }
-        } catch (e) {
-          perItemErrors++;
-          if (idx <= MAX_VERBOSE) {
-            console.warn(`[ZIP-BOOT][${idx}] Error por fila id=${id}:`, (e as any)?.message || e);
+            continue;
           }
         }
+        const fallbackBuf = await extractPdfBuffer(row);
+        if (fallbackBuf && fallbackBuf.length > 0) {
+          archive.append(Readable.from(fallbackBuf), { name: filenameInZip });
+          appended++;
+        } else if (idx <= MAX_VERBOSE) {
+          console.warn(`[ZIP-BOOT][${idx}] Sin fuente para ZIP (omitido).`);
+        }
+      } catch (e: any) {
+        perItemErrors++;
+        if (idx <= MAX_VERBOSE) {
+          console.warn(`[ZIP-BOOT][${idx}] Error por fila id=${id}:`, e?.message || e);
+        }
       }
-
-      console.log(`[ZIP-BOOT] Resumen: individuales=${savedSingles}, zipAppended=${appended}, erroresFila=${perItemErrors}`);
-
-      if (appended === 0) {
-        archive.destroy();
-        try { await fsp.rm(zipPath, { force: true }); } catch {}
-        console.warn("[ZIP-BOOT] ZIP vacío. No se generó archivo ZIP.");
-        return;
-      }
-
-      archive.finalize();
-      await done;
-
-      // Alias → “último”
-      try {
-        await fsp.rm(aliasPath, { force: true });
-        await fsp.copyFile(zipPath, aliasPath);
-        console.log(`[ZIP-BOOT] ZIP listo (${appended} archivos): ${zipPath}`);
-        console.log(`[ZIP-BOOT] Alias actualizado: ${aliasPath}`);
-      } catch (aliasErr: any) {
-        console.warn("[ZIP-BOOT] No se pudo actualizar alias:", aliasErr?.message || aliasErr);
-      }
-    } catch (err: any) {
-      console.error("[ZIP-BOOT] Error generando ZIP:", err?.message || err);
-      try { await fsp.rm(zipPath, { force: true }); } catch {}
     }
-  });
+
+    console.log(`[ZIP-BOOT] Resumen: individuales=${savedSingles}, zipAppended=${appended}, erroresFila=${perItemErrors}`);
+
+    if (appended === 0) {
+      archive.destroy();
+      try { await fsp.rm(zipPath, { force: true }); } catch {}
+      console.warn("[ZIP-BOOT] ZIP vacío. No se generó archivo ZIP.");
+      await releaseLock();
+      return;
+    }
+
+    archive.finalize();
+    await done;
+
+    // Alias → “último”
+    try {
+      await fsp.rm(aliasPath, { force: true });
+      await fsp.copyFile(zipPath, aliasPath);
+      console.log(`[ZIP-BOOT] ZIP listo (${appended} archivos): ${zipPath}`);
+      console.log(`[ZIP-BOOT] Alias actualizado: ${aliasPath}`);
+    } catch (aliasErr: any) {
+      console.warn("[ZIP-BOOT] No se pudo actualizar alias:", aliasErr?.message || aliasErr);
+    }
+  } catch (err: any) {
+    console.error("[ZIP-BOOT] Error generando ZIP:", err?.message || err);
+    try { await fsp.rm(zipPath, { force: true }); } catch {}
+  } finally {
+    await releaseLock();
+  }
 }
