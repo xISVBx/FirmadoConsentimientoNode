@@ -10,7 +10,7 @@ import { v4 as uuidv4 } from "uuid";
 import { getDb } from "./infraestructure/persistence/context/sqlite.js";
 import { ResponseGeneric } from "./common/models/response.js";
 import ZipRouter from "./router/routes/zipRouter.js";
-import { runZipOnBoot } from "application/zipJobs.js";
+import { runZipOnBoot } from "./application/zipJobs.js";
 
 declare global {
   namespace Express {

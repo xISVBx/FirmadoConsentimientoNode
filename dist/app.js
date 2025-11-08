@@ -24,7 +24,7 @@ const uuid_1 = require("uuid");
 const sqlite_js_1 = require("./infraestructure/persistence/context/sqlite.js");
 const response_js_1 = require("./common/models/response.js");
 const zipRouter_js_1 = __importDefault(require("./router/routes/zipRouter.js"));
-const zipJobs_js_1 = require("application/zipJobs.js");
+const zipJobs_js_1 = require("./application/zipJobs.js");
 // Creamos la función "configurable" que genera el middleware
 function logRequestToDatabase(options = {}) {
     return function (req, res, next) {
