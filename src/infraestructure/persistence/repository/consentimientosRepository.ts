@@ -163,35 +163,35 @@ export const getConsentimientosCompletos = async (): Promise<any[]> => {
 
   try {
     const [rows]: [any[], FieldPacket[]] = await conn.execute(
-      `SELECT 
-          c.id AS consentimiento_id,
-          c.path_consentimiento,
-          c.created,
-          c.viewed,
-          c.enviado,
-          c.ip,
-          c.location,
-          c.estado,
-          c.qr_code,
-          c.consentimiento,           -- <-- IMPORTANTE: traer el BLOB
+  `SELECT 
+      c.id AS consentimiento_id,
+      c.path_consentimiento,
+      c.created,
+      c.viewed,
+      c.enviado,
+      c.ip,
+      c.location,
+      c.estado,
+      c.qr_code,
+      c.consentimiento,
 
-          dc.nombre AS nombre_titular,
-          dc.telefono,
-          dc.correo,
-          dc.fecha_nacimiento,
+      dc.nombre AS nombre_titular,
+      dc.telefono,
+      dc.correo,
+      dc.fecha_nacimiento,
 
-          da.codigoPostal,
-          da.ingresoAnual,
-          da.compania,
-          da.plan,
-          da.nombreConsumidor
-       FROM consentimientos c
-       LEFT JOIN datos_consentimientos dc ON c.id = dc.id_consentimiento
-       LEFT JOIN datos_afirmaciones da ON c.id = da.id_consentimiento
-       WHERE c.path_consentimiento IS NOT NULL
-          OR c.consentimiento IS NOT NULL           -- <-- permite traer también los que SOLO están en BD
-       ORDER BY c.created DESC`
-    );
+      da.codigoPostal,
+      da.ingresoAnual,
+      da.compania,
+      da.plan,
+      da.nombreConsumidor
+   FROM consentimientos c
+   LEFT JOIN datos_consentimientos dc ON c.id = dc.id_consentimiento
+   LEFT JOIN datos_afirmaciones da ON c.id = da.id_consentimiento
+   WHERE c.path_consentimiento IS NOT NULL
+      OR c.consentimiento IS NOT NULL
+   ORDER BY c.created DESC`
+);
 
     // (opcional) si quieres mantener el base64 en la respuesta “normal”:
     const consentimientosConBase64 = rows.map(row => ({
